@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viamigo - Travel App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09;
+        }
+        .phone-mockup {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #111827;
+            border-radius: 40px;
+            border: 10px solid #111827;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .phone-screen {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .page { display: none; }
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .bottom-nav button.active svg, .bottom-nav button.active span { color: white; }
+        .viamigo-font {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #a78bfa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .interest-tag.selected, .segmented-control button.selected {
+            background-color: #a78bfa;
+            color: #111827;
+            font-weight: 600;
+        }
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background-color: #374151;
+        }
+        .timeline-item .dot {
+            position: absolute;
+            left: -5px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid #111827;
+        }
+        #modal.hidden { transform: translateY(100%); }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+
+    <div class="phone-mockup">
+        <div class="phone-screen">
+
+            <!-- ====================================================== -->
+            <!-- PAGINA HOME                                            -->
+            <!-- ====================================================== -->
+            <div id="page-home" class="page active">
+                <div id="home-header" class="flex justify-between items-center mb-6 px-2 h-12 flex-shrink-0 mt-6">
+                    <h1 class="text-3xl font-bold self-end mb-1 viamigo-font">Viamigo</h1>
+                    <svg class="w-9 h-9 self-center" viewBox="0 0 100 100">
+                        <defs><linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs>
+                        <path d="M20 80 C 30 40, 70 40, 80 80 L 50 20 Z" fill="url(#g2)"/></svg>
+                </div>
+                <div class="flex-grow overflow-y-auto px-2">
+                    <div class="view-toggle w-full bg-gray-800 rounded-full p-1 flex mb-6">
+                        <button class="home-toggle flex-1 text-white text-sm font-semibold py-2 rounded-full bg-gray-600" data-view="planner">Pianifica</button>
+                        <button class="home-toggle flex-1 text-white text-sm font-semibold py-2 rounded-full" data-view="chat">Chatta</button>
+                    </div>
+                    <div id="home-planner-view">
+                        <div class="space-y-6">
+                            <div class="bg-gray-800 rounded-xl p-2 border border-gray-700">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <input type="text" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Partenza">
+                                </div>
+                                <div class="h-px bg-gray-700 my-1"></div>
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <input type="text" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Destinazione">
+                                </div>
+                            </div>
+                            <button class="plan-button w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Pianifica il mio giorno</button>
+                        </div>
+                        <div class="mt-8">
+                            <h2 class="text-gray-400 text-sm font-medium mb-3 px-1">Preferenze veloci</h2>
+                            <div class="flex space-x-3">
+                                <button class="flex-1 bg-gray-800 text-gray-200 py-2 rounded-lg text-sm">Musei</button>
+                                <button class="flex-1 bg-gray-800 text-gray-200 py-2 rounded-lg text-sm">Cibo</button>
+                                <button class="flex-1 bg-gray-800 text-gray-200 py-2 rounded-lg text-sm">Parchi</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="home-chat-view" class="hidden h-full flex flex-col">
+                        <div class="flex-grow space-y-4 p-2">
+                            <div class="bg-gray-800 p-3 rounded-lg max-w-xs"><p class="text-white text-sm">Ciao! Sono il tuo assistente di viaggio. Chiedimi qualsiasi cosa per pianificare la tua giornata a Genova.</p></div>
+                        </div>
+                        <div class="mt-4 flex items-center bg-gray-800 rounded-full p-2">
+                            <input type="text" class="flex-grow bg-transparent text-white placeholder-gray-500 px-3 focus:outline-none" placeholder="Scrivi un messaggio...">
+                            <button class="send-button p-2 rounded-full bg-violet-500 text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- PAGINA ITINERARIO                                      -->
+            <!-- ====================================================== -->
+            <div id="page-itinerary" class="page">
+                <div class="header p-4 pt-8 border-b border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <button class="nav-button" data-page="home"><svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
+                        <div class="overflow-hidden">
+                            <p class="text-xs text-gray-400 truncate">Il tuo itinerario a Genova</p>
+                            <h2 class="font-bold text-white text-lg truncate">Da Via XX Settembre a Via Roma</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-900/80 backdrop-blur-sm border-b border-gray-700">
+                    <div class="w-full bg-gray-800 rounded-full p-1 flex">
+                        <button class="itinerary-toggle flex-1 text-white text-sm font-semibold py-2 rounded-full bg-gray-600" data-view="list">Lista</button>
+                        <button class="itinerary-toggle flex-1 text-white text-sm font-semibold py-2 rounded-full" data-view="map">Mappa</button>
+                    </div>
+                </div>
+                <div class="flex-grow relative">
+                    <div id="itinerary-list-view" class="absolute inset-0 overflow-y-auto p-4">
+                        <div class="timeline"></div>
+                    </div>
+                    <div id="itinerary-map-view" class="hidden absolute inset-0 bg-cover bg-center" style="background-image: url('https://placehold.co/400x800/1f2937/9ca3af?text=Mappa+di+Genova')"></div>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- PAGINA PROFILO                                         -->
+            <!-- ====================================================== -->
+            <div id="page-profile" class="page">
+                <div class="header p-4 pt-8 text-center"><h1 class="text-2xl font-bold text-white">Profilo & Preferenze</h1></div>
+                <div class="flex-grow overflow-y-auto p-4">
+                    <div class="flex flex-col items-center mb-8">
+                        <img src="https://placehold.co/80x80/374151/E5E7EB?text=M" alt="Avatar utente" class="w-20 h-20 rounded-full mb-3">
+                        <h2 class="text-xl font-semibold text-white">Maria Rossi</h2>
+                    </div>
+                    <div class="mb-8">
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">I tuoi interessi</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Arte</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Cibo</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Natura</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Shopping</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Storia</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Relax</button>
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
+                        <div class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Rilassato</button>
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">Moderato</button>
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Intenso</button>
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
+                        <div class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€</button>
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">€€</button>
+                            <button class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€€€</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 flex-shrink-0"><button class="save-button w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Salva Preferenze</button></div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- BARRA DI NAVIGAZIONE INFERIORE                         -->
+            <!-- ====================================================== -->
+            <div class="bottom-nav h-20 flex items-center justify-around flex-shrink-0 border-t border-gray-700">
+                <button class="nav-button text-center text-white active" data-page="home">
+                    <svg class="w-6 h-6 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                    <span class="text-xs">Home</span>
+                </button>
+                <button class="nav-button text-center text-gray-500" data-page="itinerary">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 10l6-3m0 0l6-3m-6 3V7"></path></svg>
+                    <span class="text-xs">Itinerario</span>
+                </button>
+                <button class="nav-button text-center text-gray-500" data-page="profile">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span class="text-xs">Profilo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Itinerario -->
+        <div id="modal-overlay" class="hidden absolute inset-0 bg-black/60 z-20"></div>
+        <div id="modal" class="hidden absolute bottom-0 left-0 right-0 bg-gray-800 rounded-t-2xl p-4 z-30 transition-transform duration-300"></div>
+    </div>
+
+    <script src="viamigo.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pages = document.querySelectorAll('.page');
+        const navButtons = document.querySelectorAll('.nav-button');
+        const timelineContainer = document.querySelector('#itinerary-list-view .timeline');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modal = document.getElementById('modal');
+
+        const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selected: 'bg-violet-400' };
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const pageId = button.dataset.page;
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(`page-${pageId}`).classList.add('active');
+                navButtons.forEach(btn => btn.classList.remove('active', 'text-white') || btn.classList.add('text-gray-500'));
+                button.classList.add('active', 'text-white');
+            });
+        });
+
+        function setupToggle(buttons, views) {
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const viewId = button.dataset.view;
+                    views.forEach(view => view.style.display = view.id.includes(viewId) ? (view.id.includes('chat') ? 'flex' : 'block') : 'none');
+                    buttons.forEach(btn => btn.classList.remove('bg-gray-600'));
+                    button.classList.add('bg-gray-600');
+                });
+            });
+        }
+        setupToggle(document.querySelectorAll('.home-toggle'), [document.getElementById('home-planner-view'), document.getElementById('home-chat-view')]);
+        setupToggle(document.querySelectorAll('.itinerary-toggle'), [document.getElementById('itinerary-list-view'), document.getElementById('itinerary-map-view')]);
+
+        const itineraryData = [
+            { time: "09:00 - 09:10 (10 min)", title: "Passeggiata alla metro", desc: "Raggiungi a piedi la fermata De Ferrari.", context: "walk" },
+            { time: "09:15 - 09:25 (10 min)", title: "Prendi la metropolitana", desc: "Linea M, direzione Brin. Scendi alla fermata Darsena.", context: "metro" },
+            { type: "tip", title: "Consiglio dell'AI", desc: "Considera il biglietto giornaliero (4.50€) se prevedi più di 3 corse oggi. Ti conviene!" },
+            { time: "09:30 - 11:30 (2 ore)", title: "Visita il Galata Museo del Mare", desc: "Scopri la storia marittima di Genova. L'orario di apertura è confermato.", context: "museum" }
+        ];
+        
+        const modalContents = {
+            walk: { title: "Percorso a piedi", content: `<div class="bg-gray-700 h-32 rounded-lg mb-4 flex items-center justify-center text-gray-400">Mappa del percorso</div><p class="text-sm text-gray-300">Segui il percorso indicato per raggiungere la fermata della metro in circa 2 minuti.</p>` },
+            metro: { title: "Metropolitana", content: `<div class="bg-gray-700 h-32 rounded-lg mb-4 flex items-center justify-center text-gray-400">Mappa della stazione</div><p class="text-sm text-gray-300 mb-4">Entra e segui le indicazioni per la linea M in direzione Brin.</p><button class="w-full font-semibold py-3 rounded-lg">Acquista biglietti online</button>` },
+            museum: { title: "Galata Museo del Mare", content: `<p class="text-sm text-gray-300 mb-4">Mostre principali: "Memorie e Migrazioni", "Navi e Marinai".</p><button class="w-full font-semibold py-3 rounded-lg">Visita il sito ufficiale</button>` }
+        };
+
+        function renderItinerary() {
+            timelineContainer.innerHTML = '';
+            itineraryData.forEach(item => {
+                if (item.type === 'tip') {
+                    timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.desc}</p></div>`;
+                } else {
+                    timelineContainer.innerHTML += `
+                        <div class="timeline-item relative pb-8">
+                            <div class="dot bg-gray-500"></div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xs text-gray-400 mb-1">${item.time}</p>
+                                    <h3 class="font-semibold text-white">${item.title}</h3>
+                                    <p class="text-sm text-gray-300">${item.desc}</p>
+                                </div>
+                                <button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}">
+                                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg>
+                                </button>
+                            </div>
+                        </div>`;
+                }
+            });
+            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+        }
+
+        function openModal(context) {
+            const data = modalContents[context];
+            modal.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-white">${data.title}</h3>
+                    <button id="close-modal-btn"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div>${data.content.replace('<button class="', `<button class="${themeColors.base} text-white `)}</div>`;
+            modalOverlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+        }
+        function closeModal() {
+            modalOverlay.classList.add('hidden');
+            modal.classList.add('hidden');
+        }
+        modalOverlay.addEventListener('click', closeModal);
+
+        renderItinerary();
+    });
+    </script>
+</body>
+</html>

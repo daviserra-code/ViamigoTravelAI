@@ -6,6 +6,8 @@ Main FastAPI application entry point
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import logging
 
@@ -61,13 +63,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
 app.include_router(travel.router, prefix="/api/v1", tags=["Travel"])
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
+    """Serve the main HTML interface"""
+    return FileResponse('static/index.html')
+
+@app.get("/api")
+async def api_info():
+    """API information endpoint"""
     return {
         "message": "Welcome to Viamigo - Your AI-Powered Travel Organizer",
         "version": "1.0.0",
