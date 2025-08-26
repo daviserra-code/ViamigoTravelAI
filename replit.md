@@ -92,3 +92,6 @@ Preferred communication style: Simple, everyday language.
 - **January 26, 2025**: Added dedicated `/health` endpoint for deployment monitoring
 - **January 26, 2025**: Enhanced root endpoint with fallback responses for deployment reliability
 - **January 26, 2025**: Updated workflow configuration with explicit main.py entry point
+- **January 26, 2025**: Created dedicated `run.py` entry point for deployment with proper environment handling
+- **January 26, 2025**: Fixed workflow configuration to use `python run.py` command for reliable deployment startup
+- **January 26, 2025**: Added support for HEAD requests on health endpoints for deployment monitoring
