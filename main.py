@@ -1,94 +1,126 @@
-"""
-Viamigo - AI-Powered Travel Organizer
-Main FastAPI application entry point
-"""
-
-import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+import os
+import httpx
+import json
+from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from contextlib import asynccontextmanager
-import logging
+from pydantic import BaseModel
+import uvicorn
 
-from app.config import settings
-from app.routes import travel, health
-from app.services.chromadb_service import ChromaDBService
-from app.utils.logger import setup_logging
+# Definisce la struttura dei dati che ci aspettiamo dal frontend
+class PlanRequest(BaseModel):
+    start: str
+    end: str
 
-# Setup logging
-setup_logging()
-logger = logging.getLogger(__name__)
+# Definisce la struttura per la richiesta di dettagli
+class DetailRequest(BaseModel):
+    context: str
 
-# Global ChromaDB service instance
-chromadb_service = None
+app = FastAPI()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    global chromadb_service
-    
-    # Startup
-    logger.info("Starting Viamigo Travel Organizer...")
-    try:
-        chromadb_service = ChromaDBService()
-        await chromadb_service.initialize()
-        app.state.chromadb_service = chromadb_service
-        logger.info("ChromaDB service initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize ChromaDB service: {e}")
-        raise
-    
-    yield
-    
-    # Shutdown
-    logger.info("Shutting down Viamigo Travel Organizer...")
-    if chromadb_service:
-        await chromadb_service.close()
+# --- FUNZIONE PER L'ITINERARIO PRINCIPALE ---
+async def get_ai_itinerary(start_location: str, end_location: str):
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return {"error": "API Key di OpenAI non configurata."}
 
-# Create FastAPI application
-app = FastAPI(
-    title="Viamigo",
-    description="AI-Powered Travel Organizer with RAG and LLM Integration",
-    version="1.0.0",
-    lifespan=lifespan
-)
+    api_url = "https://api.openai.com/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    prompt = f"""
+    Agisci come un esperto locale e guida turistica. Il tuo compito è creare un itinerario a piedi e con i mezzi pubblici per un turista. La città è implicita nella richiesta.
+    Dettagli: da '{start_location}' a '{end_location}'.
+    Istruzioni:
+    1. Crea un percorso logico combinando spostamenti e visite.
+    2. Per ogni tappa, fornisci stime di tempo, coordinate (lat, lon) e un 'context' che sia il nome esatto del luogo (es. "Acquario di Genova", "Metropolitana De Ferrari", "Palazzo della Meridiana").
+    3. Includi un "tip" utile.
+    4. La tua risposta DEVE essere un oggetto JSON valido con una chiave "itinerary" contenente un array di oggetti. Non includere testo esterno al JSON.
+    Schema per ogni oggetto: {{"time": "string", "title": "string", "description": "string", "type": "string", "context": "string", "lat": float, "lon": float}}
+    """
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Include routers
-app.include_router(health.router, prefix="/api/v1", tags=["Health"])
-app.include_router(travel.router, prefix="/api/v1", tags=["Travel"])
-
-@app.get("/")
-async def root():
-    """Serve the main HTML interface"""
-    return FileResponse('static/index.html')
-
-@app.get("/api")
-async def api_info():
-    """API information endpoint"""
-    return {
-        "message": "Welcome to Viamigo - Your AI-Powered Travel Organizer",
-        "version": "1.0.0",
-        "docs": "/docs"
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "Sei un assistente di viaggio che risponde solo in formato JSON strutturato."},
+            {"role": "user", "content": prompt}
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.5
     }
 
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            json_content_str = result['choices'][0]['message']['content']
+            return json.loads(json_content_str)
+    except Exception as e:
+        print(f"Errore API Itinerario: {e}")
+        return {"error": "Errore durante la generazione dell'itinerario."}
+
+# --- FUNZIONE PER I DETTAGLI CONTESTUALI (SENZA IMMAGINI) ---
+async def get_contextual_details(context: str):
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return {"error": "API Key di OpenAI non configurata."}
+
+    api_url = "https://api.openai.com/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+    prompt = f"""
+    Agisci come un assistente turistico. Fornisci informazioni dettagliate e utili per "{context}".
+    Istruzioni:
+    1. Fornisci un breve riassunto "wikipedia-like" (massimo 50 parole).
+    2. Se è un luogo di interesse, fornisci dettagli come "Orari di apertura".
+    3. Se è un mezzo di trasporto, fornisci orari o frequenze indicative.
+    4. Includi un link utile (sito ufficiale, acquisto biglietti).
+    5. La tua risposta DEVE essere un oggetto JSON valido. Non includere testo esterno al JSON.
+    Schema: {{
+        "title": "string",
+        "summary": "string",
+        "details": [ {{"label": "string", "value": "string"}} ],
+        "timetable": [ {{"direction": "string", "times": "string"}} ] | null,
+        "actionLink": {{"text": "string", "url": "string"}}
+    }}
+    """
+
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "Sei un assistente che fornisce dettagli su punti di interesse in formato JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.3
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            json_content_str = result['choices'][0]['message']['content']
+            return json.loads(json_content_str)
+
+    except Exception as e:
+        print(f"Errore API Dettagli: {e}")
+        return {"error": "Errore durante il recupero dei dettagli."}
+
+# --- ENDPOINTS ---
+@app.get("/")
+async def read_root():
+    return FileResponse('static/index.html')
+
+@app.post("/plan")
+async def create_plan(request: PlanRequest):
+    print(f"Richiesta itinerario: da {request.start} a {request.end}")
+    return await get_ai_itinerary(request.start, request.end)
+
+@app.post("/get_details")
+async def get_details(request: DetailRequest):
+    print(f"Richiesta dettagli per: {request.context}")
+    return await get_contextual_details(request.context)
+
+# Avvio del server
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=5000,
-        reload=settings.DEBUG,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
