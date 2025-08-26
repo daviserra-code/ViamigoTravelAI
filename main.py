@@ -159,12 +159,15 @@ async def get_contextual_details(context: str):
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     prompt = f"""
-    Agisci come un assistente turistico esperto della città di {city}. 
-    Fornisci informazioni dettagliate e utili per "{context}".
+    Agisci come un assistente turistico esperto SPECIFICATAMENTE della città di {city}, Italia. 
+    Fornisci informazioni dettagliate e utili per "{context}" che si trova a {city}.
+    
+    IMPORTANTE: Devi fornire informazioni SOLO per il luogo che si trova a {city}, NON per luoghi con nomi simili in altre città italiane.
+    
     Istruzioni:
-    1. Fornisci un breve riassunto "wikipedia-like" (max 50 parole).
-    2. Fornisci dettagli come "Orari di apertura" o frequenze dei mezzi.
-    3. Includi un link utile (sito ufficiale, biglietti).
+    1. Fornisci un breve riassunto "wikipedia-like" (max 50 parole) SPECIFICO per {city}.
+    2. Fornisci dettagli come "Orari di apertura" o frequenze dei mezzi per il luogo a {city}.
+    3. Includi un link utile (sito ufficiale, biglietti) relativo al luogo a {city}.
     4. La tua risposta DEVE essere un oggetto JSON valido.
     Schema: {{"title": "string", "summary": "string", "details": [ {{"label": "string", "value": "string"}} ], "timetable": [ {{"direction": "string", "times": "string"}} ] | null, "actionLink": {{"text": "string", "url": "string"}}}}
     """
@@ -243,20 +246,29 @@ async def simulate_real_image_search(location: str, city: str):
     """Simula la ricerca di immagini reali basandosi su database di luoghi noti"""
     location_lower = location.lower()
     
-    # Database simulato di immagini per luoghi famosi
+    # Database di immagini reali per luoghi famosi di Genova
     known_images = {
-        'teatro carlo felice': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819',
-        'acquario di genova': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5',
-        'palazzo rosso': 'https://images.unsplash.com/photo-1539650116574-75c0c6d73c6e',
-        'spianata castelletto': 'https://images.unsplash.com/photo-1566757676403-8ca6bb7b0ceb',
-        'cattedrale di san lorenzo': 'https://images.unsplash.com/photo-1548013146-72479768bada',
-        'mercato orientale': 'https://images.unsplash.com/photo-1542838132-92c53300491e'
+        'teatro carlo felice': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+        'acquario di genova': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800',
+        'palazzo rosso': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
+        'palazzo ducale': 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?w=800',
+        'spianata castelletto': 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800',
+        'cattedrale di san lorenzo': 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
+        'mercato orientale': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?w=800',
+        'via del campo': 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800',
+        'palazzo bianco': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800'
     }
     
-    # Cerca match parziali
+    # Cerca match esatti o parziali
     for key, url in known_images.items():
-        if any(word in location_lower for word in key.split()):
+        # Prima prova match esatto
+        if key in location_lower:
             return url
+        # Poi prova match di parole chiave principali
+        key_words = key.split()
+        if len(key_words) >= 2:
+            if all(word in location_lower for word in key_words):
+                return url
     
     return None
 
