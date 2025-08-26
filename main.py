@@ -61,7 +61,6 @@ async def get_ai_itinerary(start_location: str, end_location: str):
         return {"error": "API Key di OpenAI non configurata."}
 
     city = extract_city_from_input(start_location, end_location)
-    print(f"Città identificata: {city}")
     transport_data = search_real_transport_data(city)
 
     api_url = "https://api.openai.com/v1/chat/completions"
@@ -174,4 +173,4 @@ async def save_preferences(preferences: UserPreferences):
 
 # Avvio del server
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)

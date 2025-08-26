@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app.models import (
     TravelQuery, TravelResponse, RAGQuery, RAGResult, 
-    DocumentChunk, ErrorResponse
+    DocumentChunk, ErrorResponse, TravelType
 )
 from app.services.rag_service import RAGService
 from app.services.chromadb_service import ChromaDBService
@@ -173,4 +173,163 @@ async def get_travel_types():
     """Get available travel types"""
     from app.models import TravelType
     return [travel_type.value for travel_type in TravelType]
+
+@router.post("/plan")
+async def plan_itinerary(
+    request: Request,
+    rag_service: RAGService = Depends(get_rag_service)
+):
+    """Create a travel itinerary plan"""
+    try:
+        body = await request.json()
+        start = body.get('start', '')
+        end = body.get('end', '')
+        
+        logger.info(f"Richiesta itinerario: da {start} a {end}")
+        
+        if not start or not end:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Start and end locations are required"}
+            )
+        
+        # Create travel query for RAG
+        from datetime import date
+        query = TravelQuery(
+            query_text=f"Pianifica un itinerario dettagliato da {start} a {end} con orari, trasporti e attrazioni",
+            destination=end,
+            travel_type=TravelType.CULTURAL,
+            duration=1,
+            start_date=date.today(),
+            end_date=date.today(),
+            interests=["cultura", "storia", "cibo"],
+            budget=1500,
+            group_size=1
+        )
+        
+        # Get recommendations from RAG
+        response = await rag_service.process_travel_query(query)
+        
+        # Convert recommendations to itinerary format
+        itinerary = []
+        current_time = 9.0  # Start at 9:00 AM
+        
+        for i, rec in enumerate(response.recommendations):
+            # Add travel time between locations
+            if i > 0:
+                travel_duration = 0.5  # 30 minutes
+                start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+                current_time += travel_duration
+                end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+                
+                itinerary.append({
+                    "time": f"{start_time} - {end_time}",
+                    "title": f"Trasferimento verso {rec.destination}",
+                    "description": "Spostamento con mezzi pubblici o a piedi",
+                    "type": "transport",
+                    "context": "walk",
+                    "coordinates": {
+                        "lat": 44.4063 + (i * 0.01),
+                        "lng": 8.9314 + (i * 0.01)
+                    }
+                })
+            
+            # Add main activity
+            activity_duration = 2.0  # 2 hours
+            start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+            current_time += activity_duration
+            end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+            
+            itinerary.append({
+                "time": f"{start_time} - {end_time}",
+                "title": rec.destination,
+                "description": rec.description,
+                "type": "activity",
+                "context": "museum",
+                "coordinates": {
+                    "lat": 44.4063 + (i * 0.005),
+                    "lng": 8.9314 + (i * 0.005)
+                }
+            })
+            
+            # Add tip occasionally
+            if i == 0 and rec.local_tips:
+                itinerary.append({
+                    "type": "tip",
+                    "title": "Consiglio dell'AI",
+                    "description": rec.local_tips[0]
+                })
+        
+        return JSONResponse(content={"itinerary": itinerary})
+        
+    except Exception as e:
+        logger.error(f"Error creating itinerary: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to create itinerary"}
+        )
+
+@router.post("/get_details")
+async def get_location_details(
+    request: Request,
+    rag_service: RAGService = Depends(get_rag_service)
+):
+    """Get detailed information about a location or context"""
+    try:
+        body = await request.json()
+        context = body.get('context', '')
+        
+        logger.info(f"Richiesta dettagli per: {context}")
+        
+        if not context:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Context is required"}
+            )
+        
+        # Create query based on context
+        if context == "museum":
+            query_text = "Informazioni dettagliate sui musei di Genova, orari, prezzi e cosa vedere"
+        elif context == "walk":
+            query_text = "Consigli per camminare a Genova, percorsi pedonali e trasporti pubblici"
+        elif context == "restaurant":
+            query_text = "Migliori ristoranti di Genova, specialità locali e prezzi"
+        else:
+            query_text = f"Informazioni dettagliate su {context} a Genova"
+        
+        # Use RAG to get detailed information
+        from datetime import date
+        query = TravelQuery(
+            query_text=query_text,
+            destination="Genova",
+            travel_type=TravelType.CULTURAL,
+            duration=1,
+            start_date=date.today(),
+            end_date=date.today(),
+            interests=["informazioni", "dettagli"],
+            budget=1000,
+            group_size=1
+        )
+        
+        response = await rag_service.process_travel_query(query)
+        
+        if response.recommendations:
+            # Combine information from all recommendations
+            content = "\n\n".join([f"• {rec.description}" for rec in response.recommendations[:3]])
+            title = "Informazioni Dettagliate"
+        else:
+            title = "Informazioni"
+            content = "Al momento non ho informazioni specifiche disponibili per questa richiesta."
+        
+        return JSONResponse(content={
+            "title": title,
+            "content": content
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting details: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to get details"}
+        )
 

@@ -153,7 +153,6 @@
         const planButton = document.getElementById('plan-button');
         const itineraryTitle = document.getElementById('itinerary-title');
 
-        // Elementi della pagina Profilo
         const interestsGrid = document.getElementById('interests-grid');
         const paceControl = document.getElementById('pace-control');
         const budgetControl = document.getElementById('budget-control');
@@ -174,79 +173,255 @@
         });
 
         // --- GESTIONE PROFILO ---
-        interestsGrid.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                e.target.classList.toggle('selected');
-                e.target.classList.toggle('bg-gray-800');
-                e.target.classList.toggle(themeColors.selectedClass);
-            }
-        });
-
-        function setupSegmentedControl(container) {
-            container.addEventListener('click', (e) => {
+        if(interestsGrid && paceControl && budgetControl && savePrefsButton) {
+            interestsGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') {
-                    container.querySelectorAll('button').forEach(btn => {
-                        btn.classList.remove('selected', themeColors.selectedClass);
+                    e.target.classList.toggle('selected');
+                    e.target.classList.toggle('bg-gray-800');
+                    e.target.classList.toggle(themeColors.selectedClass);
+                }
+            });
+
+            function setupSegmentedControl(container) {
+                container.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        container.querySelectorAll('button').forEach(btn => {
+                            btn.classList.remove('selected', themeColors.selectedClass);
+                            btn.classList.add('text-gray-300');
+                        });
+                        e.target.classList.add('selected', themeColors.selectedClass);
+                        e.target.classList.remove('text-gray-300');
+                    }
+                });
+            }
+            setupSegmentedControl(paceControl);
+            setupSegmentedControl(budgetControl);
+
+            savePrefsButton.addEventListener('click', async () => {
+                const selectedInterests = [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent);
+                const selectedPace = paceControl.querySelector('.selected').dataset.value;
+                const selectedBudget = budgetControl.querySelector('.selected').dataset.value;
+
+                const preferences = {
+                    interests: selectedInterests,
+                    pace: selectedPace,
+                    budget: selectedBudget
+                };
+
+                savePrefsButton.textContent = 'Salvataggio...';
+                try {
+                    const response = await fetch('/save_preferences', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(preferences)
                     });
-                    e.target.classList.add('selected', themeColors.selectedClass);
+                    const data = await response.json();
+                    console.log('Preferenze salvate:', data);
+                    savePrefsButton.textContent = 'Salvato!';
+                    setTimeout(() => { savePrefsButton.textContent = 'Salva Preferenze'; }, 2000);
+                } catch (error) {
+                    console.error('Errore salvataggio preferenze:', error);
+                    savePrefsButton.textContent = 'Errore';
                 }
             });
         }
-        setupSegmentedControl(paceControl);
-        setupSegmentedControl(budgetControl);
-
-        savePrefsButton.addEventListener('click', async () => {
-            const selectedInterests = [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent);
-            const selectedPace = paceControl.querySelector('.selected').dataset.value;
-            const selectedBudget = budgetControl.querySelector('.selected').dataset.value;
-
-            const preferences = {
-                interests: selectedInterests,
-                pace: selectedPace,
-                budget: selectedBudget
-            };
-
-            savePrefsButton.textContent = 'Salvataggio...';
-            try {
-                const response = await fetch('/save_preferences', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(preferences)
-                });
-                const data = await response.json();
-                console.log('Preferenze salvate:', data);
-                savePrefsButton.textContent = 'Salvato!';
-                setTimeout(() => { savePrefsButton.textContent = 'Salva Preferenze'; }, 2000);
-            } catch (error) {
-                console.error('Errore salvataggio preferenze:', error);
-                savePrefsButton.textContent = 'Errore';
-            }
-        });
 
         // --- GESTIONE PIANIFICAZIONE ---
-        planButton.addEventListener('click', async () => {
-            const start = document.getElementById('start-location').value;
-            const end = document.getElementById('end-location').value;
-            planButton.textContent = "Pianificazione..."; planButton.disabled = true;
-            try {
-                const response = await fetch('/plan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ start, end })
+        if(planButton) {
+            planButton.addEventListener('click', async () => {
+                const start = document.getElementById('start-location').value;
+                const end = document.getElementById('end-location').value;
+                planButton.textContent = "Pianificazione..."; planButton.disabled = true;
+                try {
+                    const response = await fetch('/plan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ start, end })
+                    });
+                    const data = await response.json();
+                    if (data.error) { renderItinerary(null); } 
+                    else {
+                        currentItineraryData = data.itinerary;
+                        itineraryTitle.textContent = `Da ${start} a ${end}`;
+                        renderItinerary(data);
+                        document.querySelector('.nav-button[data-page="itinerary"]').click();
+                    }
+                } catch (error) { renderItinerary(null); } 
+                finally { planButton.textContent = "Pianifica il mio giorno"; planButton.disabled = false; }
+            });
+        }
+
+        // --- GESTIONE TOGGLE VISTA ITINERARIO (LISTA/MAPPA) ---
+        const itineraryToggleButtons = document.querySelectorAll('.itinerary-toggle');
+        const itineraryListView = document.getElementById('itinerary-list-view');
+        const itineraryMapView = document.getElementById('itinerary-map-view');
+
+        itineraryToggleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+                
+                // Aggiorna i pulsanti toggle
+                itineraryToggleButtons.forEach(btn => {
+                    btn.classList.remove('bg-gray-600');
+                    btn.classList.add('bg-transparent');
                 });
-                const data = await response.json();
-                if (data.error) { renderItinerary(null); } 
-                else {
-                    currentItineraryData = data.itinerary;
-                    itineraryTitle.textContent = `Da ${start} a ${end}`;
-                    renderItinerary(data);
-                    document.querySelector('.nav-button[data-page="itinerary"]').click();
+                button.classList.add('bg-gray-600');
+                button.classList.remove('bg-transparent');
+
+                // Mostra/nasconde le viste
+                if (view === 'list') {
+                    itineraryListView.classList.remove('hidden');
+                    itineraryMapView.classList.add('hidden');
+                } else if (view === 'map') {
+                    itineraryListView.classList.add('hidden');
+                    itineraryMapView.classList.remove('hidden');
+                    initializeMap();
                 }
-            } catch (error) { renderItinerary(null); } 
-            finally { planButton.textContent = "Pianifica il mio giorno"; planButton.disabled = false; }
+            });
         });
 
+        // --- INIZIALIZZAZIONE MAPPA ---
+        function initializeMap() {
+            if (!mapInitialized) {
+                // Coordinate di Genova come centro di default
+                map = L.map('map').setView([44.4063, 8.9314], 14);
+                
+                // Tile layer con stile scuro
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '© OpenStreetMap contributors © CARTO',
+                    maxZoom: 19
+                }).addTo(map);
+
+                mapInitialized = true;
+            }
+
+            // Aggiorna la mappa con i dati dell'itinerario
+            if (currentItineraryData) {
+                updateMapWithItinerary(currentItineraryData);
+            }
+        }
+
+        // --- AGGIORNA MAPPA CON ITINERARIO ---
+        function updateMapWithItinerary(itineraryData) {
+            if (!map) return;
+
+            // Rimuovi layer precedenti se esistono
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            // Crea un gruppo di layer per i markers
+            routeLayer = L.layerGroup();
+
+            // Aggiungi markers per ogni fermata dell'itinerario
+            const bounds = L.latLngBounds();
+            let markerIndex = 1;
+
+            itineraryData.forEach((item, index) => {
+                if (item.type !== 'tip' && item.coordinates) {
+                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno a Genova
+                    const lat = item.coordinates.lat || (44.4063 + (Math.random() - 0.5) * 0.02);
+                    const lng = item.coordinates.lng || (8.9314 + (Math.random() - 0.5) * 0.02);
+
+                    // Crea un marker personalizzato
+                    const marker = L.marker([lat, lng]).addTo(routeLayer);
+                    
+                    // Popup con informazioni della fermata
+                    marker.bindPopup(`
+                        <div class="text-gray-900">
+                            <h3 class="font-bold text-sm mb-1">${item.title}</h3>
+                            <p class="text-xs text-gray-600 mb-2">${item.time}</p>
+                            <p class="text-xs">${item.description}</p>
+                        </div>
+                    `);
+
+                    bounds.extend([lat, lng]);
+                    markerIndex++;
+                }
+            });
+
+            // Aggiungi il layer alla mappa
+            routeLayer.addTo(map);
+
+            // Adatta la vista per mostrare tutti i markers
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
         // Altre funzioni...
+        function renderItinerary(data) {
+            if (!data || !data.itinerary) {
+                timelineContainer.innerHTML = `<p class="text-gray-400 p-4">Nessun itinerario generato.</p>`;
+                return;
+            }
+            timelineContainer.innerHTML = '';
+            data.itinerary.forEach(item => {
+                if (item.type === 'tip') {
+                    timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
+                } else {
+                    timelineContainer.innerHTML += `<div class="timeline-item relative pb-8"><div class="dot bg-gray-500"></div><div class="flex justify-between items-start"><div><p class="text-xs text-gray-400 mb-1">${item.time}</p><h3 class="font-semibold text-white">${item.title}</h3><p class="text-sm text-gray-300">${item.description}</p></div><button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg></button></div></div>`;
+                }
+            });
+            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+        }
+
+        // --- FUNZIONE OPEN MODAL (MANCANTE) ---
+        function openModal(context) {
+            // Simulazione apertura modal per dettagli AI
+            console.log(`Richiesta dettagli per: ${context}`);
+            
+            // Qui potremmo fare una chiamata all'API per ottenere più dettagli
+            fetch('/get_details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ context: context })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mostra i dettagli nel modal
+                showModal(data.title || 'Dettagli', data.content || 'Informazioni non disponibili');
+            })
+            .catch(error => {
+                console.error('Errore caricamento dettagli:', error);
+                showModal('Errore', 'Impossibile caricare i dettagli in questo momento.');
+            });
+        }
+
+        // --- GESTIONE MODAL ---
+        function showModal(title, content) {
+            const modal = document.getElementById('modal');
+            const modalContainer = document.getElementById('modal-container');
+            
+            modal.innerHTML = `
+                <div class="p-4 border-b border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-white">${title}</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto">
+                    <p class="text-gray-300 text-sm">${content}</p>
+                </div>
+            `;
+
+            modalContainer.classList.remove('hidden');
+            mainContent.classList.add('content-blur');
+        }
+
+        // Rendi closeModal disponibile globalmente
+        window.closeModal = function() {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.classList.add('hidden');
+            mainContent.classList.remove('content-blur');
+        }
+
+        // Chiudi modal cliccando sull'overlay
+        modalOverlay.addEventListener('click', window.closeModal);
     });
     </script>
 </body>
