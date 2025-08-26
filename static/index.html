@@ -486,10 +486,16 @@
 
         // --- FUNZIONE OPEN MODAL (MANCANTE) ---
         function openModal(context) {
-            // Simulazione apertura modal per dettagli AI
             console.log(`Richiesta dettagli per: ${context}`);
             
-            // Qui potremmo fare una chiamata all'API per ottenere più dettagli
+            // Mostra modal con loading
+            showModalWithHTML('Caricamento dettagli...', `
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
+                    <span class="ml-2 text-gray-300">Generazione immagine e dettagli...</span>
+                </div>
+            `);
+            
             fetch('/get_details', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -499,6 +505,15 @@
             .then(data => {
                 // Gestisce la struttura ricca dei dati dal backend
                 let content = '';
+                
+                // Aggiungi immagine se disponibile
+                if (data.imageUrl) {
+                    content += `<div class="mb-4">
+                                  <img src="${data.imageUrl}" alt="${data.title || 'Immagine del luogo'}" 
+                                       class="w-full h-48 object-cover rounded-lg shadow-lg" 
+                                       style="max-height: 200px;">
+                                </div>`;
+                }
                 
                 if (data.summary) {
                     content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;

@@ -146,13 +146,15 @@ async def get_ai_itinerary(start_location: str, end_location: str, interests: Li
         print(f"Errore API Itinerario: {e}")
         return {"error": "Errore durante la generazione dell'itinerario."}
 
-# --- FUNZIONE DETTAGLI ---
+# --- FUNZIONE DETTAGLI CON IMMAGINE ---
 async def get_contextual_details(context: str):
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return {"error": "API Key di OpenAI non configurata."}
 
     city = extract_city_from_input(context)
+    
+    # Prima genera i dettagli testuali
     api_url = "https://api.openai.com/v1/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -183,11 +185,53 @@ async def get_contextual_details(context: str):
             response.raise_for_status()
             result = response.json()
             json_content_str = result['choices'][0]['message']['content']
-            return json.loads(json_content_str)
+            details_data = json.loads(json_content_str)
+            
+            # Genera un'immagine contestuale per il luogo
+            image_url = await generate_location_image(context, city)
+            if image_url:
+                details_data["imageUrl"] = image_url
+            
+            return details_data
 
     except Exception as e:
         print(f"Errore API Dettagli: {e}")
         return {"error": "Errore durante il recupero dei dettagli."}
+
+# --- FUNZIONE PER GENERARE IMMAGINI DEI LUOGHI ---
+async def generate_location_image(location: str, city: str):
+    """Genera un'immagine realistica del luogo specificato"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    
+    try:
+        # Crea un prompt dettagliato per l'immagine
+        image_prompt = f"High-quality professional travel photography of {location} in {city}, Italy. Architectural details, beautiful lighting, tourist destination, realistic photography style, vibrant colors, clear sky, daytime, travel magazine quality"
+        
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        
+        payload = {
+            "model": "dall-e-3",
+            "prompt": image_prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "quality": "standard"
+        }
+        
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post("https://api.openai.com/v1/images/generations", 
+                                       json=payload, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            
+            if result.get("data") and len(result["data"]) > 0:
+                return result["data"][0]["url"]
+                
+    except Exception as e:
+        print(f"Errore generazione immagine per {location}: {e}")
+        
+    return None
 
 
 # --- ENDPOINTS ---
