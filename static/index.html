@@ -27,6 +27,9 @@
         .leaflet-control-attribution { display: none; }
         .leaflet-bar a, .leaflet-bar a:hover { background-color: #1F2937 !important; color: #F9FAFB !important; border-bottom: 1px solid #374151 !important; width: 36px !important; height: 36px !important; line-height: 36px !important; display: flex; align-items: center; justify-content: center; }
         .leaflet-bar { box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important; border-radius: 8px !important; overflow: hidden; }
+        .custom-marker { background: transparent !important; border: none !important; }
+        .activity-marker .marker-content { background-color: #3b82f6 !important; }
+        .transport-marker .marker-content { background-color: #f97316 !important; }
         #modal-container.hidden { pointer-events: none; }
         #modal-overlay { transition: opacity 0.3s ease-in-out; }
         #modal { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
@@ -292,6 +295,9 @@
                     maxZoom: 19
                 }).addTo(map);
 
+                // Aggiungi controlli personalizzati alla mappa
+                addMapControls();
+
                 mapInitialized = true;
             }
 
@@ -310,35 +316,63 @@
                 map.removeLayer(routeLayer);
             }
 
-            // Crea un gruppo di layer per i markers
+            // Crea un gruppo di layer per i markers e percorsi
             routeLayer = L.layerGroup();
 
-            // Aggiungi markers per ogni fermata dell'itinerario
+            // Array per memorizzare le coordinate del percorso
+            const routeCoordinates = [];
             const bounds = L.latLngBounds();
             let markerIndex = 1;
 
             itineraryData.forEach((item, index) => {
-                if (item.type !== 'tip' && item.coordinates) {
+                if (item.type !== 'tip') {
                     // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno a Genova
-                    const lat = item.coordinates.lat || (44.4063 + (Math.random() - 0.5) * 0.02);
-                    const lng = item.coordinates.lng || (8.9314 + (Math.random() - 0.5) * 0.02);
+                    const lat = item.coordinates?.lat || (44.4063 + (index * 0.005));
+                    const lng = item.coordinates?.lng || (8.9314 + (index * 0.005));
 
-                    // Crea un marker personalizzato
-                    const marker = L.marker([lat, lng]).addTo(routeLayer);
+                    // Aggiungi coordinate al percorso
+                    routeCoordinates.push([lat, lng]);
+
+                    // Crea un marker personalizzato con numerazione
+                    const isTransport = item.type === 'transport';
+                    const markerColor = isTransport ? 'orange' : 'blue';
+                    const markerIcon = isTransport ? '🚶‍♂️' : markerIndex.toString();
+
+                    // Marker personalizzato con icona numerata
+                    const customIcon = L.divIcon({
+                        className: `custom-marker ${isTransport ? 'transport-marker' : 'activity-marker'}`,
+                        html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
                     
                     // Popup con informazioni della fermata
                     marker.bindPopup(`
-                        <div class="text-gray-900">
+                        <div class="text-gray-900 max-w-xs">
                             <h3 class="font-bold text-sm mb-1">${item.title}</h3>
-                            <p class="text-xs text-gray-600 mb-2">${item.time}</p>
+                            <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
                             <p class="text-xs">${item.description}</p>
+                            ${item.type === 'activity' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
                         </div>
                     `);
 
                     bounds.extend([lat, lng]);
-                    markerIndex++;
+                    if (!isTransport) markerIndex++;
                 }
             });
+
+            // Disegna il percorso se ci sono almeno 2 punti
+            if (routeCoordinates.length > 1) {
+                const routeLine = L.polyline(routeCoordinates, {
+                    color: '#8b5cf6',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 5'
+                }).addTo(routeLayer);
+            }
 
             // Aggiungi il layer alla mappa
             routeLayer.addTo(map);
@@ -347,6 +381,72 @@
             if (bounds.isValid()) {
                 map.fitBounds(bounds, { padding: [20, 20] });
             }
+        }
+
+        // --- AGGIUNGI CONTROLLI MAPPA ---
+        function addMapControls() {
+            if (!map) return;
+
+            // Controllo per localizzare utente
+            const locateControl = L.control({ position: 'topright' });
+            locateControl.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                div.style.backgroundColor = '#1F2937';
+                div.style.backgroundImage = 'none';
+                div.style.width = '36px';
+                div.style.height = '36px';
+                div.style.cursor = 'pointer';
+                div.style.borderRadius = '8px';
+                div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center;">
+                                   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                   </svg>
+                                 </div>`;
+                
+                div.onclick = function() {
+                    if (navigator.geolocation) {
+                        div.style.backgroundColor = '#8b5cf6';
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                
+                                // Sposta la mappa alla posizione utente
+                                map.setView([lat, lng], 16);
+                                
+                                // Aggiungi marker per la posizione utente
+                                if (window.userLocationMarker) {
+                                    map.removeLayer(window.userLocationMarker);
+                                }
+                                
+                                const userIcon = L.divIcon({
+                                    className: 'user-location-marker',
+                                    html: '<div style="background: #10b981; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
+                                    iconSize: [20, 20],
+                                    iconAnchor: [10, 10]
+                                });
+                                
+                                window.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+                                    .addTo(map)
+                                    .bindPopup('<div class="text-gray-900"><strong>La tua posizione</strong></div>');
+                                
+                                div.style.backgroundColor = '#1F2937';
+                            },
+                            function() {
+                                alert('Impossibile ottenere la posizione. Assicurati di aver dato il permesso.');
+                                div.style.backgroundColor = '#1F2937';
+                            }
+                        );
+                    } else {
+                        alert('Geolocalizzazione non supportata da questo browser.');
+                    }
+                };
+                
+                return div;
+            };
+            
+            locateControl.addTo(map);
         }
 
         // Altre funzioni...
