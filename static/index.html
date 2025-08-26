@@ -379,17 +379,62 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Mostra i dettagli nel modal
-                showModal(data.title || 'Dettagli', data.content || 'Informazioni non disponibili');
+                // Gestisce la struttura ricca dei dati dal backend
+                let content = '';
+                
+                if (data.summary) {
+                    content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;
+                }
+                
+                if (data.details && data.details.length > 0) {
+                    content += '<div class="mb-4">';
+                    data.details.forEach(detail => {
+                        content += `<div class="flex justify-between py-2 border-b border-gray-700">
+                                      <span class="text-gray-400 text-sm">${detail.label}:</span>
+                                      <span class="text-gray-200 text-sm">${detail.value}</span>
+                                    </div>`;
+                    });
+                    content += '</div>';
+                }
+                
+                if (data.timetable && data.timetable.length > 0) {
+                    content += '<div class="mb-4"><h4 class="text-white font-semibold mb-2">Orari</h4>';
+                    data.timetable.forEach(schedule => {
+                        content += `<div class="flex justify-between py-1">
+                                      <span class="text-gray-400 text-sm">${schedule.direction}:</span>
+                                      <span class="text-gray-200 text-sm">${schedule.times}</span>
+                                    </div>`;
+                    });
+                    content += '</div>';
+                }
+                
+                if (data.actionLink) {
+                    content += `<div class="mt-4">
+                                  <a href="${data.actionLink.url}" target="_blank" 
+                                     class="inline-block bg-violet-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-violet-600">
+                                    ${data.actionLink.text}
+                                  </a>
+                                </div>`;
+                }
+                
+                if (!content) {
+                    content = '<p class="text-gray-300">Informazioni non disponibili al momento.</p>';
+                }
+                
+                showModalWithHTML(data.title || 'Dettagli', content);
             })
             .catch(error => {
                 console.error('Errore caricamento dettagli:', error);
-                showModal('Errore', 'Impossibile caricare i dettagli in questo momento.');
+                showModalWithHTML('Errore', '<p class="text-gray-300">Impossibile caricare i dettagli in questo momento.</p>');
             });
         }
 
         // --- GESTIONE MODAL ---
         function showModal(title, content) {
+            showModalWithHTML(title, `<p class="text-gray-300 text-sm">${content}</p>`);
+        }
+
+        function showModalWithHTML(title, htmlContent) {
             const modal = document.getElementById('modal');
             const modalContainer = document.getElementById('modal-container');
             
@@ -405,7 +450,7 @@
                     </div>
                 </div>
                 <div class="p-4 flex-grow overflow-y-auto">
-                    <p class="text-gray-300 text-sm">${content}</p>
+                    ${htmlContent}
                 </div>
             `;
 
