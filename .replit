@@ -23,13 +23,13 @@ args = "Viamigo Server"
 name = "Viamigo Server"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv add fastapi uvicorn chromadb pydantic-settings && python main.py"
+args = "python main.py"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000

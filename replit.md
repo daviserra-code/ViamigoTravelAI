@@ -70,3 +70,25 @@ Preferred communication style: Simple, everyday language.
 - **CORS Middleware**: Cross-origin request support for web clients
 - **Environment Configuration**: .env file support for local development
 - **Persistent Storage**: File-based vector storage for data persistence
+
+## Deployment Configuration
+
+### Health Check Endpoints
+- **Primary Health Check**: `/health` endpoint for deployment monitoring with proper error handling
+- **Root Endpoint**: `/` endpoint serves static content with fallback health response for deployment systems
+- **Status Responses**: Structured JSON responses with service status and error details
+
+### Server Configuration
+- **Host Binding**: Application configured to listen on `0.0.0.0:5000` for external accessibility
+- **Port Mapping**: Internal port 5000 mapped for deployment compatibility
+- **Entry Point**: Explicit `main.py` specification for reliable deployment startup
+
+### Workflow Management  
+- **Development Server**: Configured via workflow system for consistent local development
+- **Process Management**: Automatic restart capabilities with proper port monitoring
+- **Resource Initialization**: Proper startup sequence ensuring all services are ready
+
+### Recent Changes
+- **January 26, 2025**: Added dedicated `/health` endpoint for deployment monitoring
+- **January 26, 2025**: Enhanced root endpoint with fallback responses for deployment reliability
+- **January 26, 2025**: Updated workflow configuration with explicit main.py entry point

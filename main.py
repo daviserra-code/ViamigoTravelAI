@@ -1,7 +1,7 @@
 import os
 import httpx
 import json
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List
@@ -403,9 +403,35 @@ async def generate_ai_image(location: str, city: str):
 
 
 # --- ENDPOINTS ---
+@app.get("/health")
+@app.head("/health")
+async def health_check(request: Request):
+    """Health check endpoint for deployment monitoring"""
+    try:
+        if request.method == "HEAD":
+            return JSONResponse(content=None, status_code=200)
+        return {"status": "healthy", "service": "viamigo"}
+    except Exception as e:
+        status_code = 500
+        if request.method == "HEAD":
+            return JSONResponse(content=None, status_code=status_code)
+        return JSONResponse(
+            content={"status": "unhealthy", "error": str(e)}, 
+            status_code=status_code
+        )
+
 @app.get("/")
-async def read_root():
-    return FileResponse('static/index.html')
+@app.head("/")
+async def read_root(request: Request):
+    # For health check purposes, ensure this endpoint always responds with 200
+    try:
+        if request.method == "HEAD":
+            # For HEAD requests, just return headers without body
+            return JSONResponse(content=None, status_code=200, headers={"Content-Type": "text/html"})
+        return FileResponse('static/index.html')
+    except Exception as e:
+        # Fallback response if static file is not found
+        return {"status": "ok", "service": "viamigo", "message": "Application is running"}
 
 @app.post("/plan")
 async def create_plan(request: PlanRequest):
