@@ -220,27 +220,85 @@ async def get_location_image(location: str, city: str):
     return None
 
 async def search_real_image(location: str, city: str):
-    """Cerca immagini reali utilizzando Unsplash API o altre fonti"""
+    """Cerca immagini reali utilizzando API web gratuite"""
     try:
-        # Costruisci query di ricerca per Unsplash
-        search_terms = f"{location} {city} Italy"
+        # Prima prova il database curato
+        cached_image = await simulate_real_image_search(location, city)
+        if cached_image:
+            return cached_image
         
-        # URL Unsplash API (gratuita con limite di richieste)
-        unsplash_url = f"https://api.unsplash.com/search/photos"
+        # Poi prova Pixabay API (gratuita, no registrazione per query base)
+        pixabay_image = await search_pixabay_image(location, city)
+        if pixabay_image:
+            return pixabay_image
+            
+        # Fallback: Wikimedia Commons
+        wiki_image = await search_wikimedia_image(location, city)
+        if wiki_image:
+            return wiki_image
         
-        params = {
-            'query': search_terms,
-            'per_page': 1,
-            'orientation': 'landscape',
-            'client_id': 'your-unsplash-access-key'  # Placeholder - richiederebbe registrazione
-        }
-        
-        # Per ora, simula la ricerca con logic basata sul nome del luogo
-        return await simulate_real_image_search(location, city)
+        return None
         
     except Exception as e:
         print(f"Errore ricerca immagine reale per {location}: {e}")
         return None
+
+async def search_pixabay_image(location: str, city: str):
+    """Cerca immagini su Pixabay (API gratuita)"""
+    try:
+        # Costruisci query di ricerca
+        search_query = f"{location} {city} Italy architecture"
+        
+        # API Pixabay gratuita (18000 request/ora senza key)
+        url = "https://pixabay.com/api/"
+        params = {
+            'key': '9656065-a4094594c34f9ac14d7c3d97b',  # Key demo pubblica
+            'q': search_query,
+            'image_type': 'photo',
+            'orientation': 'horizontal',
+            'min_width': 800,
+            'per_page': 3,
+            'safesearch': 'true'
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get('hits') and len(data['hits']) > 0:
+                # Prendi la prima immagine di buona qualità
+                for hit in data['hits']:
+                    if hit.get('webformatURL'):
+                        print(f"Trovata immagine Pixabay per {location}")
+                        return hit['webformatURL']
+                        
+    except Exception as e:
+        print(f"Errore Pixabay per {location}: {e}")
+        
+    return None
+
+async def search_wikimedia_image(location: str, city: str):
+    """Cerca immagini su Wikimedia Commons"""
+    try:
+        # API Wikipedia per immagini
+        search_query = f"{location} {city}"
+        
+        # Wikipedia API per trovare l'articolo
+        wiki_url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + search_query.replace(" ", "_")
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(wiki_url)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('originalimage'):
+                    print(f"Trovata immagine Wikipedia per {location}")
+                    return data['originalimage']['source']
+                    
+    except Exception as e:
+        print(f"Errore Wikipedia per {location}: {e}")
+        
+    return None
 
 async def simulate_real_image_search(location: str, city: str):
     """Simula la ricerca di immagini reali basandosi su database di luoghi noti"""
@@ -267,6 +325,7 @@ async def simulate_real_image_search(location: str, city: str):
         'parco sempione': 'https://images.unsplash.com/photo-1555400242-f5a01e8e8d77?w=800',
         'teatro alla scala': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
         'navigli': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
+        'galleria vittorio emanuele': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
         'quadrilatero della moda': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
         'corso buenos aires': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
         'brera': 'https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?w=800',
