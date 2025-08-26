@@ -262,6 +262,14 @@
                     const data = await response.json();
                     if (data.error) { renderItinerary(null); } 
                     else {
+                        // Reset della mappa per nuova città
+                        if (mapInitialized) {
+                            map.remove();
+                            mapInitialized = false;
+                            map = null;
+                            routeLayer = null;
+                        }
+                        
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
                         renderItinerary(data);
@@ -304,8 +312,9 @@
         // --- INIZIALIZZAZIONE MAPPA ---
         function initializeMap() {
             if (!mapInitialized) {
-                // Coordinate di Genova come centro di default
-                map = L.map('map').setView([44.4063, 8.9314], 14);
+                // Rileva la città dall'itinerario e usa le coordinate appropriate
+                const cityCoords = detectCityFromItinerary(currentItineraryData);
+                map = L.map('map').setView([cityCoords.lat, cityCoords.lng], 14);
                 
                 // Tile layer con stile scuro
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -323,6 +332,47 @@
             if (currentItineraryData) {
                 updateMapWithItinerary(currentItineraryData);
             }
+        }
+
+        // --- RILEVA CITTÀ DALL'ITINERARIO ---
+        function detectCityFromItinerary(itineraryData) {
+            const cityCoordinates = {
+                'genova': { lat: 44.4063, lng: 8.9314 },
+                'milano': { lat: 45.4642, lng: 9.1900 },
+                'roma': { lat: 41.9028, lng: 12.4964 },
+                'firenze': { lat: 43.7696, lng: 11.2558 },
+                'venezia': { lat: 45.4408, lng: 12.3155 },
+                'napoli': { lat: 40.8518, lng: 14.2681 },
+                'torino': { lat: 45.0703, lng: 7.6869 },
+                'palermo': { lat: 38.1157, lng: 13.3615 },
+                'bologna': { lat: 44.4949, lng: 11.3426 }
+            };
+
+            // Prova a rilevare la città dalle location di partenza/arrivo
+            const startLocation = document.getElementById('start-location').value.toLowerCase();
+            const endLocation = document.getElementById('end-location').value.toLowerCase();
+            
+            for (const [city, coords] of Object.entries(cityCoordinates)) {
+                if (startLocation.includes(city) || endLocation.includes(city)) {
+                    console.log(`Mappa centrata su: ${city}`);
+                    return coords;
+                }
+            }
+
+            // Se non trova nulla, prova dal contenuto dell'itinerario
+            if (itineraryData) {
+                const itineraryText = JSON.stringify(itineraryData).toLowerCase();
+                for (const [city, coords] of Object.entries(cityCoordinates)) {
+                    if (itineraryText.includes(city)) {
+                        console.log(`Mappa centrata su: ${city} (da itinerario)`);
+                        return coords;
+                    }
+                }
+            }
+
+            // Default: Genova
+            console.log('Mappa centrata su: Genova (default)');
+            return cityCoordinates.genova;
         }
 
         // --- AGGIORNA MAPPA CON ITINERARIO ---
@@ -344,9 +394,11 @@
 
             itineraryData.forEach((item, index) => {
                 if (item.type !== 'tip') {
-                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno a Genova
-                    const lat = item.coordinates?.lat || (44.4063 + (index * 0.005));
-                    const lng = item.coordinates?.lng || (8.9314 + (index * 0.005));
+                    // Rileva le coordinate del centro città per questa mappa
+                    const cityCenter = detectCityFromItinerary(currentItineraryData);
+                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno al centro città
+                    const lat = item.coordinates?.lat || (cityCenter.lat + (index * 0.005));
+                    const lng = item.coordinates?.lng || (cityCenter.lng + (index * 0.005));
 
                     // Aggiungi coordinate al percorso
                     routeCoordinates.push([lat, lng]);

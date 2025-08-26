@@ -246,8 +246,9 @@ async def simulate_real_image_search(location: str, city: str):
     """Simula la ricerca di immagini reali basandosi su database di luoghi noti"""
     location_lower = location.lower()
     
-    # Database di immagini reali per luoghi famosi di Genova
+    # Database di immagini reali per luoghi famosi di diverse città italiane
     known_images = {
+        # Genova
         'teatro carlo felice': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
         'acquario di genova': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800',
         'palazzo rosso': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
@@ -256,7 +257,31 @@ async def simulate_real_image_search(location: str, city: str):
         'cattedrale di san lorenzo': 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
         'mercato orientale': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?w=800',
         'via del campo': 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800',
-        'palazzo bianco': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800'
+        'palazzo bianco': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800',
+        'porto antico': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800',
+        
+        # Milano
+        'duomo di milano': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
+        'piazza del duomo': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
+        'castello sforzesco': 'https://images.unsplash.com/photo-1565965949354-c40465b06762?w=800',
+        'parco sempione': 'https://images.unsplash.com/photo-1555400242-f5a01e8e8d77?w=800',
+        'teatro alla scala': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+        'navigli': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
+        'quadrilatero della moda': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+        'corso buenos aires': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+        'brera': 'https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?w=800',
+        
+        # Roma
+        'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',
+        'fori imperiali': 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=800',
+        'pantheon': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800',
+        'fontana di trevi': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',
+        'piazza di spagna': 'https://images.unsplash.com/photo-1555992457-c341ea86b4dc?w=800',
+        
+        # Firenze
+        'duomo di firenze': 'https://images.unsplash.com/photo-1543429944-c2bd2ead5d73?w=800',
+        'ponte vecchio': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+        'uffizi': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800'
     }
     
     # Cerca match esatti o parziali
