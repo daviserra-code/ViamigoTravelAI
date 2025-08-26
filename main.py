@@ -4,6 +4,7 @@ import json
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from typing import List
 import uvicorn
 
 # Definisce la struttura dei dati che ci aspettiamo dal frontend
@@ -15,29 +16,31 @@ class PlanRequest(BaseModel):
 class DetailRequest(BaseModel):
     context: str
 
+# NUOVO: Definisce la struttura per le preferenze utente
+class UserPreferences(BaseModel):
+    interests: List[str]
+    pace: str
+    budget: str
+
 app = FastAPI()
 
-# --- NUOVA FUNZIONE HELPER PER ESTRARRE LA CITTÀ ---
+# --- FUNZIONE HELPER PER ESTRARRE LA CITTÀ ---
 def extract_city_from_input(*args: str) -> str:
     """
     Estrae il nome di una città da una o più stringhe di input.
-    Cerca una parte dopo una virgola, che è tipicamente la città.
     """
     for text in args:
         if ',' in text:
             parts = text.split(',')
-            # Prende l'ultima parte, rimuove spazi e la restituisce se non è vuota
             city = parts[-1].strip()
             if city:
                 return city
-    # Se nessuna città viene trovata, restituisce un default generico
     return "una città italiana"
 
 # --- FUNZIONE PER SIMULARE LA RICERCA DATI (RAG) ---
 def search_real_transport_data(city: str):
     """
-    In un'applicazione reale, questa funzione interrogherebbe un database 
-    contenente i dati GTFS. Per ora, simuliamo la risposta per Genova.
+    Simula la ricerca di dati GTFS.
     """
     if "genova" in city.lower():
         return """
@@ -51,23 +54,19 @@ def search_real_transport_data(city: str):
         """
     return "Nessun dato di trasporto specifico disponibile per questa città."
 
-# --- FUNZIONE PER L'ITINERARIO PRINCIPALE (AGGIORNATA CON RAG DINAMICO) ---
+# --- FUNZIONE PER L'ITINERARIO PRINCIPALE ---
 async def get_ai_itinerary(start_location: str, end_location: str):
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return {"error": "API Key di OpenAI non configurata."}
 
-    # 1. Estraiamo dinamicamente la città dall'input
     city = extract_city_from_input(start_location, end_location)
     print(f"Città identificata: {city}")
-
-    # 2. Recuperiamo i dati reali per quella città
     transport_data = search_real_transport_data(city)
 
     api_url = "https://api.openai.com/v1/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-    # 3. Includiamo la città e i dati reali nel prompt
     prompt = f"""
     Agisci come un esperto locale e guida turistica per la città di {city}. 
     Il tuo compito è creare un itinerario dettagliato per un turista.
@@ -77,16 +76,13 @@ async def get_ai_itinerary(start_location: str, end_location: str):
     {transport_data}
     ---
 
-    Dettagli della richiesta:
-    - Punto di partenza: {start_location}
-    - Destinazione: {end_location}
-
+    Dettagli richiesta: da '{start_location}' a '{end_location}'.
     Istruzioni:
     1. Basandoti sui dati forniti, crea un percorso logico.
-    2. Per ogni tappa, fornisci stime di tempo, coordinate (lat, lon) e un 'context' (il nome esatto del luogo).
+    2. Fornisci stime di tempo, coordinate (lat, lon) e un 'context' (nome esatto del luogo).
     3. Includi un "tip" utile.
     4. La tua risposta DEVE essere un oggetto JSON valido.
-    Schema per ogni oggetto nell'array "itinerary": {{"time": "string", "title": "string", "description": "string", "type": "string", "context": "string", "lat": float, "lon": float}}
+    Schema per ogni oggetto in "itinerary": {{"time": "string", "title": "string", "description": "string", "type": "string", "context": "string", "lat": float, "lon": float}}
     """
 
     payload = {
@@ -110,26 +106,23 @@ async def get_ai_itinerary(start_location: str, end_location: str):
         print(f"Errore API Itinerario: {e}")
         return {"error": "Errore durante la generazione dell'itinerario."}
 
-# --- FUNZIONE DETTAGLI (AGGIORNATA CON CITTÀ DINAMICA) ---
+# --- FUNZIONE DETTAGLI ---
 async def get_contextual_details(context: str):
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return {"error": "API Key di OpenAI non configurata."}
 
-    # Estraiamo la città anche dal contesto per essere più precisi
     city = extract_city_from_input(context)
-
     api_url = "https://api.openai.com/v1/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     prompt = f"""
     Agisci come un assistente turistico esperto della città di {city}. 
     Fornisci informazioni dettagliate e utili per "{context}".
-
     Istruzioni:
-    1. Fornisci un breve riassunto "wikipedia-like" (massimo 50 parole).
+    1. Fornisci un breve riassunto "wikipedia-like" (max 50 parole).
     2. Fornisci dettagli come "Orari di apertura" o frequenze dei mezzi.
-    3. Includi un link utile (sito ufficiale, acquisto biglietti).
+    3. Includi un link utile (sito ufficiale, biglietti).
     4. La tua risposta DEVE essere un oggetto JSON valido.
     Schema: {{"title": "string", "summary": "string", "details": [ {{"label": "string", "value": "string"}} ], "timetable": [ {{"direction": "string", "times": "string"}} ] | null, "actionLink": {{"text": "string", "url": "string"}}}}
     """
@@ -171,6 +164,13 @@ async def create_plan(request: PlanRequest):
 async def get_details(request: DetailRequest):
     print(f"Richiesta dettagli per: {request.context}")
     return await get_contextual_details(request.context)
+
+# --- NUOVO ENDPOINT PER SALVARE LE PREFERENZE ---
+@app.post("/save_preferences")
+async def save_preferences(preferences: UserPreferences):
+    print(f"Preferenze ricevute e salvate: {preferences.dict()}")
+    return {"status": "success", "message": "Preferenze salvate correttamente."}
+
 
 # Avvio del server
 if __name__ == "__main__":
