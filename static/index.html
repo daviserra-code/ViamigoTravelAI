@@ -303,8 +303,298 @@
                     timelineContainer.innerHTML += `<div class="timeline-item relative pb-8"><div class="dot bg-gray-500"></div><div class="flex justify-between items-start"><div><p class="text-xs text-gray-400 mb-1">${item.time}</p><h3 class="font-semibold text-white">${item.title}</h3><p class="text-sm text-gray-300">${item.description}</p></div><button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg></button></div></div>`;
                 }
             });
-            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => loadAIDetails(e.currentTarget.dataset.context)));
         }
+
+        // --- GESTIONE MAPPA ---
+        let map, routeLayer, mapInitialized = false;
+
+        function toggleView(view) {
+            if (view === 'list') {
+                document.getElementById('itinerary-view').classList.remove('hidden');
+                document.getElementById('map-view').classList.add('hidden');
+                document.querySelector('.view-button[data-view="list"]').classList.add('bg-violet-500', 'text-white');
+                document.querySelector('.view-button[data-view="list"]').classList.remove('bg-gray-700', 'text-gray-300');
+                document.querySelector('.view-button[data-view="map"]').classList.remove('bg-violet-500', 'text-white');
+                document.querySelector('.view-button[data-view="map"]').classList.add('bg-gray-700', 'text-gray-300');
+            } else {
+                document.getElementById('itinerary-view').classList.add('hidden');
+                document.getElementById('map-view').classList.remove('hidden');
+                document.querySelector('.view-button[data-view="map"]').classList.add('bg-violet-500', 'text-white');
+                document.querySelector('.view-button[data-view="map"]').classList.remove('bg-gray-700', 'text-gray-300');
+                document.querySelector('.view-button[data-view="list"]').classList.remove('bg-violet-500', 'text-white');
+                document.querySelector('.view-button[data-view="list"]').classList.add('bg-gray-700', 'text-gray-300');
+                
+                initializeMap();
+                if (currentItineraryData) {
+                    updateMapWithItinerary(currentItineraryData);
+                }
+            }
+        }
+
+        function initializeMap() {
+            if (mapInitialized) return;
+
+            map = L.map('map').setView([44.4063, 8.9314], 13);
+
+            // Tile layer con stile scuro
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors © CARTO',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Aggiungi controlli personalizzati alla mappa
+            addMapControls();
+
+            mapInitialized = true;
+        }
+
+        // --- AGGIORNA MAPPA CON ITINERARIO ---
+        function updateMapWithItinerary(itineraryData) {
+            if (!map) return;
+
+            // Rimuovi layer precedenti se esistono
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            // Crea un gruppo di layer per i markers e percorsi
+            routeLayer = L.layerGroup();
+
+            // Array per memorizzare le coordinate del percorso
+            const routeCoordinates = [];
+            const bounds = L.latLngBounds();
+            let markerIndex = 1;
+
+            itineraryData.forEach((item, index) => {
+                if (item.type !== 'tip') {
+                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno a Genova
+                    const lat = item.coordinates?.lat || (44.4063 + (index * 0.005));
+                    const lng = item.coordinates?.lng || (8.9314 + (index * 0.005));
+
+                    // Aggiungi coordinate al percorso
+                    routeCoordinates.push([lat, lng]);
+
+                    // Crea un marker personalizzato con numerazione
+                    const isTransport = item.type === 'transport';
+                    const markerColor = isTransport ? 'orange' : 'blue';
+                    const markerIcon = isTransport ? '🚶‍♂️' : markerIndex.toString();
+
+                    // Marker personalizzato con icona numerata
+                    const customIcon = L.divIcon({
+                        className: `custom-marker ${isTransport ? 'transport-marker' : 'activity-marker'}`,
+                        html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
+                    
+                    // Popup con informazioni della fermata
+                    marker.bindPopup(`
+                        <div class="text-gray-900 max-w-xs">
+                            <h3 class="font-bold text-sm mb-1">${item.title}</h3>
+                            <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
+                            <p class="text-xs">${item.description}</p>
+                            ${item.type === 'activity' ? `<button onclick="loadAIDetails('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
+                        </div>
+                    `);
+
+                    bounds.extend([lat, lng]);
+                    if (!isTransport) markerIndex++;
+                }
+            });
+
+            // Disegna il percorso se ci sono almeno 2 punti
+            if (routeCoordinates.length > 1) {
+                const routeLine = L.polyline(routeCoordinates, {
+                    color: '#8b5cf6',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 5'
+                }).addTo(routeLayer);
+            }
+
+            // Aggiungi il layer alla mappa
+            routeLayer.addTo(map);
+
+            // Adatta la vista per mostrare tutti i markers
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
+        // --- AGGIUNGI CONTROLLI MAPPA ---
+        function addMapControls() {
+            if (!map) return;
+
+            // Controllo per localizzare utente
+            const locateControl = L.control({ position: 'topright' });
+            locateControl.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                div.style.backgroundColor = '#1F2937';
+                div.style.backgroundImage = 'none';
+                div.style.width = '36px';
+                div.style.height = '36px';
+                div.style.cursor = 'pointer';
+                div.style.borderRadius = '8px';
+                div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center;">
+                                   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                   </svg>
+                                 </div>`;
+                
+                div.onclick = function() {
+                    if (navigator.geolocation) {
+                        div.style.backgroundColor = '#8b5cf6';
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                
+                                // Sposta la mappa alla posizione utente
+                                map.setView([lat, lng], 16);
+                                
+                                // Aggiungi marker per la posizione utente
+                                if (window.userLocationMarker) {
+                                    map.removeLayer(window.userLocationMarker);
+                                }
+                                
+                                const userIcon = L.divIcon({
+                                    className: 'user-location-marker',
+                                    html: '<div style="background: #10b981; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
+                                    iconSize: [20, 20],
+                                    iconAnchor: [10, 10]
+                                });
+                                
+                                window.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+                                    .addTo(map)
+                                    .bindPopup('<div class="text-gray-900"><strong>La tua posizione</strong></div>');
+                                
+                                div.style.backgroundColor = '#1F2937';
+                            },
+                            function() {
+                                alert('Impossibile ottenere la posizione. Assicurati di aver dato il permesso.');
+                                div.style.backgroundColor = '#1F2937';
+                            }
+                        );
+                    } else {
+                        alert('Geolocalizzazione non supportata da questo browser.');
+                    }
+                };
+                
+                return div;
+            };
+            
+            locateControl.addTo(map);
+        }
+
+        // --- CARICA DETTAGLI AI ---
+        function loadAIDetails(context) {
+            console.log('Richiesta dettagli per:', context);
+            
+            fetch('/get_details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ context: context })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Gestisce la struttura ricca dei dati dal backend
+                let content = '';
+                
+                if (data.summary) {
+                    content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;
+                }
+                
+                if (data.details && data.details.length > 0) {
+                    content += '<div class="mb-4">';
+                    data.details.forEach(detail => {
+                        content += `<div class="flex justify-between py-2 border-b border-gray-700">
+                                      <span class="text-gray-400 text-sm">${detail.label}:</span>
+                                      <span class="text-gray-200 text-sm">${detail.value}</span>
+                                    </div>`;
+                    });
+                    content += '</div>';
+                }
+                
+                if (data.timetable && data.timetable.length > 0) {
+                    content += '<div class="mb-4"><h4 class="text-white font-semibold mb-2">Orari</h4>';
+                    data.timetable.forEach(schedule => {
+                        content += `<div class="flex justify-between py-1">
+                                      <span class="text-gray-400 text-sm">${schedule.direction}:</span>
+                                      <span class="text-gray-200 text-sm">${schedule.times}</span>
+                                    </div>`;
+                    });
+                    content += '</div>';
+                }
+                
+                if (data.actionLink) {
+                    content += `<div class="mt-4">
+                                  <a href="${data.actionLink.url}" target="_blank" 
+                                     class="inline-block bg-violet-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-violet-600">
+                                    ${data.actionLink.text}
+                                  </a>
+                                </div>`;
+                }
+                
+                if (!content) {
+                    content = '<p class="text-gray-300">Informazioni non disponibili al momento.</p>';
+                }
+                
+                showModalWithHTML(data.title || 'Dettagli', content);
+            })
+            .catch(error => {
+                console.error('Errore caricamento dettagli:', error);
+                showModalWithHTML('Errore', '<p class="text-gray-300">Impossibile caricare i dettagli in questo momento.</p>');
+            });
+        }
+
+        // --- GESTIONE MODAL ---
+        function showModal(title, content) {
+            showModalWithHTML(title, `<p class="text-gray-300 text-sm">${content}</p>`);
+        }
+
+        function showModalWithHTML(title, htmlContent) {
+            const modal = document.getElementById('modal');
+            const modalContainer = document.getElementById('modal-container');
+            
+            modal.innerHTML = `
+                <div class="p-4 border-b border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-white">${title}</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto">
+                    ${htmlContent}
+                </div>
+            `;
+
+            modalContainer.classList.remove('hidden');
+            mainContent.classList.add('content-blur');
+        }
+
+        function closeModal() {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.classList.add('hidden');
+            mainContent.classList.remove('content-blur');
+        }
+
+        // Event listeners per i pulsanti vista
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.view-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    toggleView(e.currentTarget.dataset.view);
+                });
+            });
+        });
     });
     </script>
 </body>
