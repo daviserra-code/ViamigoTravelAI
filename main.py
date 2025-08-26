@@ -2,7 +2,7 @@ import os
 import httpx
 import json
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List
 import uvicorn
@@ -16,7 +16,7 @@ class PlanRequest(BaseModel):
 class DetailRequest(BaseModel):
     context: str
 
-# NUOVO: Definisce la struttura per le preferenze utente
+# Definisce la struttura per le preferenze utente
 class UserPreferences(BaseModel):
     interests: List[str]
     pace: str
@@ -24,11 +24,18 @@ class UserPreferences(BaseModel):
 
 app = FastAPI()
 
+# --- DATABASE SIMULATO ---
+user_profile_db = {
+    "user_1": {
+        "name": "Maria Rossi",
+        "interests": ["Cibo", "Relax"],
+        "pace": "Moderato",
+        "budget": "€€"
+    }
+}
+
 # --- FUNZIONE HELPER PER ESTRARRE LA CITTÀ ---
 def extract_city_from_input(*args: str) -> str:
-    """
-    Estrae il nome di una città da una o più stringhe di input.
-    """
     for text in args:
         if ',' in text:
             parts = text.split(',')
@@ -37,23 +44,6 @@ def extract_city_from_input(*args: str) -> str:
                 return city
     return "una città italiana"
 
-# --- FUNZIONE PER SIMULARE LA RICERCA DATI (RAG) ---
-def search_real_transport_data(city: str):
-    """
-    Simula la ricerca di dati GTFS.
-    """
-    if "genova" in city.lower():
-        return """
-        - Metropolitana di Genova (Linea M): collega Brin a Brignole. Fermate principali: De Ferrari, Darsena, San Giorgio. Frequenza: ogni 6 minuti nelle ore di punta.
-        - Linea Bus 1: collega Voltri a Caricamento (centro).
-        """
-    if "milano" in city.lower():
-        return """
-        - Metropolitana di Milano: Linee M1, M2, M3, M4, M5. Fermate principali: Duomo, Cadorna, Centrale.
-        - Tram: Linee storiche e moderne che coprono tutta la città.
-        """
-    return "Nessun dato di trasporto specifico disponibile per questa città."
-
 # --- FUNZIONE PER L'ITINERARIO PRINCIPALE ---
 async def get_ai_itinerary(start_location: str, end_location: str):
     api_key = os.getenv("OPENAI_API_KEY")
@@ -61,23 +51,15 @@ async def get_ai_itinerary(start_location: str, end_location: str):
         return {"error": "API Key di OpenAI non configurata."}
 
     city = extract_city_from_input(start_location, end_location)
-    transport_data = search_real_transport_data(city)
-
     api_url = "https://api.openai.com/v1/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     prompt = f"""
     Agisci come un esperto locale e guida turistica per la città di {city}. 
     Il tuo compito è creare un itinerario dettagliato per un turista.
-
-    Usa i seguenti DATI REALI SUI TRASPORTI per la tua pianificazione:
-    ---
-    {transport_data}
-    ---
-
     Dettagli richiesta: da '{start_location}' a '{end_location}'.
     Istruzioni:
-    1. Basandoti sui dati forniti, crea un percorso logico.
+    1. Crea un percorso logico.
     2. Fornisci stime di tempo, coordinate (lat, lon) e un 'context' (nome esatto del luogo).
     3. Includi un "tip" utile.
     4. La tua risposta DEVE essere un oggetto JSON valido.
@@ -87,7 +69,7 @@ async def get_ai_itinerary(start_location: str, end_location: str):
     payload = {
         "model": "gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": "Sei un assistente di viaggio che risponde solo in formato JSON, basandosi sui dati contestuali forniti."},
+            {"role": "system", "content": "Sei un assistente di viaggio che risponde solo in formato JSON."},
             {"role": "user", "content": prompt}
         ],
         "response_format": {"type": "json_object"},
@@ -102,8 +84,7 @@ async def get_ai_itinerary(start_location: str, end_location: str):
             json_content_str = result['choices'][0]['message']['content']
             return json.loads(json_content_str)
     except Exception as e:
-        print(f"Errore API Itinerario: {e}")
-        return {"error": "Errore durante la generazione dell'itinerario."}
+        return {"error": f"Errore API Itinerario: {e}"}
 
 # --- FUNZIONE DETTAGLI ---
 async def get_contextual_details(context: str):
@@ -143,11 +124,8 @@ async def get_contextual_details(context: str):
             result = response.json()
             json_content_str = result['choices'][0]['message']['content']
             return json.loads(json_content_str)
-
     except Exception as e:
-        print(f"Errore API Dettagli: {e}")
-        return {"error": "Errore durante il recupero dei dettagli."}
-
+        return {"error": f"Errore API Dettagli: {e}"}
 
 # --- ENDPOINTS ---
 @app.get("/")
@@ -156,21 +134,34 @@ async def read_root():
 
 @app.post("/plan")
 async def create_plan(request: PlanRequest):
-    print(f"Richiesta itinerario: da {request.start} a {request.end}")
     return await get_ai_itinerary(request.start, request.end)
 
 @app.post("/get_details")
 async def get_details(request: DetailRequest):
-    print(f"Richiesta dettagli per: {request.context}")
     return await get_contextual_details(request.context)
 
-# --- NUOVO ENDPOINT PER SALVARE LE PREFERENZE ---
-@app.post("/save_preferences")
-async def save_preferences(preferences: UserPreferences):
-    print(f"Preferenze ricevute e salvate: {preferences.dict()}")
-    return {"status": "success", "message": "Preferenze salvate correttamente."}
+@app.get("/get_profile")
+async def get_profile():
+    profile_data = user_profile_db.get("user_1")
+    if profile_data:
+        return JSONResponse(content=profile_data)
+    return JSONResponse(content={"name": "", "interests": [], "pace": "", "budget": ""})
 
+@app.post("/update_profile")
+async def update_profile(preferences: UserPreferences):
+    user_profile_db["user_1"] = preferences.model_dump()
+    print(f"Profilo aggiornato: {user_profile_db['user_1']}")
+    return {"status": "success", "message": "Profilo aggiornato."}
+
+@app.delete("/delete_profile")
+async def delete_profile():
+    if "user_1" in user_profile_db:
+        del user_profile_db["user_1"]
+        print("Profilo eliminato.")
+        return {"status": "success", "message": "Profilo eliminato."}
+    return JSONResponse(content={"error": "Profilo non trovato."}, status_code=404)
 
 # Avvio del server
 if __name__ == "__main__":
+    # Usa sempre la porta 5000 per Replit
     uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -27,9 +27,6 @@
         .leaflet-control-attribution { display: none; }
         .leaflet-bar a, .leaflet-bar a:hover { background-color: #1F2937 !important; color: #F9FAFB !important; border-bottom: 1px solid #374151 !important; width: 36px !important; height: 36px !important; line-height: 36px !important; display: flex; align-items: center; justify-content: center; }
         .leaflet-bar { box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important; border-radius: 8px !important; overflow: hidden; }
-        .custom-marker { background: transparent !important; border: none !important; }
-        .activity-marker .marker-content { background-color: #3b82f6 !important; }
-        .transport-marker .marker-content { background-color: #f97316 !important; }
         #modal-container.hidden { pointer-events: none; }
         #modal-overlay { transition: opacity 0.3s ease-in-out; }
         #modal { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
@@ -94,24 +91,24 @@
                 <div class="flex-grow overflow-y-auto p-4">
                     <div class="flex flex-col items-center mb-8">
                         <img src="https://placehold.co/80x80/374151/E5E7EB?text=M" alt="Avatar utente" class="w-20 h-20 rounded-full mb-3">
-                        <h2 class="text-xl font-semibold text-white">Maria Rossi</h2>
+                        <input type="text" id="profile-name" class="w-full bg-gray-900 text-white text-center text-xl font-semibold rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-violet-500" value="Caricamento...">
                     </div>
                     <div class="mb-8">
                         <h3 class="text-gray-400 text-sm font-medium mb-3">I tuoi interessi</h3>
                         <div id="interests-grid" class="grid grid-cols-3 gap-3">
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Arte</button>
-                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Cibo</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Cibo</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Natura</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Shopping</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Storia</button>
-                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Relax</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Relax</button>
                         </div>
                     </div>
                     <div class="mb-8">
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
                         <div id="pace-control" class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
                             <button data-value="Rilassato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Rilassato</button>
-                            <button data-value="Moderato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">Moderato</button>
+                            <button data-value="Moderato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Moderato</button>
                             <button data-value="Intenso" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Intenso</button>
                         </div>
                     </div>
@@ -119,9 +116,12 @@
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
                         <div id="budget-control" class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
                             <button data-value="€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€</button>
-                            <button data-value="€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">€€</button>
+                            <button data-value="€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€€</button>
                             <button data-value="€€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€€€</button>
                         </div>
+                    </div>
+                    <div class="mt-12">
+                         <button id="delete-profile-button" class="w-full text-red-400 text-sm text-center py-2">Elimina Profilo</button>
                     </div>
                 </div>
                 <div class="p-4 flex-shrink-0"><button id="save-prefs-button" class="w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Salva Preferenze</button></div>
@@ -156,10 +156,13 @@
         const planButton = document.getElementById('plan-button');
         const itineraryTitle = document.getElementById('itinerary-title');
 
+        // Elementi della pagina Profilo
+        const profileNameInput = document.getElementById('profile-name');
         const interestsGrid = document.getElementById('interests-grid');
         const paceControl = document.getElementById('pace-control');
         const budgetControl = document.getElementById('budget-control');
         const savePrefsButton = document.getElementById('save-prefs-button');
+        const deleteProfileButton = document.getElementById('delete-profile-button');
 
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
@@ -172,10 +175,48 @@
                 document.getElementById(`page-${pageId}`).classList.add('active');
                 navButtons.forEach(btn => { btn.classList.remove('active', 'text-white'); btn.classList.add('text-gray-500'); });
                 button.classList.add('active', 'text-white');
+
+                if (pageId === 'profile') {
+                    loadProfileData();
+                }
             });
         });
 
-        // --- GESTIONE PROFILO ---
+        // --- GESTIONE PROFILO (CRUD) ---
+        async function loadProfileData() {
+            try {
+                const response = await fetch('/get_profile');
+                const data = await response.json();
+
+                profileNameInput.value = data.name || '';
+
+                // Deseleziona tutto prima
+                interestsGrid.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('selected', themeColors.selectedClass);
+                    btn.classList.add('bg-gray-800', 'text-gray-200');
+                });
+                paceControl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected', themeColors.selectedClass));
+                budgetControl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected', themeColors.selectedClass));
+
+                // Seleziona interessi
+                (data.interests || []).forEach(interest => {
+                    const btn = [...interestsGrid.querySelectorAll('button')].find(b => b.textContent === interest);
+                    if(btn) {
+                        btn.classList.add('selected', themeColors.selectedClass);
+                        btn.classList.remove('bg-gray-800', 'text-gray-200');
+                    }
+                });
+                // Seleziona ritmo e budget
+                const paceBtn = paceControl.querySelector(`[data-value="${data.pace}"]`);
+                if(paceBtn) paceBtn.classList.add('selected', themeColors.selectedClass);
+                const budgetBtn = budgetControl.querySelector(`[data-value="${data.budget}"]`);
+                if(budgetBtn) budgetBtn.classList.add('selected', themeColors.selectedClass);
+
+            } catch (error) {
+                console.error("Errore caricamento profilo:", error);
+            }
+        }
+
         if(interestsGrid && paceControl && budgetControl && savePrefsButton) {
             interestsGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') {
@@ -190,10 +231,8 @@
                     if (e.target.tagName === 'BUTTON') {
                         container.querySelectorAll('button').forEach(btn => {
                             btn.classList.remove('selected', themeColors.selectedClass);
-                            btn.classList.add('text-gray-300');
                         });
                         e.target.classList.add('selected', themeColors.selectedClass);
-                        e.target.classList.remove('text-gray-300');
                     }
                 });
             }
@@ -201,30 +240,26 @@
             setupSegmentedControl(budgetControl);
 
             savePrefsButton.addEventListener('click', async () => {
-                const selectedInterests = [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent);
-                const selectedPace = paceControl.querySelector('.selected').dataset.value;
-                const selectedBudget = budgetControl.querySelector('.selected').dataset.value;
-
                 const preferences = {
-                    interests: selectedInterests,
-                    pace: selectedPace,
-                    budget: selectedBudget
+                    name: profileNameInput.value,
+                    interests: [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent),
+                    pace: paceControl.querySelector('.selected')?.dataset.value || '',
+                    budget: budgetControl.querySelector('.selected')?.dataset.value || ''
                 };
-
                 savePrefsButton.textContent = 'Salvataggio...';
                 try {
-                    const response = await fetch('/save_preferences', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(preferences)
-                    });
-                    const data = await response.json();
-                    console.log('Preferenze salvate:', data);
+                    await fetch('/update_profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preferences) });
                     savePrefsButton.textContent = 'Salvato!';
                     setTimeout(() => { savePrefsButton.textContent = 'Salva Preferenze'; }, 2000);
-                } catch (error) {
-                    console.error('Errore salvataggio preferenze:', error);
-                    savePrefsButton.textContent = 'Errore';
+                } catch (error) { savePrefsButton.textContent = 'Errore'; }
+            });
+
+            deleteProfileButton.addEventListener('click', async () => {
+                if (confirm("Sei sicuro di voler eliminare il profilo?")) {
+                    try {
+                        await fetch('/delete_profile', { method: 'DELETE' });
+                        loadProfileData(); // Ricarica il profilo (che sarà vuoto)
+                    } catch (error) { console.error("Errore eliminazione profilo:", error); }
                 }
             });
         }
@@ -254,201 +289,6 @@
             });
         }
 
-        // --- GESTIONE TOGGLE VISTA ITINERARIO (LISTA/MAPPA) ---
-        const itineraryToggleButtons = document.querySelectorAll('.itinerary-toggle');
-        const itineraryListView = document.getElementById('itinerary-list-view');
-        const itineraryMapView = document.getElementById('itinerary-map-view');
-
-        itineraryToggleButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const view = button.dataset.view;
-                
-                // Aggiorna i pulsanti toggle
-                itineraryToggleButtons.forEach(btn => {
-                    btn.classList.remove('bg-gray-600');
-                    btn.classList.add('bg-transparent');
-                });
-                button.classList.add('bg-gray-600');
-                button.classList.remove('bg-transparent');
-
-                // Mostra/nasconde le viste
-                if (view === 'list') {
-                    itineraryListView.classList.remove('hidden');
-                    itineraryMapView.classList.add('hidden');
-                } else if (view === 'map') {
-                    itineraryListView.classList.add('hidden');
-                    itineraryMapView.classList.remove('hidden');
-                    initializeMap();
-                }
-            });
-        });
-
-        // --- INIZIALIZZAZIONE MAPPA ---
-        function initializeMap() {
-            if (!mapInitialized) {
-                // Coordinate di Genova come centro di default
-                map = L.map('map').setView([44.4063, 8.9314], 14);
-                
-                // Tile layer con stile scuro
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '© OpenStreetMap contributors © CARTO',
-                    maxZoom: 19
-                }).addTo(map);
-
-                // Aggiungi controlli personalizzati alla mappa
-                addMapControls();
-
-                mapInitialized = true;
-            }
-
-            // Aggiorna la mappa con i dati dell'itinerario
-            if (currentItineraryData) {
-                updateMapWithItinerary(currentItineraryData);
-            }
-        }
-
-        // --- AGGIORNA MAPPA CON ITINERARIO ---
-        function updateMapWithItinerary(itineraryData) {
-            if (!map) return;
-
-            // Rimuovi layer precedenti se esistono
-            if (routeLayer) {
-                map.removeLayer(routeLayer);
-            }
-
-            // Crea un gruppo di layer per i markers e percorsi
-            routeLayer = L.layerGroup();
-
-            // Array per memorizzare le coordinate del percorso
-            const routeCoordinates = [];
-            const bounds = L.latLngBounds();
-            let markerIndex = 1;
-
-            itineraryData.forEach((item, index) => {
-                if (item.type !== 'tip') {
-                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno a Genova
-                    const lat = item.coordinates?.lat || (44.4063 + (index * 0.005));
-                    const lng = item.coordinates?.lng || (8.9314 + (index * 0.005));
-
-                    // Aggiungi coordinate al percorso
-                    routeCoordinates.push([lat, lng]);
-
-                    // Crea un marker personalizzato con numerazione
-                    const isTransport = item.type === 'transport';
-                    const markerColor = isTransport ? 'orange' : 'blue';
-                    const markerIcon = isTransport ? '🚶‍♂️' : markerIndex.toString();
-
-                    // Marker personalizzato con icona numerata
-                    const customIcon = L.divIcon({
-                        className: `custom-marker ${isTransport ? 'transport-marker' : 'activity-marker'}`,
-                        html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 16],
-                        popupAnchor: [0, -16]
-                    });
-
-                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
-                    
-                    // Popup con informazioni della fermata
-                    marker.bindPopup(`
-                        <div class="text-gray-900 max-w-xs">
-                            <h3 class="font-bold text-sm mb-1">${item.title}</h3>
-                            <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
-                            <p class="text-xs">${item.description}</p>
-                            ${item.type === 'activity' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
-                        </div>
-                    `);
-
-                    bounds.extend([lat, lng]);
-                    if (!isTransport) markerIndex++;
-                }
-            });
-
-            // Disegna il percorso se ci sono almeno 2 punti
-            if (routeCoordinates.length > 1) {
-                const routeLine = L.polyline(routeCoordinates, {
-                    color: '#8b5cf6',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '10, 5'
-                }).addTo(routeLayer);
-            }
-
-            // Aggiungi il layer alla mappa
-            routeLayer.addTo(map);
-
-            // Adatta la vista per mostrare tutti i markers
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [20, 20] });
-            }
-        }
-
-        // --- AGGIUNGI CONTROLLI MAPPA ---
-        function addMapControls() {
-            if (!map) return;
-
-            // Controllo per localizzare utente
-            const locateControl = L.control({ position: 'topright' });
-            locateControl.onAdd = function(map) {
-                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                div.style.backgroundColor = '#1F2937';
-                div.style.backgroundImage = 'none';
-                div.style.width = '36px';
-                div.style.height = '36px';
-                div.style.cursor = 'pointer';
-                div.style.borderRadius = '8px';
-                div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center;">
-                                   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                   </svg>
-                                 </div>`;
-                
-                div.onclick = function() {
-                    if (navigator.geolocation) {
-                        div.style.backgroundColor = '#8b5cf6';
-                        navigator.geolocation.getCurrentPosition(
-                            function(position) {
-                                const lat = position.coords.latitude;
-                                const lng = position.coords.longitude;
-                                
-                                // Sposta la mappa alla posizione utente
-                                map.setView([lat, lng], 16);
-                                
-                                // Aggiungi marker per la posizione utente
-                                if (window.userLocationMarker) {
-                                    map.removeLayer(window.userLocationMarker);
-                                }
-                                
-                                const userIcon = L.divIcon({
-                                    className: 'user-location-marker',
-                                    html: '<div style="background: #10b981; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
-                                    iconSize: [20, 20],
-                                    iconAnchor: [10, 10]
-                                });
-                                
-                                window.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
-                                    .addTo(map)
-                                    .bindPopup('<div class="text-gray-900"><strong>La tua posizione</strong></div>');
-                                
-                                div.style.backgroundColor = '#1F2937';
-                            },
-                            function() {
-                                alert('Impossibile ottenere la posizione. Assicurati di aver dato il permesso.');
-                                div.style.backgroundColor = '#1F2937';
-                            }
-                        );
-                    } else {
-                        alert('Geolocalizzazione non supportata da questo browser.');
-                    }
-                };
-                
-                return div;
-            };
-            
-            locateControl.addTo(map);
-        }
-
         // Altre funzioni...
         function renderItinerary(data) {
             if (!data || !data.itinerary) {
@@ -465,108 +305,6 @@
             });
             document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
         }
-
-        // --- FUNZIONE OPEN MODAL (MANCANTE) ---
-        function openModal(context) {
-            // Simulazione apertura modal per dettagli AI
-            console.log(`Richiesta dettagli per: ${context}`);
-            
-            // Qui potremmo fare una chiamata all'API per ottenere più dettagli
-            fetch('/get_details', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ context: context })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Gestisce la struttura ricca dei dati dal backend
-                let content = '';
-                
-                if (data.summary) {
-                    content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;
-                }
-                
-                if (data.details && data.details.length > 0) {
-                    content += '<div class="mb-4">';
-                    data.details.forEach(detail => {
-                        content += `<div class="flex justify-between py-2 border-b border-gray-700">
-                                      <span class="text-gray-400 text-sm">${detail.label}:</span>
-                                      <span class="text-gray-200 text-sm">${detail.value}</span>
-                                    </div>`;
-                    });
-                    content += '</div>';
-                }
-                
-                if (data.timetable && data.timetable.length > 0) {
-                    content += '<div class="mb-4"><h4 class="text-white font-semibold mb-2">Orari</h4>';
-                    data.timetable.forEach(schedule => {
-                        content += `<div class="flex justify-between py-1">
-                                      <span class="text-gray-400 text-sm">${schedule.direction}:</span>
-                                      <span class="text-gray-200 text-sm">${schedule.times}</span>
-                                    </div>`;
-                    });
-                    content += '</div>';
-                }
-                
-                if (data.actionLink) {
-                    content += `<div class="mt-4">
-                                  <a href="${data.actionLink.url}" target="_blank" 
-                                     class="inline-block bg-violet-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-violet-600">
-                                    ${data.actionLink.text}
-                                  </a>
-                                </div>`;
-                }
-                
-                if (!content) {
-                    content = '<p class="text-gray-300">Informazioni non disponibili al momento.</p>';
-                }
-                
-                showModalWithHTML(data.title || 'Dettagli', content);
-            })
-            .catch(error => {
-                console.error('Errore caricamento dettagli:', error);
-                showModalWithHTML('Errore', '<p class="text-gray-300">Impossibile caricare i dettagli in questo momento.</p>');
-            });
-        }
-
-        // --- GESTIONE MODAL ---
-        function showModal(title, content) {
-            showModalWithHTML(title, `<p class="text-gray-300 text-sm">${content}</p>`);
-        }
-
-        function showModalWithHTML(title, htmlContent) {
-            const modal = document.getElementById('modal');
-            const modalContainer = document.getElementById('modal-container');
-            
-            modal.innerHTML = `
-                <div class="p-4 border-b border-gray-700">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-white">${title}</h3>
-                        <button onclick="closeModal()" class="text-gray-400 hover:text-white">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="p-4 flex-grow overflow-y-auto">
-                    ${htmlContent}
-                </div>
-            `;
-
-            modalContainer.classList.remove('hidden');
-            mainContent.classList.add('content-blur');
-        }
-
-        // Rendi closeModal disponibile globalmente
-        window.closeModal = function() {
-            const modalContainer = document.getElementById('modal-container');
-            modalContainer.classList.add('hidden');
-            mainContent.classList.remove('content-blur');
-        }
-
-        // Chiudi modal cliccando sull'overlay
-        modalOverlay.addEventListener('click', window.closeModal);
     });
     </script>
 </body>
