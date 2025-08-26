@@ -27,6 +27,9 @@
         .leaflet-control-attribution { display: none; }
         .leaflet-bar a, .leaflet-bar a:hover { background-color: #1F2937 !important; color: #F9FAFB !important; border-bottom: 1px solid #374151 !important; width: 36px !important; height: 36px !important; line-height: 36px !important; display: flex; align-items: center; justify-content: center; }
         .leaflet-bar { box-shadow: 0 1px 5px rgba(0,0,0,0.65) !important; border-radius: 8px !important; overflow: hidden; }
+        .custom-marker { background: transparent !important; border: none !important; }
+        .activity-marker .marker-content { background-color: #3b82f6 !important; }
+        .transport-marker .marker-content { background-color: #f97316 !important; }
         #modal-container.hidden { pointer-events: none; }
         #modal-overlay { transition: opacity 0.3s ease-in-out; }
         #modal { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
@@ -91,24 +94,24 @@
                 <div class="flex-grow overflow-y-auto p-4">
                     <div class="flex flex-col items-center mb-8">
                         <img src="https://placehold.co/80x80/374151/E5E7EB?text=M" alt="Avatar utente" class="w-20 h-20 rounded-full mb-3">
-                        <input type="text" id="profile-name" class="w-full bg-gray-900 text-white text-center text-xl font-semibold rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-violet-500" value="Caricamento...">
+                        <h2 class="text-xl font-semibold text-white">Maria Rossi</h2>
                     </div>
                     <div class="mb-8">
                         <h3 class="text-gray-400 text-sm font-medium mb-3">I tuoi interessi</h3>
                         <div id="interests-grid" class="grid grid-cols-3 gap-3">
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Arte</button>
-                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Cibo</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Cibo</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Natura</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Shopping</button>
                             <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Storia</button>
-                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm">Relax</button>
+                            <button class="interest-tag bg-gray-800 text-gray-200 py-3 rounded-lg text-sm selected">Relax</button>
                         </div>
                     </div>
                     <div class="mb-8">
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
                         <div id="pace-control" class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
                             <button data-value="Rilassato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Rilassato</button>
-                            <button data-value="Moderato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Moderato</button>
+                            <button data-value="Moderato" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">Moderato</button>
                             <button data-value="Intenso" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">Intenso</button>
                         </div>
                     </div>
@@ -116,12 +119,9 @@
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
                         <div id="budget-control" class="segmented-control w-full bg-gray-800 rounded-full p-1 flex">
                             <button data-value="€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€</button>
-                            <button data-value="€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€€</button>
+                            <button data-value="€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full selected">€€</button>
                             <button data-value="€€€" class="flex-1 text-gray-300 text-sm font-semibold py-2 rounded-full">€€€</button>
                         </div>
-                    </div>
-                    <div class="mt-12">
-                         <button id="delete-profile-button" class="w-full text-red-400 text-sm text-center py-2">Elimina Profilo</button>
                     </div>
                 </div>
                 <div class="p-4 flex-shrink-0"><button id="save-prefs-button" class="w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Salva Preferenze</button></div>
@@ -156,13 +156,10 @@
         const planButton = document.getElementById('plan-button');
         const itineraryTitle = document.getElementById('itinerary-title');
 
-        // Elementi della pagina Profilo
-        const profileNameInput = document.getElementById('profile-name');
         const interestsGrid = document.getElementById('interests-grid');
         const paceControl = document.getElementById('pace-control');
         const budgetControl = document.getElementById('budget-control');
         const savePrefsButton = document.getElementById('save-prefs-button');
-        const deleteProfileButton = document.getElementById('delete-profile-button');
 
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
@@ -175,48 +172,10 @@
                 document.getElementById(`page-${pageId}`).classList.add('active');
                 navButtons.forEach(btn => { btn.classList.remove('active', 'text-white'); btn.classList.add('text-gray-500'); });
                 button.classList.add('active', 'text-white');
-
-                if (pageId === 'profile') {
-                    loadProfileData();
-                }
             });
         });
 
-        // --- GESTIONE PROFILO (CRUD) ---
-        async function loadProfileData() {
-            try {
-                const response = await fetch('/get_profile');
-                const data = await response.json();
-
-                profileNameInput.value = data.name || '';
-
-                // Deseleziona tutto prima
-                interestsGrid.querySelectorAll('button').forEach(btn => {
-                    btn.classList.remove('selected', themeColors.selectedClass);
-                    btn.classList.add('bg-gray-800', 'text-gray-200');
-                });
-                paceControl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected', themeColors.selectedClass));
-                budgetControl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected', themeColors.selectedClass));
-
-                // Seleziona interessi
-                (data.interests || []).forEach(interest => {
-                    const btn = [...interestsGrid.querySelectorAll('button')].find(b => b.textContent === interest);
-                    if(btn) {
-                        btn.classList.add('selected', themeColors.selectedClass);
-                        btn.classList.remove('bg-gray-800', 'text-gray-200');
-                    }
-                });
-                // Seleziona ritmo e budget
-                const paceBtn = paceControl.querySelector(`[data-value="${data.pace}"]`);
-                if(paceBtn) paceBtn.classList.add('selected', themeColors.selectedClass);
-                const budgetBtn = budgetControl.querySelector(`[data-value="${data.budget}"]`);
-                if(budgetBtn) budgetBtn.classList.add('selected', themeColors.selectedClass);
-
-            } catch (error) {
-                console.error("Errore caricamento profilo:", error);
-            }
-        }
-
+        // --- GESTIONE PROFILO ---
         if(interestsGrid && paceControl && budgetControl && savePrefsButton) {
             interestsGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') {
@@ -231,8 +190,10 @@
                     if (e.target.tagName === 'BUTTON') {
                         container.querySelectorAll('button').forEach(btn => {
                             btn.classList.remove('selected', themeColors.selectedClass);
+                            btn.classList.add('text-gray-300');
                         });
                         e.target.classList.add('selected', themeColors.selectedClass);
+                        e.target.classList.remove('text-gray-300');
                     }
                 });
             }
@@ -240,26 +201,30 @@
             setupSegmentedControl(budgetControl);
 
             savePrefsButton.addEventListener('click', async () => {
+                const selectedInterests = [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent);
+                const selectedPace = paceControl.querySelector('.selected').dataset.value;
+                const selectedBudget = budgetControl.querySelector('.selected').dataset.value;
+
                 const preferences = {
-                    name: profileNameInput.value,
-                    interests: [...interestsGrid.querySelectorAll('.selected')].map(btn => btn.textContent),
-                    pace: paceControl.querySelector('.selected')?.dataset.value || '',
-                    budget: budgetControl.querySelector('.selected')?.dataset.value || ''
+                    interests: selectedInterests,
+                    pace: selectedPace,
+                    budget: selectedBudget
                 };
+
                 savePrefsButton.textContent = 'Salvataggio...';
                 try {
-                    await fetch('/update_profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preferences) });
+                    const response = await fetch('/save_preferences', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(preferences)
+                    });
+                    const data = await response.json();
+                    console.log('Preferenze salvate:', data);
                     savePrefsButton.textContent = 'Salvato!';
                     setTimeout(() => { savePrefsButton.textContent = 'Salva Preferenze'; }, 2000);
-                } catch (error) { savePrefsButton.textContent = 'Errore'; }
-            });
-
-            deleteProfileButton.addEventListener('click', async () => {
-                if (confirm("Sei sicuro di voler eliminare il profilo?")) {
-                    try {
-                        await fetch('/delete_profile', { method: 'DELETE' });
-                        loadProfileData(); // Ricarica il profilo (che sarà vuoto)
-                    } catch (error) { console.error("Errore eliminazione profilo:", error); }
+                } catch (error) {
+                    console.error('Errore salvataggio preferenze:', error);
+                    savePrefsButton.textContent = 'Errore';
                 }
             });
         }
@@ -289,64 +254,57 @@
             });
         }
 
-        // Altre funzioni...
-        function renderItinerary(data) {
-            if (!data || !data.itinerary) {
-                timelineContainer.innerHTML = `<p class="text-gray-400 p-4">Nessun itinerario generato.</p>`;
-                return;
-            }
-            timelineContainer.innerHTML = '';
-            data.itinerary.forEach(item => {
-                if (item.type === 'tip') {
-                    timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
-                } else {
-                    timelineContainer.innerHTML += `<div class="timeline-item relative pb-8"><div class="dot bg-gray-500"></div><div class="flex justify-between items-start"><div><p class="text-xs text-gray-400 mb-1">${item.time}</p><h3 class="font-semibold text-white">${item.title}</h3><p class="text-sm text-gray-300">${item.description}</p></div><button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg></button></div></div>`;
+        // --- GESTIONE TOGGLE VISTA ITINERARIO (LISTA/MAPPA) ---
+        const itineraryToggleButtons = document.querySelectorAll('.itinerary-toggle');
+        const itineraryListView = document.getElementById('itinerary-list-view');
+        const itineraryMapView = document.getElementById('itinerary-map-view');
+
+        itineraryToggleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.view;
+                
+                // Aggiorna i pulsanti toggle
+                itineraryToggleButtons.forEach(btn => {
+                    btn.classList.remove('bg-gray-600');
+                    btn.classList.add('bg-transparent');
+                });
+                button.classList.add('bg-gray-600');
+                button.classList.remove('bg-transparent');
+
+                // Mostra/nasconde le viste
+                if (view === 'list') {
+                    itineraryListView.classList.remove('hidden');
+                    itineraryMapView.classList.add('hidden');
+                } else if (view === 'map') {
+                    itineraryListView.classList.add('hidden');
+                    itineraryMapView.classList.remove('hidden');
+                    initializeMap();
                 }
             });
-            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => loadAIDetails(e.currentTarget.dataset.context)));
-        }
+        });
 
-        // --- GESTIONE MAPPA ---
-        let map, routeLayer, mapInitialized = false;
-
-        function toggleView(view) {
-            if (view === 'list') {
-                document.getElementById('itinerary-view').classList.remove('hidden');
-                document.getElementById('map-view').classList.add('hidden');
-                document.querySelector('.view-button[data-view="list"]').classList.add('bg-violet-500', 'text-white');
-                document.querySelector('.view-button[data-view="list"]').classList.remove('bg-gray-700', 'text-gray-300');
-                document.querySelector('.view-button[data-view="map"]').classList.remove('bg-violet-500', 'text-white');
-                document.querySelector('.view-button[data-view="map"]').classList.add('bg-gray-700', 'text-gray-300');
-            } else {
-                document.getElementById('itinerary-view').classList.add('hidden');
-                document.getElementById('map-view').classList.remove('hidden');
-                document.querySelector('.view-button[data-view="map"]').classList.add('bg-violet-500', 'text-white');
-                document.querySelector('.view-button[data-view="map"]').classList.remove('bg-gray-700', 'text-gray-300');
-                document.querySelector('.view-button[data-view="list"]').classList.remove('bg-violet-500', 'text-white');
-                document.querySelector('.view-button[data-view="list"]').classList.add('bg-gray-700', 'text-gray-300');
-                
-                initializeMap();
-                if (currentItineraryData) {
-                    updateMapWithItinerary(currentItineraryData);
-                }
-            }
-        }
-
+        // --- INIZIALIZZAZIONE MAPPA ---
         function initializeMap() {
-            if (mapInitialized) return;
+            if (!mapInitialized) {
+                // Coordinate di Genova come centro di default
+                map = L.map('map').setView([44.4063, 8.9314], 14);
+                
+                // Tile layer con stile scuro
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '© OpenStreetMap contributors © CARTO',
+                    maxZoom: 19
+                }).addTo(map);
 
-            map = L.map('map').setView([44.4063, 8.9314], 13);
+                // Aggiungi controlli personalizzati alla mappa
+                addMapControls();
 
-            // Tile layer con stile scuro
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors © CARTO',
-                maxZoom: 19
-            }).addTo(map);
+                mapInitialized = true;
+            }
 
-            // Aggiungi controlli personalizzati alla mappa
-            addMapControls();
-
-            mapInitialized = true;
+            // Aggiorna la mappa con i dati dell'itinerario
+            if (currentItineraryData) {
+                updateMapWithItinerary(currentItineraryData);
+            }
         }
 
         // --- AGGIORNA MAPPA CON ITINERARIO ---
@@ -397,7 +355,7 @@
                             <h3 class="font-bold text-sm mb-1">${item.title}</h3>
                             <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
                             <p class="text-xs">${item.description}</p>
-                            ${item.type === 'activity' ? `<button onclick="loadAIDetails('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
+                            ${item.type === 'activity' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
                         </div>
                     `);
 
@@ -491,10 +449,29 @@
             locateControl.addTo(map);
         }
 
-        // --- CARICA DETTAGLI AI ---
-        function loadAIDetails(context) {
-            console.log('Richiesta dettagli per:', context);
+        // Altre funzioni...
+        function renderItinerary(data) {
+            if (!data || !data.itinerary) {
+                timelineContainer.innerHTML = `<p class="text-gray-400 p-4">Nessun itinerario generato.</p>`;
+                return;
+            }
+            timelineContainer.innerHTML = '';
+            data.itinerary.forEach(item => {
+                if (item.type === 'tip') {
+                    timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
+                } else {
+                    timelineContainer.innerHTML += `<div class="timeline-item relative pb-8"><div class="dot bg-gray-500"></div><div class="flex justify-between items-start"><div><p class="text-xs text-gray-400 mb-1">${item.time}</p><h3 class="font-semibold text-white">${item.title}</h3><p class="text-sm text-gray-300">${item.description}</p></div><button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg></button></div></div>`;
+                }
+            });
+            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+        }
+
+        // --- FUNZIONE OPEN MODAL (MANCANTE) ---
+        function openModal(context) {
+            // Simulazione apertura modal per dettagli AI
+            console.log(`Richiesta dettagli per: ${context}`);
             
+            // Qui potremmo fare una chiamata all'API per ottenere più dettagli
             fetch('/get_details', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -581,20 +558,15 @@
             mainContent.classList.add('content-blur');
         }
 
-        function closeModal() {
+        // Rendi closeModal disponibile globalmente
+        window.closeModal = function() {
             const modalContainer = document.getElementById('modal-container');
             modalContainer.classList.add('hidden');
             mainContent.classList.remove('content-blur');
         }
 
-        // Event listeners per i pulsanti vista
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.view-button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    toggleView(e.currentTarget.dataset.view);
-                });
-            });
-        });
+        // Chiudi modal cliccando sull'overlay
+        modalOverlay.addEventListener('click', window.closeModal);
     });
     </script>
 </body>
