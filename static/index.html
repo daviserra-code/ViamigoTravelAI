@@ -235,11 +235,29 @@
                 const start = document.getElementById('start-location').value;
                 const end = document.getElementById('end-location').value;
                 planButton.textContent = "Pianificazione..."; planButton.disabled = true;
+                
+                // Recupera le preferenze dell'utente dal profilo
+                let userPreferences = { interests: [], pace: "", budget: "" };
+                try {
+                    const profileResponse = await fetch('/get_profile');
+                    if (profileResponse.ok) {
+                        userPreferences = await profileResponse.json();
+                    }
+                } catch (error) {
+                    console.log('Preferenze non disponibili, uso quelle di default');
+                }
+                
                 try {
                     const response = await fetch('/plan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ start, end })
+                        body: JSON.stringify({ 
+                            start, 
+                            end, 
+                            interests: userPreferences.interests || [],
+                            pace: userPreferences.pace || "",
+                            budget: userPreferences.budget || ""
+                        })
                     });
                     const data = await response.json();
                     if (data.error) { renderItinerary(null); } 
