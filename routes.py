@@ -304,7 +304,7 @@ def api_get_profile():
         return jsonify({
             'success': True,
             'profile': {
-                'interests': profile.get_interests(),
+                'interests': profile.interests.split(',') if profile.interests else [],
                 'travel_pace': profile.travel_pace,
                 'budget': profile.budget
             }
