@@ -91,7 +91,13 @@ def fix_italian_coordinates(itinerary_data):
             "palazzo rosso": {"lat": 44.4078, "lon": 8.9314},
             "spianata castelletto": {"lat": 44.4127, "lon": 8.9264},
             "mercato orientale": {"lat": 44.4043, "lon": 8.9380},
-            "via del campo": {"lat": 44.4065, "lon": 8.9298}
+            "via del campo": {"lat": 44.4065, "lon": 8.9298},
+            # Luoghi specifici di Nervi sulla terraferma
+            "museo giannettino luxoro": {"lat": 44.3665, "lon": 8.9750},
+            "ristorante da rina": {"lat": 44.3670, "lon": 8.9748},
+            "bar berto": {"lat": 44.4071, "lon": 8.9348},
+            "lungomare di nervi": {"lat": 44.3672, "lon": 8.9758},
+            "passeggiata anita garibaldi": {"lat": 44.3674, "lon": 8.9762}
         },
         "milano": {
             "piazza del duomo": {"lat": 45.4642, "lon": 9.1900},
