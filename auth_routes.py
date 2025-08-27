@@ -129,8 +129,8 @@ def register():
             const data = Object.fromEntries(formData);
             
             // Validazione client-side semplificata
-            if (!data.first_name || !data.last_name || !data.email) {
-                showError('Nome, cognome ed email sono obbligatori');
+            if (!data.email) {
+                showError('Email obbligatoria');
                 return;
             }
             
@@ -283,6 +283,15 @@ def login():
                                    class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
                         </div>
                         
+                        <!-- Checkbox Ricordami -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="remember_me" id="remember_me" 
+                                   class="w-4 h-4 text-violet-600 bg-gray-700 border-gray-600 rounded focus:ring-violet-500 focus:ring-2">
+                            <label for="remember_me" class="ml-2 text-sm text-gray-300">
+                                Ricordami per 7 giorni
+                            </label>
+                        </div>
+                        
                         <div id="errorMessage" class="hidden text-red-400 text-sm bg-red-900/20 p-3 rounded-lg border border-red-700"></div>
                         
                         <!-- Login con Replit -->
@@ -314,6 +323,9 @@ def login():
                             <p class="text-sm text-gray-400">
                                 Non hai un account? 
                                 <a href="/auth/register" class="text-violet-400 hover:text-violet-300 font-medium">Registrati qui</a>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                🚀 L'app parte sempre da questa pagina di login
                             </p>
                         </div>
                     </form>
@@ -382,6 +394,8 @@ def login():
         
         try:
             # Sistema login semplificato per Replit users e demo
+            remember_me = data.get('remember_me', False)
+            
             if data['email'] == 'demo@viamigo.com' and data['password'] == 'Demo12345!':
                 # Utente demo
                 user = User.query.filter_by(email='demo@viamigo.com').first()
@@ -395,7 +409,7 @@ def login():
                     db.session.commit()
                 
                 session.permanent = True
-                login_user(user, remember=True)
+                login_user(user, remember=remember_me)
                 
                 return jsonify({
                     'success': True,
@@ -422,7 +436,7 @@ def login():
                     db.session.commit()
                 
                 session.permanent = True
-                login_user(user, remember=True)
+                login_user(user, remember=remember_me)
                 
                 return jsonify({
                     'success': True,
@@ -441,7 +455,7 @@ def login():
                 if user:
                     # Utente trovato - login automatico
                     session.permanent = True
-                    login_user(user, remember=True)
+                    login_user(user, remember=remember_me)
                     
                     return jsonify({
                         'success': True,
