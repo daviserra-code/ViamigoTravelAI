@@ -340,10 +340,15 @@ def api_plan_trip():
         if not city:
             city = detect_city_from_locations(start.lower(), end.lower())
         
+        # Ottieni profilo utente per personalizzazione
+        current_user = get_current_user()
+        profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+        user_interests = profile.interests.split(',') if profile and profile.interests else []
+        
         # Prova prima il routing dinamico personalizzato
         from dynamic_routing import dynamic_router
         itinerary = dynamic_router.generate_personalized_itinerary(
-            start, end, city, duration
+            start, end, city, duration, user_interests
         )
         
         # Se il routing dinamico fallisce, usa template specifici

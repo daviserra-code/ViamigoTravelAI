@@ -54,12 +54,12 @@
                             <div class="bg-gray-800 rounded-xl p-2 border border-gray-700">
                                 <div class="flex items-center">
                                     <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input type="text" id="start-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Partenza" value="Piazza Unità d'Italia, Trieste">
+                                    <input type="text" id="start-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Partenza" value="Piazza De Ferrari, Genova">
                                 </div>
                                 <div class="h-px bg-gray-700 my-1"></div>
                                 <div class="flex items-center">
                                     <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input type="text" id="end-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Destinazione" value="Castello Miramare, Trieste">
+                                    <input type="text" id="end-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Destinazione" value="Acquario di Genova">
                                 </div>
                             </div>
                             <button id="plan-button" class="w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Pianifica il mio giorno</button>
@@ -426,10 +426,10 @@
                 }
             }
 
-            // Default: Trieste
-            console.log('Mappa centrata su: Trieste (default)');
-            window.currentCityName = 'trieste';
-            return cityCoordinates.trieste;
+            // Default: Genova
+            console.log('Mappa centrata su: Genova (default)');
+            window.currentCityName = 'genova';
+            return cityCoordinates.genova;
         }
 
         // Database delle coordinate reali dei luoghi
@@ -511,7 +511,7 @@
                 console.log(`Analizzando item ${index}:`, item);
                 if (item.type !== 'tip') {
                     // Rileva la città dall'itinerario
-                    const currentCity = window.currentCityName || 'trieste';
+                    const currentCity = window.currentCityName || 'genova';
                     
                     // Usa le coordinate dal backend (formato lat/lon) se disponibili
                     let lat, lng;

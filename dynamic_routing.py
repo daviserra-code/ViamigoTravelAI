@@ -105,7 +105,7 @@ class DynamicRouter:
         }
     
     def generate_personalized_itinerary(self, start: str, end: str, city: str = "", 
-                                       duration: str = "half_day") -> List[Dict]:
+                                       duration: str = "half_day", user_interests: List[str] = None) -> List[Dict]:
         """
         Genera itinerario personalizzato da start a end
         """
@@ -218,7 +218,10 @@ class DynamicRouter:
         # 4. Fallback finale - usa coordinate della città se disponibile
         if city_lower in self.city_centers:
             return tuple(self.city_centers[city_lower])
-        return (42.5, 12.5)
+        
+        # 5. Fallback geografico per centro Italia
+        print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Italia")
+        return (41.9028, 12.4964)  # Roma come centro Italia
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
         """Rileva la città dalle coordinate con precisione migliorata"""
@@ -385,14 +388,19 @@ class DynamicRouter:
                 lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
                 lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
             
-            # Descrizioni dettagliate per luoghi specifici
+            # Descrizioni dettagliate e personalizzate per luoghi specifici
+            if user_interests:
+                interest_context = f" - perfetto per chi ama {', '.join(user_interests[:2])}"
+            else:
+                interest_context = ""
+                
             detailed_descriptions = {
-                'Piazza Unità d\'Italia': 'La piazza più grande d\'Europa affacciata sul mare, circondata da eleganti palazzi asburgici del XIX secolo',
-                'Castello di Miramare': 'Romantico castello bianco affacciato sul golfo con giardini botanici e arredi storici dell\'Arciduca Massimiliano',
-                'Canal Grande': 'Il canale navigabile che attraversa il centro storico con caffè asburgici e palazzi neoclassici',
-                'Centro Storico': f'Il cuore antico di {city.title()} con architetture mitteleuropee e atmosfera multiculturale',
-                'Lungomare': f'Suggestiva passeggiata panoramica sul golfo di Trieste con vista sulle montagne carsiche',
-                'Porto': f'Il grande porto commerciale di Trieste, storico ponte tra Europa centrale e Mediterraneo'
+                'Piazza Unità d\'Italia': f'La piazza più grande d\'Europa affacciata sul mare, circondata da eleganti palazzi asburgici del XIX secolo{interest_context}',
+                'Castello di Miramare': f'Romantico castello bianco affacciato sul golfo con giardini botanici e arredi storici dell\'Arciduca Massimiliano{interest_context}',
+                'Canal Grande': f'Il canale navigabile che attraversa il centro storico con caffè asburgici e palazzi neoclassici{interest_context}',
+                'Centro Storico': f'Il cuore antico di {city.title()} con architetture mitteleuropee e atmosfera multiculturale{interest_context}',
+                'Lungomare': f'Suggestiva passeggiata panoramica sul golfo di Trieste con vista sulle montagne carsiche{interest_context}',
+                'Porto': f'Il grande porto commerciale di Trieste, storico ponte tra Europa centrale e Mediterraneo{interest_context}'
             }
             
             description = detailed_descriptions.get(name, f'Esplora {name} e le sue meraviglie caratteristiche di {city.title()}')
@@ -415,24 +423,24 @@ class DynamicRouter:
         itinerary = []
         current_time = datetime(2025, 1, 1, 9, 0)  # Start at 9 AM
         
-        # Starting point
+        # Starting point  
         itinerary.append({
             'time': current_time.strftime('%H:%M'),
             'title': start.title(),
             'description': f'Punto di partenza: {start}',
-            'coordinates': list(start_coords),
+            'coordinates': list(start_coords),  # Coordinate precise del punto di partenza
             'context': self._generate_context_key(start, city),
             'transport': 'start'
         })
         
-        # Waypoints
+        # Waypoints con coordinate precise
         for waypoint in waypoints:
             current_time += timedelta(minutes=30)  # Travel time
             itinerary.append({
                 'time': current_time.strftime('%H:%M'),
                 'title': waypoint['name'],
                 'description': waypoint['description'],
-                'coordinates': waypoint['estimated_coords'],
+                'coordinates': waypoint['estimated_coords'],  # Usa coordinate precise dal waypoint
                 'context': self._generate_context_key(waypoint['name'], city),
                 'transport': waypoint.get('transport_from_previous', 'walking')
             })
