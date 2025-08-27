@@ -215,7 +215,9 @@ class DynamicRouter:
         except Exception as e:
             print(f"Errore geocoding universale {location} in {city}: {e}")
         
-        # 4. Fallback finale
+        # 4. Fallback finale - usa coordinate della città se disponibile
+        if city_lower in self.city_centers:
+            return tuple(self.city_centers[city_lower])
         return (42.5, 12.5)
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
@@ -383,36 +385,21 @@ class DynamicRouter:
                 lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
                 lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
             
-            waypoints.append({
-                'name': name,
-                'description': f'Esplora {name} e i suoi dintorni',
-                'estimated_coords': [lat, lon],
-                'visit_duration': '45 min',
-                'transport_from_previous': 'walking'
-            })
-        
-        return waypoints
-        
-        
-        waypoints = []
-        for i, name in enumerate(names[:3]):
-            # Distribuzione intelligente: usa coordinate base della città + offset graduali
-            factor = (i + 1) / (len(names) + 1)
+            # Descrizioni dettagliate per luoghi specifici
+            detailed_descriptions = {
+                'Piazza Unità d\'Italia': 'La piazza più grande d\'Europa affacciata sul mare, circondata da eleganti palazzi asburgici del XIX secolo',
+                'Castello di Miramare': 'Romantico castello bianco affacciato sul golfo con giardini botanici e arredi storici dell\'Arciduca Massimiliano',
+                'Canal Grande': 'Il canale navigabile che attraversa il centro storico con caffè asburgici e palazzi neoclassici',
+                'Centro Storico': f'Il cuore antico di {city.title()} con architetture mitteleuropee e atmosfera multiculturale',
+                'Lungomare': f'Suggestiva passeggiata panoramica sul golfo di Trieste con vista sulle montagne carsiche',
+                'Porto': f'Il grande porto commerciale di Trieste, storico ponte tra Europa centrale e Mediterraneo'
+            }
             
-            # Per città reali, usa coordinate base + piccoli offset realistici
-            if city_lower in self.city_centers:
-                offset_lat = (i - 1) * 0.003  # ~300m per waypoint
-                offset_lon = (i - 1) * 0.003
-                lat = base_coords[0] + offset_lat
-                lon = base_coords[1] + offset_lon
-            else:
-                # Fallback: distribuzione tra start e end
-                lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
-                lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
+            description = detailed_descriptions.get(name, f'Esplora {name} e le sue meraviglie caratteristiche di {city.title()}')
             
             waypoints.append({
                 'name': name,
-                'description': f'Esplora {name} e i suoi dintorni',
+                'description': description,
                 'estimated_coords': [lat, lon],
                 'visit_duration': '45 min',
                 'transport_from_previous': 'walking'
