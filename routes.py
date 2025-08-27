@@ -689,7 +689,16 @@ def api_get_details():
                 'source': 'local_database'
             })
         
-        # Se non trovato localmente, usa API dinamiche
+        # Se non trovato localmente, controlla cache database
+        cached_result = get_cached_place_details(context)
+        if cached_result:
+            return jsonify({
+                'success': True,
+                'details': cached_result,
+                'source': 'cache_database'
+            })
+        
+        # Se non in cache, usa API dinamiche e salva in cache
         place_name = data.get('place_name', context.replace('_', ' '))
         city = data.get('city', '')
         country = data.get('country', '')
@@ -698,6 +707,9 @@ def api_get_details():
         dynamic_result = dynamic_places.get_place_info(place_name, city, country)
         
         if dynamic_result:
+            # Salva in cache per future richieste
+            save_to_cache(context, place_name, city, country, dynamic_result)
+            
             return jsonify({
                 'success': True,
                 'details': dynamic_result,
@@ -982,6 +994,39 @@ def get_local_place_details(context):
         return place_details[context]
     else:
         return None
+
+def get_cached_place_details(context):
+    """Ottiene dettagli dalla cache database"""
+    try:
+        from models import PlaceCache
+        cached = PlaceCache.query.filter_by(cache_key=context).first()
+        if cached:
+            cached.update_access()
+            db.session.commit()
+            return cached.get_place_data()
+    except Exception as e:
+        print(f"Errore cache lookup: {e}")
+    return None
+
+def save_to_cache(context, place_name, city, country, place_data):
+    """Salva dati luogo in cache database"""
+    try:
+        import json
+        from models import PlaceCache
+        
+        cache_entry = PlaceCache(
+            cache_key=context,
+            place_name=place_name,
+            city=city,
+            country=country,
+            place_data=json.dumps(place_data),
+            priority_level='dynamic'
+        )
+        db.session.add(cache_entry)
+        db.session.commit()
+        print(f"✅ Salvato in cache: {place_name}")
+    except Exception as e:
+        print(f"Errore salvataggio cache: {e}")
 
 @app.route('/save_preferences', methods=['POST'])
 @require_login

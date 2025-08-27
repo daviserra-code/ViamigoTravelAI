@@ -93,6 +93,35 @@ class UserProfile(db.Model if db else object):
             self.interests = ','.join(interests_list)
         else:
             self.interests = None
+
+class PlaceCache(db.Model if db else object):
+    __tablename__ = 'place_cache'
+    
+    if db:
+        id = db.Column(db.Integer, primary_key=True)
+        cache_key = db.Column(db.String(200), unique=True, nullable=False)
+        place_name = db.Column(db.String(200), nullable=False)
+        city = db.Column(db.String(100), nullable=False)
+        country = db.Column(db.String(100), nullable=False)
+        place_data = db.Column(db.Text, nullable=False)  # JSON data
+        priority_level = db.Column(db.String(50), default='custom')  # italia, europa, mondiale, custom
+        created_at = db.Column(db.DateTime, default=datetime.now)
+        last_accessed = db.Column(db.DateTime, default=datetime.now)
+        access_count = db.Column(db.Integer, default=0)
+    
+    def get_place_data(self):
+        """Converte place_data JSON string to dict"""
+        try:
+            import json
+            return json.loads(getattr(self, 'place_data', '{}'))
+        except:
+            return {}
+    
+    def update_access(self):
+        """Aggiorna statistiche di accesso"""
+        if db:
+            self.last_accessed = datetime.now()
+            self.access_count = getattr(self, 'access_count', 0) + 1
     
     def get_interests(self):
         """Ritorna lista di interessi dalla stringa comma-separated"""
