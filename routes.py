@@ -384,19 +384,42 @@ def api_plan_trip():
         }), 500
 
 def detect_city_from_locations(start, end):
-    """Rileva la città dall'input utente"""
+    """Rileva la città dall'input utente con logica di priorità"""
     text = f"{start} {end}".lower()
     
-    city_keywords = {
-        'torino': ['torino', 'turin', 'piemonte', 'mole antonelliana', 'palazzo reale', 'lungo po'],
-        'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'termini', 'trastevere', 'pantheon'],
-        'milano': ['milano', 'milan', 'duomo', 'navigli', 'brera', 'porta garibaldi'],
-        'venezia': ['venezia', 'venice', 'san marco', 'rialto', 'murano', 'burano'],
-        'firenze': ['firenze', 'florence', 'uffizi', 'duomo', 'ponte vecchio', 'oltrarno'],
-        'genova': ['genova', 'genoa', 'acquario', 'de ferrari', 'spianata castelletto', 'via del campo']
+    # PRIORITÀ 1: Match esatti di nomi di città (per evitare confusione)
+    exact_city_names = ['chiavari', 'rapallo', 'portofino', 'torino', 'roma', 'milano', 'venezia', 'firenze', 'genova', 'pisa', 'lucca', 'siena']
+    for city_name in exact_city_names:
+        if city_name in text:
+            return city_name
+    
+    # PRIORITÀ 2: Pattern specifici con città
+    city_patterns = {
+        'chiavari': ['lungomare,chiavari', 'piazza roma,chiavari', 'piazza del mercato,chiavari', 'centro,chiavari', 'porto,chiavari'],
+        'rapallo': ['lungomare,rapallo', 'castello,rapallo'],
+        'torino': ['mole antonelliana', 'palazzo reale torino', 'lungo po'],
+        'roma': ['colosseo', 'vaticano', 'termini roma', 'trastevere', 'pantheon'],
+        'milano': ['duomo milano', 'navigli', 'brera', 'porta garibaldi'],
+        'venezia': ['san marco', 'rialto', 'murano', 'burano'],
+        'firenze': ['uffizi', 'ponte vecchio', 'oltrarno'],
+        'genova': ['acquario genova', 'de ferrari', 'spianata castelletto', 'via del campo']
     }
     
-    for city, keywords in city_keywords.items():
+    for city, patterns in city_patterns.items():
+        if any(pattern in text for pattern in patterns):
+            return city
+    
+    # PRIORITÀ 3: Keywords generiche (solo se non c'è match sopra)
+    generic_keywords = {
+        'roma': ['roma', 'rome'],
+        'milano': ['milano', 'milan'], 
+        'torino': ['torino', 'turin'],
+        'venezia': ['venezia', 'venice'],
+        'firenze': ['firenze', 'florence'],
+        'genova': ['genova', 'genoa']
+    }
+    
+    for city, keywords in generic_keywords.items():
         if any(keyword in text for keyword in keywords):
             return city
     

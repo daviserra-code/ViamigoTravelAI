@@ -106,12 +106,17 @@ class DynamicRouter:
             if city_lower in self.city_centers:
                 return self.city_centers[city_lower]
             
-            # 2. Controllo se location contiene il nome di una città
+            # 2. Controllo se location contiene il nome di una città (priorità a match esatti)
+            for city_name, coords in self.city_centers.items():
+                if city_name == city_lower or city_name == location_lower:
+                    return coords
+            
+            # 3. Controllo substring solo se non c'è match esatto
             for city_name, coords in self.city_centers.items():
                 if city_name in location_lower or city_name in city_lower:
                     return coords
             
-            # 3. Controllo piazze/luoghi specifici con pattern
+            # 4. Controllo piazze/luoghi specifici con pattern
             location_patterns = {
                 'piazza': 'centro',
                 'stazione': 'stazione centrale', 
@@ -143,7 +148,7 @@ class DynamicRouter:
                             city_coords[1] + offset_lon + unique_offset
                         )
             
-            # 4. Fallback: Nominatim API con query migliorata
+            # 5. Fallback: Nominatim API con query migliorata
             query_parts = []
             if location:
                 query_parts.append(location)
@@ -181,7 +186,7 @@ class DynamicRouter:
         except Exception as e:
             print(f"Errore geocoding {location} in {city}: {e}")
         
-        # 5. Ultimo fallback: coordinate centro Italia
+        # 6. Ultimo fallback: coordinate centro Italia
         return (42.5, 12.5)
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
@@ -286,7 +291,7 @@ class DynamicRouter:
         mid_lat = (start_coords[0] + end_coords[0]) / 2
         mid_lon = (start_coords[1] + end_coords[1]) / 2
         
-        # Waypoints specifici per città italiane
+        # Waypoints specifici per città italiane con coordinate realistiche
         city_waypoints = {
             'roma': ['Centro Storico', 'Piazza di Spagna', 'Campo de\' Fiori'],
             'milano': ['Duomo', 'Galleria Vittorio Emanuele', 'Brera'],
@@ -303,15 +308,31 @@ class DynamicRouter:
             'siena': ['Piazza del Campo', 'Duomo', 'Via di Città']
         }
         
+        # Usa waypoints della città corretta e distribuisci coordinate realistiche
         city_lower = city.lower()
-        names = city_waypoints.get(city_lower, ['Centro Storico', 'Zona Turistica'])
+        if city_lower in self.city_centers:
+            base_coords = self.city_centers[city_lower]
+            names = city_waypoints.get(city_lower, ['Centro Storico', 'Zona Turistica'])
+        else:
+            base_coords = start_coords
+            names = ['Centro Storico', 'Zona Turistica']
+        
         
         waypoints = []
         for i, name in enumerate(names[:3]):
-            # Distribute waypoints between start and end
+            # Distribuzione intelligente: usa coordinate base della città + offset graduali
             factor = (i + 1) / (len(names) + 1)
-            lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
-            lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
+            
+            # Per città reali, usa coordinate base + piccoli offset realistici
+            if city_lower in self.city_centers:
+                offset_lat = (i - 1) * 0.003  # ~300m per waypoint
+                offset_lon = (i - 1) * 0.003
+                lat = base_coords[0] + offset_lat
+                lon = base_coords[1] + offset_lon
+            else:
+                # Fallback: distribuzione tra start e end
+                lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
+                lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
             
             waypoints.append({
                 'name': name,
