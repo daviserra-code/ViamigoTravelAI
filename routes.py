@@ -400,55 +400,107 @@ def api_get_details():
         place_details = {
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
-                'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana.',
+                'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',
                 'details': [
-                    {'label': 'Tipo', 'value': 'Stazione ferroviaria'},
-                    {'label': 'Metro', 'value': 'Linea A e B'},
-                    {'label': 'Servizi', 'value': 'Biglietteria, bar, negozi'}
+                    {'label': 'Inaugurazione', 'value': '20 dicembre 1950'},
+                    {'label': 'Binari', 'value': '29 binari'},
+                    {'label': 'Metro', 'value': 'Linea A (rossa) e B (blu)'},
+                    {'label': 'Passeggeri/anno', 'value': '150+ milioni'},
+                    {'label': 'Servizi', 'value': 'Biglietteria automatica, sala d\'attesa, ristoranti, negozi'},
+                    {'label': 'Bagagli', 'value': 'Deposito bagagli disponibile'},
+                    {'label': 'WiFi', 'value': 'Gratuito per 1 ora'}
+                ],
+                'timetable': [
+                    {'direction': 'Metro A - Battistini', 'times': 'Ogni 3-6 min (5:30-23:30)'},
+                    {'direction': 'Metro B - Laurentina', 'times': 'Ogni 4-7 min (5:30-23:30)'}
                 ],
                 'actionLink': {
-                    'text': 'Orari Trenitalia',
+                    'text': 'Orari Trenitalia in tempo reale',
                     'url': 'https://www.trenitalia.com'
                 }
             },
             'piazza_spagna': {
                 'title': 'Piazza di Spagna',
-                'summary': 'Una delle piazze più famose di Roma, dominata dalla Scalinata di Trinità dei Monti con 135 gradini.',
+                'summary': 'Una delle piazze più iconiche di Roma, famosa per la maestosa Scalinata di Trinità dei Monti e per essere il cuore dello shopping di lusso romano. La scalinata collega la piazza con la chiesa francese in cima.',
                 'details': [
-                    {'label': 'Gradini', 'value': '135 scalini'},
-                    {'label': 'Epoca', 'value': 'XVIII secolo'},
-                    {'label': 'Attrazioni', 'value': 'Fontana della Barcaccia, Via Condotti'}
+                    {'label': 'Gradini scalinata', 'value': '135 scalini in travertino'},
+                    {'label': 'Costruzione', 'value': '1723-1726'},
+                    {'label': 'Architetto', 'value': 'Francesco de Sanctis'},
+                    {'label': 'Fontana', 'value': 'Fontana della Barcaccia (Bernini, 1629)'},
+                    {'label': 'Shopping', 'value': 'Via Condotti, Via del Babuino'},
+                    {'label': 'Curiosità', 'value': 'Vietato sedersi sui gradini (multa €250)'},
+                    {'label': 'Metro', 'value': 'Spagna (Linea A)'}
+                ],
+                'timetable': [
+                    {'direction': 'Chiesa Trinità dei Monti', 'times': 'Mar-Dom 10:00-19:00'},
+                    {'direction': 'Keats-Shelley Museum', 'times': 'Lun-Sab 10:00-18:00'}
                 ]
             },
             'fontana_trevi': {
                 'title': 'Fontana di Trevi',
-                'summary': 'La fontana barocca più famosa al mondo. Tradizione vuole che lanciando una moneta si ritorni a Roma.',
+                'summary': 'La fontana barocca più spettacolare al mondo, immortalata in "La Dolce Vita" di Fellini. La tradizione dice che lanciando una moneta con la mano destra sopra la spalla sinistra si tornerà a Roma.',
                 'details': [
-                    {'label': 'Altezza', 'value': '26 metri'},
-                    {'label': 'Larghezza', 'value': '49 metri'},
+                    {'label': 'Altezza', 'value': '26.3 metri'},
+                    {'label': 'Larghezza', 'value': '49.15 metri'},
                     {'label': 'Architetto', 'value': 'Nicola Salvi'},
-                    {'label': 'Completata', 'value': '1762'}
+                    {'label': 'Completamento', 'value': '1762 (30 anni di lavori)'},
+                    {'label': 'Stile', 'value': 'Barocco Romano'},
+                    {'label': 'Figura centrale', 'value': 'Nettuno (Oceano)'},
+                    {'label': 'Monete raccolte', 'value': '€1.4 milioni/anno (dati alla Caritas)'},
+                    {'label': 'Curiosità', 'value': 'Due monete = nuova storia d\'amore'},
+                    {'label': 'Miglior orario', 'value': 'Alba (6:00-7:00) per evitare folle'}
+                ],
+                'timetable': [
+                    {'direction': 'Accessibile', 'times': '24h/7gg (illuminazione notturna)'},
+                    {'direction': 'Pulizia fontana', 'times': 'Ogni lunedì mattina 7:00-9:00'}
                 ]
             },
             'pantheon': {
                 'title': 'Pantheon',
-                'summary': 'Tempio romano del II secolo, straordinariamente conservato. La sua cupola è stata la più grande del mondo per 1300 anni.',
+                'summary': 'Il tempio romano meglio conservato al mondo, considerato una meraviglia architettonica. La sua cupola fu la più grande per 1.300 anni fino a Brunelleschi. Oggi è basilica cristiana e mausoleo reale.',
                 'details': [
-                    {'label': 'Costruzione', 'value': '118-128 d.C.'},
-                    {'label': 'Diametro cupola', 'value': '43.3 metri'},
-                    {'label': 'Ingresso', 'value': 'Gratuito'},
-                    {'label': 'Orari', 'value': '9:00-19:00'}
-                ]
+                    {'label': 'Costruzione originale', 'value': '27 a.C. (Marco Agrippa)'},
+                    {'label': 'Ricostruzione', 'value': '118-128 d.C. (Imperatore Adriano)'},
+                    {'label': 'Diametro cupola', 'value': '43.30 metri (= altezza interna)'},
+                    {'label': 'Oculus', 'value': '8.2 metri di diametro (unica fonte di luce)'},
+                    {'label': 'Materiale', 'value': 'Calcestruzzo romano con pomice'},
+                    {'label': 'Sepolture illustri', 'value': 'Raffaello Sanzio, Re Vittorio Emanuele II'},
+                    {'label': 'Ingresso', 'value': 'Gratuito (prenotazione consigliata)'},
+                    {'label': 'Curiosità', 'value': 'Il pavimento ha pendenze per far defluire la pioggia'}
+                ],
+                'timetable': [
+                    {'direction': 'Lun-Sab', 'times': '9:00-19:00 (ultimo ingresso 18:45)'},
+                    {'direction': 'Domenica', 'times': '9:00-18:00 (ultimo ingresso 17:45)'},
+                    {'direction': 'Messe', 'times': 'Sabato 17:00, Domenica 10:30'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota visita guidata',
+                    'url': 'https://pantheonroma.com'
+                }
             },
             'piazza_navona': {
                 'title': 'Piazza Navona',
-                'summary': 'La piazza barocca più spettacolare di Roma, costruita sul sito dell\'antico Stadio di Domiziano.',
+                'summary': 'Il gioiello del barocco romano, costruita sulle rovine dello Stadio di Domiziano. Teatro della rivalità artistica tra Bernini e Borromini, oggi è il salotto elegante di Roma con i suoi caffè storici.',
                 'details': [
-                    {'label': 'Fontane', 'value': '3 (Fontana dei Quattro Fiumi, del Moro, del Nettuno)'},
-                    {'label': 'Chiesa', 'value': 'Sant\'Agnese in Agone'},
-                    {'label': 'Architetto', 'value': 'Gian Lorenzo Bernini'},
-                    {'label': 'Epoca', 'value': 'XVII secolo'}
-                ]
+                    {'label': 'Forma originale', 'value': 'Stadio di Domiziano (86 d.C., 30.000 spettatori)'},
+                    {'label': 'Trasformazione', 'value': 'XV secolo - da stadio a piazza'},
+                    {'label': 'Lunghezza', 'value': '276 metri'},
+                    {'label': 'Fontana centrale', 'value': 'Fontana dei Quattro Fiumi (Bernini, 1651)'},
+                    {'label': 'Fontana sud', 'value': 'Fontana del Moro (Bernini)'},
+                    {'label': 'Fontana nord', 'value': 'Fontana del Nettuno'},
+                    {'label': 'Chiesa', 'value': 'Sant\'Agnese in Agone (Borromini)'},
+                    {'label': 'Leggenda', 'value': 'Statua del Nilo copre gli occhi per non vedere la chiesa'},
+                    {'label': 'Mercatino', 'value': 'Befana (6 gennaio) e Natale'}
+                ],
+                'timetable': [
+                    {'direction': 'Caffè storici', 'times': 'Caffè Domiziano, Tre Scalini (7:00-1:00)'},
+                    {'direction': 'Artisti di strada', 'times': 'Tutti i giorni 10:00-24:00'},
+                    {'direction': 'Chiesa S. Agnese', 'times': 'Mar-Dom 9:30-12:30, 15:30-19:00'}
+                ],
+                'actionLink': {
+                    'text': 'Storia dello Stadio di Domiziano',
+                    'url': 'https://stadiodomiziano.com'
+                }
             }
         }
         
@@ -465,6 +517,48 @@ def api_get_details():
             'title': 'Errore',
             'summary': f'Errore nel caricamento: {str(e)}',
             'details': []
+        }), 500
+
+@app.route('/save_preferences', methods=['POST'])
+@require_login
+def api_save_preferences():
+    """API endpoint per salvare preferenze utente"""
+    try:
+        data = request.get_json()
+        current_user = get_current_user()
+        
+        # Trova o crea profilo utente
+        profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+        
+        if not profile:
+            profile = UserProfile(
+                user_id=current_user.id,
+                interests='',
+                travel_pace='Moderato',
+                budget='€€',
+                bio='Viaggiatore entusiasta'
+            )
+            db.session.add(profile)
+        
+        # Aggiorna le preferenze
+        if 'interests' in data:
+            profile.set_interests(data['interests'])
+        if 'travel_pace' in data:
+            profile.travel_pace = data['travel_pace']
+        if 'budget' in data:
+            profile.budget = data['budget']
+            
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Preferenze salvate correttamente'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 500
 
 # === CRUD ROUTES PER USER PROFILE ===
