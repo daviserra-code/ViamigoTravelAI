@@ -383,70 +383,136 @@ def create_profile():
             flash('Profilo creato con successo!')
             return redirect(url_for('view_profile'))
     
-    # GET request - mostra form
+    # GET request - mostra form con design mobile Viamigo
     return render_template_string('''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Crea Profilo - Viamigo</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="bg-gray-50 min-h-screen">
-        <nav class="bg-blue-600 text-white p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <a href="/" class="text-xl font-bold">Viamigo</a>
-                <a href="/profile" class="bg-blue-500 px-3 py-1 rounded">Torna al Profilo</a>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viamigo - Crea Profilo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
+        .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .phone-screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .interest-tag { background-color: #374151; color: #d1d5db; cursor: pointer; transition: all 0.2s; }
+        .interest-tag.selected { background-color: #a78bfa; color: #111827; font-weight: 600; }
+        .segmented-control button { background-color: #374151; color: #d1d5db; transition: all 0.2s; }
+        .segmented-control button.selected { background-color: #a78bfa; color: #111827; font-weight: 600; }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+    <div class="phone-mockup">
+        <div class="phone-screen">
+            <!-- HEADER -->
+            <div class="header p-4 pt-8 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='/profile'" class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
+                    <div class="overflow-hidden">
+                        <p class="text-xs text-gray-400">Personalizza i tuoi viaggi</p>
+                        <h2 class="font-bold text-white text-lg">Crea il Tuo Profilo</h2>
+                    </div>
+                </div>
             </div>
-        </nav>
-        
-        <div class="container mx-auto p-8">
-            <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6">Crea il Tuo Profilo di Viaggio</h2>
-                
+
+            <!-- CONTENUTO FORM -->
+            <div class="flex-grow overflow-y-auto p-4">
                 <form method="POST" class="space-y-6">
+                    <!-- Interessi -->
                     <div>
-                        <label class="block font-medium mb-2">I Tuoi Interessi</label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {% for interest in ['Cibo', 'Arte', 'Relax', 'Avventura', 'Storia', 'Natura', 'Shopping', 'Nightlife'] %}
-                            <label class="flex items-center">
-                                <input type="checkbox" name="interests" value="{{ interest }}" class="mr-2">
-                                <span>{{ interest }}</span>
-                            </label>
-                            {% endfor %}
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">I tuoi interessi</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Cibo')">🍕 Cibo</div>
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Arte')">🎨 Arte</div>
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Storia')">🏛️ Storia</div>
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Natura')">🌲 Natura</div>
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Relax')">🧘 Relax</div>
+                            <div class="interest-tag py-2 px-3 rounded-lg text-sm text-center" onclick="toggleInterest(this, 'Avventura')">⛰️ Avventura</div>
                         </div>
+                        <input type="hidden" name="interests" id="interests-input">
                     </div>
                     
+                    <!-- Ritmo di Viaggio -->
                     <div>
-                        <label class="block font-medium mb-2">Ritmo di Viaggio</label>
-                        <select name="travel_pace" class="w-full border rounded px-3 py-2">
-                            <option value="">Seleziona...</option>
-                            <option value="Lento">Lento - Mi piace prendermi il mio tempo</option>
-                            <option value="Moderato">Moderato - Un buon equilibrio</option>
-                            <option value="Veloce">Veloce - Voglio vedere tutto</option>
-                        </select>
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
+                        <div class="segmented-control grid grid-cols-3 bg-gray-800 rounded-xl p-1 gap-1">
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm" onclick="selectPace(this, 'Lento')">🐌 Lento</button>
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm selected" onclick="selectPace(this, 'Moderato')">🚶 Moderato</button>
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm" onclick="selectPace(this, 'Veloce')">🏃 Veloce</button>
+                        </div>
+                        <input type="hidden" name="travel_pace" id="pace-input" value="Moderato">
                     </div>
                     
+                    <!-- Budget -->
                     <div>
-                        <label class="block font-medium mb-2">Budget</label>
-                        <select name="budget" class="w-full border rounded px-3 py-2">
-                            <option value="">Seleziona...</option>
-                            <option value="€">€ - Economico</option>
-                            <option value="€€">€€ - Medio</option>
-                            <option value="€€€">€€€ - Alto</option>
-                        </select>
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
+                        <div class="segmented-control grid grid-cols-3 bg-gray-800 rounded-xl p-1 gap-1">
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm" onclick="selectBudget(this, '€')">€ Economico</button>
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm selected" onclick="selectBudget(this, '€€')">€€ Medio</button>
+                            <button type="button" class="py-2 px-3 rounded-lg text-sm" onclick="selectBudget(this, '€€€')">€€€ Alto</button>
+                        </div>
+                        <input type="hidden" name="budget" id="budget-input" value="€€">
                     </div>
                     
-                    <div class="flex space-x-4">
-                        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Crea Profilo</button>
-                        <a href="/profile" class="bg-gray-500 text-white px-6 py-2 rounded">Annulla</a>
+                    <!-- Pulsanti Azione -->
+                    <div class="space-y-3 pt-4">
+                        <button type="submit" class="w-full bg-violet-500 text-white py-3 rounded-xl font-semibold">
+                            Crea il Mio Profilo
+                        </button>
+                        <button type="button" onclick="window.location.href='/profile'" class="w-full bg-gray-700 text-white py-3 rounded-xl font-semibold">
+                            Annulla
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    </body>
-    </html>
+    </div>
+
+    <script>
+        let selectedInterests = [];
+        
+        function toggleInterest(element, interest) {
+            if (selectedInterests.includes(interest)) {
+                selectedInterests = selectedInterests.filter(i => i !== interest);
+                element.classList.remove('selected');
+            } else {
+                selectedInterests.push(interest);
+                element.classList.add('selected');
+            }
+            document.getElementById('interests-input').value = selectedInterests.join(',');
+        }
+        
+        function selectPace(element, pace) {
+            document.querySelectorAll('.segmented-control button').forEach(btn => {
+                if (btn.parentElement.parentElement.querySelector('#pace-input')) {
+                    btn.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            document.getElementById('pace-input').value = pace;
+        }
+        
+        function selectBudget(element, budget) {
+            document.querySelectorAll('.segmented-control button').forEach(btn => {
+                if (btn.parentElement.parentElement.querySelector('#budget-input')) {
+                    btn.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            document.getElementById('budget-input').value = budget;
+        }
+    </script>
+</body>
+</html>
     ''')
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
