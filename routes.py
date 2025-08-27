@@ -322,71 +322,284 @@ def api_get_profile():
 @app.route('/plan', methods=['POST'])
 @require_login
 def api_plan_trip():
-    """API endpoint per pianificazione viaggi - mockup per demo"""
+    """API endpoint per pianificazione viaggi - sistema dinamico mondiale"""
     try:
         data = request.get_json()
-        start = data.get('start', '')
-        end = data.get('end', '')
+        start = data.get('start', '').lower()
+        end = data.get('end', '').lower()
         
-        # Itinerario dettagliato Roma: Termini → Piazza Navona
-        mock_response = {
+        # Rilevamento automatico città dal testo
+        city = detect_city_from_locations(start, end)
+        
+        if city == 'torino':
+            itinerary = generate_torino_itinerary(start, end)
+        elif city == 'roma':
+            itinerary = generate_roma_itinerary(start, end)
+        elif city == 'milano':
+            itinerary = generate_milano_itinerary(start, end)
+        elif city == 'venezia':
+            itinerary = generate_venezia_itinerary(start, end)
+        elif city == 'firenze':
+            itinerary = generate_firenze_itinerary(start, end)
+        else:
+            # Itinerario generico per città non riconosciute
+            itinerary = generate_generic_itinerary(start, end)
+        
+        return jsonify({
             'success': True,
-            'itinerary': [
-                {
-                    'time': '09:00',
-                    'title': 'Stazione Roma Termini',
-                    'description': 'Partenza dalla stazione principale di Roma. Prendi la Metro A (linea rossa) direzione Battistini.',
-                    'coordinates': [41.9028, 12.4964],
-                    'context': 'stazione_termini'
-                },
-                {
-                    'time': '09:15',
-                    'title': 'Metro Spagna',
-                    'description': 'Scendi alla fermata Spagna e sali la famosa Scalinata di Trinità dei Monti.',
-                    'coordinates': [41.9063, 12.4821],
-                    'context': 'piazza_spagna'
-                },
-                {
-                    'time': '10:00',
-                    'title': 'Fontana di Trevi',
-                    'description': 'Visita la fontana più famosa di Roma. Lancia una moneta per tornare nella Città Eterna!',
-                    'coordinates': [41.9009, 12.4833],
-                    'context': 'fontana_trevi'
-                },
-                {
-                    'time': '10:45',
-                    'title': 'Pantheon',
-                    'description': 'Ammira questo capolavoro dell\'architettura romana, perfettamente conservato da 2000 anni.',
-                    'coordinates': [41.8986, 12.4769],
-                    'context': 'pantheon'
-                },
-                {
-                    'time': '11:30',
-                    'title': 'Piazza Navona',
-                    'description': 'Destinazione finale: la piazza barocca più bella di Roma con le sue tre magnifiche fontane.',
-                    'coordinates': [41.8986, 12.4730],
-                    'context': 'piazza_navona'
-                },
-                {
-                    'type': 'tip',
-                    'title': '🚇 Info Trasporti',
-                    'description': 'Biglietto Metro: €1.50 (100 min). In alternativa tutto a piedi: 3.2 km, 40 minuti di camminata.'
-                },
-                {
-                    'type': 'tip',
-                    'title': '💡 Consiglio Locale',
-                    'description': 'Evita i ristoranti intorno al Pantheon: sono turistici. Cerca una trattoria nelle vie laterali.'
-                }
-            ]
-        }
+            'itinerary': itinerary
+        })
         
-        return jsonify(mock_response)
         
     except Exception as e:
         return jsonify({
             'success': False,
             'error': str(e)
         }), 500
+
+def detect_city_from_locations(start, end):
+    """Rileva la città dall'input utente"""
+    text = f"{start} {end}".lower()
+    
+    city_keywords = {
+        'torino': ['torino', 'turin', 'piemonte', 'mole antonelliana', 'palazzo reale', 'lungo po'],
+        'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'termini', 'trastevere', 'pantheon'],
+        'milano': ['milano', 'milan', 'duomo', 'navigli', 'brera', 'porta garibaldi'],
+        'venezia': ['venezia', 'venice', 'san marco', 'rialto', 'murano', 'burano'],
+        'firenze': ['firenze', 'florence', 'uffizi', 'duomo', 'ponte vecchio', 'oltrarno']
+    }
+    
+    for city, keywords in city_keywords.items():
+        if any(keyword in text for keyword in keywords):
+            return city
+    
+    return 'generico'
+
+def generate_torino_itinerary(start, end):
+    """Genera itinerario specifico per Torino"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Via Roma',
+            'description': 'Partenza dalla via pedonale più elegante di Torino, tra portici storici e caffè aristocratici.',
+            'coordinates': [45.0703, 7.6869],
+            'context': 'via_roma_torino'
+        },
+        {
+            'time': '09:30',
+            'title': 'Piazza Castello',
+            'description': 'Il cuore di Torino con Palazzo Reale, Palazzo Madama e Teatro Regio.',
+            'coordinates': [45.0706, 7.6868],
+            'context': 'piazza_castello_torino'
+        },
+        {
+            'time': '10:15',
+            'title': 'Mole Antonelliana',
+            'description': 'Il simbolo di Torino con il Museo del Cinema. Vista panoramica dalla cupola.',
+            'coordinates': [45.0692, 7.6934],
+            'context': 'mole_antonelliana'
+        },
+        {
+            'time': '11:00',
+            'title': 'Musei Reali',
+            'description': 'Palazzo Reale, Armeria Reale e Galleria Sabauda in un unico complesso.',
+            'coordinates': [45.0722, 7.6862],
+            'context': 'musei_reali_torino'
+        },
+        {
+            'time': '12:30',
+            'title': 'Lungo Po',
+            'description': 'Passeggiata rilassante lungo il fiume Po fino al Parco del Valentino.',
+            'coordinates': [45.0618, 7.6908],
+            'context': 'lungo_po'
+        },
+        {
+            'type': 'tip',
+            'title': '🚌 Trasporti Torino',
+            'description': 'Biglietto GTT: €1.70 (90 min). Torino Card include trasporti e musei.'
+        },
+        {
+            'type': 'tip',
+            'title': '☕ Specialità locale',
+            'description': 'Prova il bicerin al Caffè Fiorio (1780) o al Baratti & Milano.'
+        }
+    ]
+
+def generate_roma_itinerary(start, end):
+    """Genera itinerario specifico per Roma"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Stazione Roma Termini',
+            'description': 'Partenza dalla stazione principale di Roma. Prendi la Metro A direzione Battistini.',
+            'coordinates': [41.9028, 12.4964],
+            'context': 'stazione_termini'
+        },
+        {
+            'time': '09:15',
+            'title': 'Piazza di Spagna',
+            'description': 'Scalinata di Trinità dei Monti e shopping di lusso in Via Condotti.',
+            'coordinates': [41.9063, 12.4821],
+            'context': 'piazza_spagna'
+        },
+        {
+            'time': '10:00',
+            'title': 'Fontana di Trevi',
+            'description': 'Lancia una moneta per tornare nella Città Eterna!',
+            'coordinates': [41.9009, 12.4833],
+            'context': 'fontana_trevi'
+        },
+        {
+            'time': '10:45',
+            'title': 'Pantheon',
+            'description': 'Capolavoro dell\'architettura romana, perfettamente conservato.',
+            'coordinates': [41.8986, 12.4769],
+            'context': 'pantheon'
+        },
+        {
+            'time': '11:30',
+            'title': 'Piazza Navona',
+            'description': 'La piazza barocca più bella di Roma con le sue tre fontane.',
+            'coordinates': [41.8986, 12.4730],
+            'context': 'piazza_navona'
+        },
+        {
+            'type': 'tip',
+            'title': '🚇 Metro Roma',
+            'description': 'Biglietto: €1.50 (100 min). Roma Pass include trasporti e musei.'
+        }
+    ]
+
+def generate_milano_itinerary(start, end):
+    """Genera itinerario specifico per Milano"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Duomo di Milano',
+            'description': 'La cattedrale gotica più famosa d\'Italia. Salita alle terrazze per vista panoramica.',
+            'coordinates': [45.4642, 9.1900],
+            'context': 'duomo_milano'
+        },
+        {
+            'time': '10:30',
+            'title': 'Galleria Vittorio Emanuele II',
+            'description': 'Il salotto di Milano, galleria commerciale del 1800.',
+            'coordinates': [45.4655, 9.1897],
+            'context': 'galleria_milano'
+        },
+        {
+            'time': '11:15',
+            'title': 'Teatro alla Scala',
+            'description': 'Il teatro dell\'opera più famoso al mondo.',
+            'coordinates': [45.4678, 9.1895],
+            'context': 'scala_milano'
+        },
+        {
+            'time': '12:00',
+            'title': 'Castello Sforzesco',
+            'description': 'Castello rinascimentale con musei e il Parco Sempione.',
+            'coordinates': [45.4706, 9.1799],
+            'context': 'castello_sforzesco'
+        },
+        {
+            'type': 'tip',
+            'title': '🍸 Aperitivo milanese',
+            'description': 'Navigli per aperitivo serale (18:00-20:00).'
+        }
+    ]
+
+def generate_venezia_itinerary(start, end):
+    """Genera itinerario specifico per Venezia"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Piazza San Marco',
+            'description': 'Il cuore di Venezia con la Basilica e il Campanile.',
+            'coordinates': [45.4341, 12.3384],
+            'context': 'san_marco_venezia'
+        },
+        {
+            'time': '10:30',
+            'title': 'Palazzo Ducale',
+            'description': 'Palazzo dei Dogi con il famoso Ponte dei Sospiri.',
+            'coordinates': [45.4336, 12.3403],
+            'context': 'palazzo_ducale'
+        },
+        {
+            'time': '11:30',
+            'title': 'Ponte di Rialto',
+            'description': 'Il ponte più antico e famoso del Canal Grande.',
+            'coordinates': [45.4380, 12.3358],
+            'context': 'rialto_venezia'
+        },
+        {
+            'type': 'tip',
+            'title': '🚤 Vaporetto',
+            'description': 'Biglietto: €7.50 (75 min). Venice Card per sconti.'
+        }
+    ]
+
+def generate_firenze_itinerary(start, end):
+    """Genera itinerario specifico per Firenze"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Duomo di Firenze',
+            'description': 'Cattedrale con la cupola del Brunelleschi.',
+            'coordinates': [43.7733, 11.2560],
+            'context': 'duomo_firenze'
+        },
+        {
+            'time': '10:30',
+            'title': 'Galleria degli Uffizi',
+            'description': 'Il museo d\'arte più importante di Firenze.',
+            'coordinates': [43.7678, 11.2553],
+            'context': 'uffizi'
+        },
+        {
+            'time': '12:00',
+            'title': 'Ponte Vecchio',
+            'description': 'Il ponte medievale con le botteghe orafe.',
+            'coordinates': [43.7681, 11.2533],
+            'context': 'ponte_vecchio'
+        },
+        {
+            'type': 'tip',
+            'title': '🎨 Prenotazioni',
+            'description': 'Uffizi e Accademia richiedono prenotazione obbligatoria.'
+        }
+    ]
+
+def generate_generic_itinerary(start, end):
+    """Genera itinerario generico per città non riconosciute"""
+    return [
+        {
+            'time': '09:00',
+            'title': start.title(),
+            'description': f'Punto di partenza: {start}',
+            'coordinates': [45.0, 9.0],  # Coordinate generiche Italia centrale
+            'context': 'generic_start'
+        },
+        {
+            'time': '10:30',
+            'title': 'Centro storico',
+            'description': 'Esplora il centro storico della città e i suoi monumenti principali.',
+            'coordinates': [45.001, 9.001],
+            'context': 'generic_center'
+        },
+        {
+            'time': '12:00',
+            'title': end.title(),
+            'description': f'Destinazione finale: {end}',
+            'coordinates': [45.002, 9.002],
+            'context': 'generic_end'
+        },
+        {
+            'type': 'tip',
+            'title': '💡 Consiglio',
+            'description': 'Per itinerari dettagliati, specifica la città nelle tue ricerche.'
+        }
+    ]
 
 @app.route('/get_details', methods=['POST'])
 @require_login
@@ -396,8 +609,58 @@ def api_get_details():
         data = request.get_json()
         context = data.get('context', '')
         
-        # Database mockup dettagli luoghi Roma
+        # Database dinamico dettagli luoghi per città italiane
         place_details = {
+            # TORINO
+            'via_roma_torino': {
+                'title': 'Via Roma, Torino',
+                'summary': 'La via pedonale più elegante di Torino, creata nel 1930s. I suoi portici neoclassici ospitano boutique di lusso e caffè storici.',
+                'details': [
+                    {'label': 'Lunghezza', 'value': '1.2 km di portici'},
+                    {'label': 'Costruzione', 'value': '1930-1937 (piano urbanistico)'},
+                    {'label': 'Stile', 'value': 'Architettura razionalista italiana'},
+                    {'label': 'Shopping', 'value': 'Boutique di lusso, librerie storiche'},
+                    {'label': 'Caffè storici', 'value': 'Caffè Mulassano (1907), Caffè Stratta'}
+                ]
+            },
+            'piazza_castello_torino': {
+                'title': 'Piazza Castello, Torino',
+                'summary': 'Il cuore politico e culturale di Torino, circondata dai principali palazzi del potere sabaudo. Centro geometrico della città.',
+                'details': [
+                    {'label': 'Dimensioni', 'value': '40.000 m² (tra le più grandi d\'Europa)'},
+                    {'label': 'Palazzo Reale', 'value': 'Residenza dei Savoia (XVII-XVIII sec)'},
+                    {'label': 'Palazzo Madama', 'value': 'Museo Civico d\'Arte Antica'},
+                    {'label': 'Teatro Regio', 'value': 'Opera house (1973, dopo incendio)'},
+                    {'label': 'Armeria Reale', 'value': 'Collezione armi antiche più importante al mondo'}
+                ]
+            },
+            'mole_antonelliana': {
+                'title': 'Mole Antonelliana',
+                'summary': 'Il simbolo di Torino, edificio più alto della città (167m). Originariamente sinagoga, oggi ospita il Museo Nazionale del Cinema.',
+                'details': [
+                    {'label': 'Altezza', 'value': '167.5 metri'},
+                    {'label': 'Architetto', 'value': 'Alessandro Antonelli'},
+                    {'label': 'Costruzione', 'value': '1863-1889'},
+                    {'label': 'Ascensore panoramico', 'value': 'Salita alla cupola (€8)'},
+                    {'label': 'Museo del Cinema', 'value': 'Primo in Italia per importanza'},
+                    {'label': 'Curiosità', 'value': 'Compare sul retro delle monete da 2 centesimi'}
+                ],
+                'timetable': [
+                    {'direction': 'Museo del Cinema', 'times': 'Mar-Dom 9:00-20:00'},
+                    {'direction': 'Ascensore panoramico', 'times': 'Mar-Dom 9:00-19:00 (ultima salita)'}
+                ]
+            },
+            'lungo_po': {
+                'title': 'Lungo Po, Torino',
+                'summary': 'Le passeggiate lungo il fiume Po offrono scorci romantici di Torino. Dal centro storico al Parco del Valentino.',
+                'details': [
+                    {'label': 'Lunghezza percorso', 'value': '3 km centro-Valentino'},
+                    {'label': 'Parco del Valentino', 'value': '500.000 m² di verde urbano'},
+                    {'label': 'Castello del Valentino', 'value': 'Residenza sabauda (UNESCO)'},
+                    {'label': 'Borgo medievale', 'value': 'Ricostruzione filologica (1884)'},
+                    {'label': 'Attività', 'value': 'Jogging, ciclismo, pic-nic'}
+                ]
+            },
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
                 'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',
