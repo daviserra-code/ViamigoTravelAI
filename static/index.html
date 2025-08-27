@@ -633,10 +633,17 @@
 
         // Altre funzioni...
         function renderItinerary(data) {
+            console.log('🔄 renderItinerary chiamata con dati:', data);
+            
             if (!data || !data.itinerary) {
                 timelineContainer.innerHTML = `<p class="text-gray-400 p-4">Nessun itinerario generato.</p>`;
                 return;
             }
+            
+            // AGGIORNA LA MAPPA CON I NUOVI DATI
+            console.log('🗺️ Aggiornamento mappa con itinerario...');
+            updateMapWithItinerary(data.itinerary);
+            
             timelineContainer.innerHTML = '';
             data.itinerary.forEach(item => {
                 if (item.type === 'tip') {
