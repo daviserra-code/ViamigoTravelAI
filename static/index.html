@@ -277,7 +277,7 @@
                         // Estrai e centra la mappa sulla nuova città
                         const cityFromInput = end.toLowerCase();
                         console.log(`Mappa centrata su: ${cityFromInput}`);
-                        currentCityName = cityFromInput;
+                        window.currentCityName = cityFromInput;
                         
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
@@ -340,6 +340,11 @@
                 addMapControls();
 
                 mapInitialized = true;
+            } else {
+                // Se la mappa esiste già, aggiorna solo il centro per la nuova città
+                const cityCoords = detectCityFromItinerary(currentItineraryData);
+                map.setView([cityCoords.lat, cityCoords.lng], 14);
+                console.log(`Mappa ricentrata su: lat ${cityCoords.lat}, lng ${cityCoords.lng}`);
             }
 
             // Aggiorna la mappa con i dati dell'itinerario
@@ -362,13 +367,24 @@
                 'bologna': { lat: 44.4949, lng: 11.3426 }
             };
 
+            // Usa la variabile globale currentCityName se è stata impostata
+            if (window.currentCityName) {
+                for (const [city, coords] of Object.entries(cityCoordinates)) {
+                    if (window.currentCityName.includes(city)) {
+                        console.log(`Mappa centrata su: ${city} (da currentCityName)`);
+                        return coords;
+                    }
+                }
+            }
+
             // Prova a rilevare la città dalle location di partenza/arrivo
-            const startLocation = document.getElementById('start-location').value.toLowerCase();
-            const endLocation = document.getElementById('end-location').value.toLowerCase();
+            const startLocation = document.getElementById('start-location')?.value?.toLowerCase() || '';
+            const endLocation = document.getElementById('end-location')?.value?.toLowerCase() || '';
             
             for (const [city, coords] of Object.entries(cityCoordinates)) {
                 if (startLocation.includes(city) || endLocation.includes(city)) {
                     console.log(`Mappa centrata su: ${city}`);
+                    window.currentCityName = city; // Memorizza per future chiamate
                     return coords;
                 }
             }
@@ -379,6 +395,7 @@
                 for (const [city, coords] of Object.entries(cityCoordinates)) {
                     if (itineraryText.includes(city)) {
                         console.log(`Mappa centrata su: ${city} (da itinerario)`);
+                        window.currentCityName = city; // Memorizza per future chiamate
                         return coords;
                     }
                 }
@@ -386,6 +403,7 @@
 
             // Default: Genova
             console.log('Mappa centrata su: Genova (default)');
+            window.currentCityName = 'genova';
             return cityCoordinates.genova;
         }
 
