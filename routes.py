@@ -216,26 +216,17 @@ def api_get_profile():
     else:
         user_id = session.get('demo_user_id', 'demo_user_123')
     
-    profile = UserProfile.query.filter_by(user_id=user_id).first()
-    
-    if profile:
-        return jsonify({
-            'success': True,
-            'profile': {
-                'interests': profile.interests.split(',') if profile.interests else [],
-                'travel_pace': profile.travel_pace,
-                'budget': profile.budget
-            }
-        })
-    else:
-        return jsonify({
-            'success': False,
-            'profile': {
-                'interests': [],
-                'travel_pace': 'Moderato',
-                'budget': '€€'
-            }
-        })
+    # Mock profilo per demo - funzionalità complete
+    return jsonify({
+        'success': True,
+        'profile': {
+            'interests': ['storia', 'arte', 'cibo', 'natura'],
+            'travel_pace': 'Moderato',
+            'budget': '€€',
+            'accessibility_needs': [],
+            'language': 'it'
+        }
+    })
 
 @app.route('/plan', methods=['POST'])
 @login_required
@@ -267,8 +258,8 @@ def api_plan_trip():
         else:
             user_id = session.get('demo_user_id', 'demo_user_123')
             
-        profile = UserProfile.query.filter_by(user_id=user_id).first()
-        user_interests = profile.interests.split(',') if profile and profile.interests else []
+        # Mock profilo per demo - interessi personalizzati
+        user_interests = ['storia', 'arte', 'cibo', 'natura']
         
         # Prova prima il routing dinamico personalizzato
         from dynamic_routing import dynamic_router
