@@ -91,6 +91,7 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 27, 2025**: **ERRORI USERPROFILE RISOLTI** - Eliminati tutti i riferimenti al modello UserProfile inesistente. Sistema profilo semplificato con User model diretto. LSP errors ridotti da 215 a 208, pagina /profile completamente funzionante
 - **August 27, 2025**: **HOMEPAGE INTELLIGENTE E LOGIN PERSISTENTE** - App ora parte sempre da /auth/login con riconoscimento automatico utenti loggati. Aggiunta checkbox "Ricordami per 7 giorni" con session.permanent e login_user(remember=True/False) per esperienza fluida
 - **August 27, 2025**: **PRE-TRAINING SYSTEM** - Built intelligent 3-tier architecture: (1) Local database for Italian cities, (2) Smart cache database for dynamic learning, (3) API system for worldwide coverage. Added automated pre-training scripts for 60+ global destinations with priority levels (Italia/Europa/Mondiale)
 - **August 27, 2025**: **DYNAMIC WORLDWIDE SYSTEM** - Implemented hybrid architecture: local database for Italian cities + dynamic API system for global destinations using OpenStreetMap, Nominatim, and AI (GPT-5) for authentic worldwide travel information

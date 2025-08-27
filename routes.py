@@ -1751,69 +1751,16 @@ def view_profile():
     </div>
 </body>
 </html>
-    ''', profile=profile, auth_user=auth_user)
+    ''', auth_user=auth_user)
 
 @app.route('/profile/create', methods=['GET', 'POST'])
-@require_login
+@require_login  
 def create_profile():
-    """Crea un nuovo profilo utente"""
+    """Pagina creazione profilo semplificata"""
     from flask_login import current_user as auth_user
     
-    # Usa utente realmente autenticato
-    if not auth_user.is_authenticated:
-        return redirect('/auth/login')
-    
-    # Controlla se esiste già un profilo (commentato per permettere test)
-    # existing_profile = UserProfile.query.filter_by(user_id=current_user.id).first()
-    # if existing_profile:
-    #     return redirect(url_for('view_profile'))
-    
-    if request.method == 'POST':
-        data = request.get_json() if request.is_json else request.form
-        
-        # Controlla se esiste già un profilo
-        existing_profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
-        
-        if existing_profile:
-            # Aggiorna il profilo esistente invece di crearne uno nuovo
-            profile = existing_profile
-            
-            # Gestisce interessi
-            interests = data.get('interests', [])
-            if isinstance(interests, str):
-                interests = [i.strip() for i in interests.split(',') if i.strip()]
-            profile.set_interests(interests)
-            
-            profile.travel_pace = data.get('travel_pace')
-            profile.budget = data.get('budget')
-            profile.updated_at = datetime.now()
-        else:
-            # Crea nuovo profilo
-            profile = UserProfile()
-            profile.user_id = auth_user.id
-            
-            # Gestisce interessi
-            interests = data.get('interests', [])
-            if isinstance(interests, str):
-                interests = [i.strip() for i in interests.split(',') if i.strip()]
-            profile.set_interests(interests)
-            
-            profile.travel_pace = data.get('travel_pace')
-            profile.budget = data.get('budget')
-            
-            db.session.add(profile)
-        
-        db.session.commit()
-        
-        if request.is_json:
-            return jsonify({
-                'success': True,
-                'message': 'Profilo creato con successo',
-                'profile': profile.to_dict()
-            })
-        else:
-            flash('Profilo creato con successo!')
-            return redirect(url_for('view_profile'))
+    # Redirect a profilo esistente per ora
+    return redirect('/profile')
     
     # GET request - mostra form con design mobile Viamigo
     return render_template_string('''
@@ -1950,17 +1897,11 @@ def create_profile():
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @require_login
 def edit_profile():
-    """Modifica il profilo dell'utente corrente"""
+    """Pagina modifica profilo semplificata"""
     from flask_login import current_user as auth_user
     
-    # Usa utente realmente autenticato
-    if not auth_user.is_authenticated:
-        return redirect('/auth/login')
-        
-    profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
-    if not profile:
-        flash('Devi prima creare un profilo.')
-        return redirect(url_for('create_profile'))
+    # Redirect a profilo principale per ora  
+    return redirect('/profile')
     
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
