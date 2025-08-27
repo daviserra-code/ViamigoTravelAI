@@ -60,7 +60,48 @@ class DynamicRouter:
             'reggio emilia': [44.6989, 10.6297],
             'ferrara': [44.8381, 11.6176],
             'ravenna': [44.4184, 12.2035],
-            'rimini': [44.0678, 12.5695]
+            'rimini': [44.0678, 12.5695],
+            # Friuli-Venezia Giulia  
+            'trieste': [45.6495, 13.7768],
+            'udine': [46.0748, 13.2335],
+            # Marche
+            'ancona': [43.6158, 13.5189],
+            'pesaro': [43.9102, 12.9130],
+            # Umbria
+            'perugia': [43.1122, 12.3888],
+            'assisi': [43.0700, 12.6167],
+            # Lazio
+            'viterbo': [42.4173, 12.1067],
+            'latina': [41.4669, 12.9036],
+            # Abruzzo
+            'l\'aquila': [42.3498, 13.3995],
+            'pescara': [42.4584, 14.2081],
+            # Campania
+            'salerno': [40.6781, 14.7594],
+            'caserta': [41.0732, 14.3333],
+            'amalfi': [40.6340, 14.6026],
+            'sorrento': [40.6264, 14.3758],
+            # Puglia
+            'bari': [41.1171, 16.8719],
+            'lecce': [40.3515, 18.1750],
+            'brindisi': [40.6384, 17.9455],
+            'taranto': [40.4668, 17.2725],
+            # Calabria
+            'reggio calabria': [38.1151, 15.6611],
+            'cosenza': [39.2908, 16.2571],
+            'catanzaro': [38.9097, 16.5947],
+            # Sicilia
+            'palermo': [38.1157, 13.3615],
+            'catania': [37.5079, 15.0830],
+            'messina': [38.1937, 15.5540],
+            'siracusa': [37.0594, 15.2934],
+            'agrigento': [37.3257, 13.5768],
+            'trapani': [38.0176, 12.5365],
+            # Sardegna
+            'cagliari': [39.2238, 9.1217],
+            'sassari': [40.7259, 8.5644],
+            'nuoro': [40.3210, 9.3301],
+            'olbia': [40.9233, 9.5027]
         }
     
     def generate_personalized_itinerary(self, start: str, end: str, city: str = "", 
@@ -282,7 +323,7 @@ class DynamicRouter:
         # Sistema waypoint dinamico e universale
         city_lower = city.lower()
         
-        # Waypoints specifici per città principali
+        # Waypoints specifici per città principali con dettagli autentici
         specific_waypoints = {
             'roma': ['Centro Storico', 'Piazza di Spagna', 'Campo de\' Fiori'],
             'milano': ['Duomo', 'Galleria Vittorio Emanuele', 'Brera'],
@@ -291,7 +332,13 @@ class DynamicRouter:
             'torino': ['Piazza Castello', 'Via Roma', 'Parco del Valentino'],
             'genova': ['Via del Campo', 'Piazza De Ferrari', 'Porto Antico'],
             'napoli': ['Spaccanapoli', 'Piazza del Plebiscito', 'Lungomare'],
-            'bologna': ['Piazza Maggiore', 'Le Due Torri', 'Università']
+            'bologna': ['Piazza Maggiore', 'Le Due Torri', 'Università'],
+            'trieste': ['Piazza Unità d\'Italia', 'Castello di Miramare', 'Canal Grande'],
+            'verona': ['Arena di Verona', 'Casa di Giulietta', 'Piazza delle Erbe'],
+            'padova': ['Cappella Scrovegni', 'Basilica del Santo', 'Prato della Valle'],
+            'amalfi': ['Duomo di Amalfi', 'Sentiero degli Dei', 'Marina Grande'],
+            'pisa': ['Torre di Pisa', 'Piazza dei Miracoli', 'Lungarni'],
+            'lecce': ['Basilica Santa Croce', 'Piazza del Duomo', 'Anfiteatro Romano']
         }
         
         # Waypoints generici per città costiere/montane/interne
