@@ -328,35 +328,54 @@ def api_plan_trip():
         start = data.get('start', '')
         end = data.get('end', '')
         
-        # Mock response formato corretto per frontend JavaScript
+        # Itinerario dettagliato Roma: Termini → Piazza Navona
         mock_response = {
             'success': True,
             'itinerary': [
                 {
                     'time': '09:00',
-                    'title': start,
-                    'description': 'Punto di partenza del tuo viaggio',
+                    'title': 'Stazione Roma Termini',
+                    'description': 'Partenza dalla stazione principale di Roma. Prendi la Metro A (linea rossa) direzione Battistini.',
                     'coordinates': [41.9028, 12.4964],
-                    'context': f'dettagli_{start.replace(" ", "_")}'
+                    'context': 'stazione_termini'
                 },
                 {
-                    'time': '10:30', 
-                    'title': 'Tappa intermedia',
-                    'description': 'Scoperta locale interessante lungo il percorso',
-                    'coordinates': [41.9020, 12.4950],
-                    'context': 'tappa_intermedia'
+                    'time': '09:15',
+                    'title': 'Metro Spagna',
+                    'description': 'Scendi alla fermata Spagna e sali la famosa Scalinata di Trinità dei Monti.',
+                    'coordinates': [41.9063, 12.4821],
+                    'context': 'piazza_spagna'
                 },
                 {
-                    'time': '12:00',
-                    'title': end,
-                    'description': 'Destinazione finale del tuo itinerario',
-                    'coordinates': [41.8986, 12.4768],
-                    'context': f'dettagli_{end.replace(" ", "_")}'
+                    'time': '10:00',
+                    'title': 'Fontana di Trevi',
+                    'description': 'Visita la fontana più famosa di Roma. Lancia una moneta per tornare nella Città Eterna!',
+                    'coordinates': [41.9009, 12.4833],
+                    'context': 'fontana_trevi'
+                },
+                {
+                    'time': '10:45',
+                    'title': 'Pantheon',
+                    'description': 'Ammira questo capolavoro dell\'architettura romana, perfettamente conservato da 2000 anni.',
+                    'coordinates': [41.8986, 12.4769],
+                    'context': 'pantheon'
+                },
+                {
+                    'time': '11:30',
+                    'title': 'Piazza Navona',
+                    'description': 'Destinazione finale: la piazza barocca più bella di Roma con le sue tre magnifiche fontane.',
+                    'coordinates': [41.8986, 12.4730],
+                    'context': 'piazza_navona'
                 },
                 {
                     'type': 'tip',
-                    'title': '💡 Consiglio viaggio',
-                    'description': 'Porta sempre con te una bottiglia d\'acqua e scarpe comode per camminare.'
+                    'title': '🚇 Info Trasporti',
+                    'description': 'Biglietto Metro: €1.50 (100 min). In alternativa tutto a piedi: 3.2 km, 40 minuti di camminata.'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Consiglio Locale',
+                    'description': 'Evita i ristoranti intorno al Pantheon: sono turistici. Cerca una trattoria nelle vie laterali.'
                 }
             ]
         }
@@ -367,6 +386,85 @@ def api_plan_trip():
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+@app.route('/get_details', methods=['POST'])
+@require_login
+def api_get_details():
+    """API endpoint per dettagli luoghi - mockup per demo"""
+    try:
+        data = request.get_json()
+        context = data.get('context', '')
+        
+        # Database mockup dettagli luoghi Roma
+        place_details = {
+            'stazione_termini': {
+                'title': 'Stazione Roma Termini',
+                'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana.',
+                'details': [
+                    {'label': 'Tipo', 'value': 'Stazione ferroviaria'},
+                    {'label': 'Metro', 'value': 'Linea A e B'},
+                    {'label': 'Servizi', 'value': 'Biglietteria, bar, negozi'}
+                ],
+                'actionLink': {
+                    'text': 'Orari Trenitalia',
+                    'url': 'https://www.trenitalia.com'
+                }
+            },
+            'piazza_spagna': {
+                'title': 'Piazza di Spagna',
+                'summary': 'Una delle piazze più famose di Roma, dominata dalla Scalinata di Trinità dei Monti con 135 gradini.',
+                'details': [
+                    {'label': 'Gradini', 'value': '135 scalini'},
+                    {'label': 'Epoca', 'value': 'XVIII secolo'},
+                    {'label': 'Attrazioni', 'value': 'Fontana della Barcaccia, Via Condotti'}
+                ]
+            },
+            'fontana_trevi': {
+                'title': 'Fontana di Trevi',
+                'summary': 'La fontana barocca più famosa al mondo. Tradizione vuole che lanciando una moneta si ritorni a Roma.',
+                'details': [
+                    {'label': 'Altezza', 'value': '26 metri'},
+                    {'label': 'Larghezza', 'value': '49 metri'},
+                    {'label': 'Architetto', 'value': 'Nicola Salvi'},
+                    {'label': 'Completata', 'value': '1762'}
+                ]
+            },
+            'pantheon': {
+                'title': 'Pantheon',
+                'summary': 'Tempio romano del II secolo, straordinariamente conservato. La sua cupola è stata la più grande del mondo per 1300 anni.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '118-128 d.C.'},
+                    {'label': 'Diametro cupola', 'value': '43.3 metri'},
+                    {'label': 'Ingresso', 'value': 'Gratuito'},
+                    {'label': 'Orari', 'value': '9:00-19:00'}
+                ]
+            },
+            'piazza_navona': {
+                'title': 'Piazza Navona',
+                'summary': 'La piazza barocca più spettacolare di Roma, costruita sul sito dell\'antico Stadio di Domiziano.',
+                'details': [
+                    {'label': 'Fontane', 'value': '3 (Fontana dei Quattro Fiumi, del Moro, del Nettuno)'},
+                    {'label': 'Chiesa', 'value': 'Sant\'Agnese in Agone'},
+                    {'label': 'Architetto', 'value': 'Gian Lorenzo Bernini'},
+                    {'label': 'Epoca', 'value': 'XVII secolo'}
+                ]
+            }
+        }
+        
+        details = place_details.get(context, {
+            'title': 'Luogo di interesse',
+            'summary': 'Informazioni non disponibili per questo luogo.',
+            'details': []
+        })
+        
+        return jsonify(details)
+        
+    except Exception as e:
+        return jsonify({
+            'title': 'Errore',
+            'summary': f'Errore nel caricamento: {str(e)}',
+            'details': []
         }), 500
 
 # === CRUD ROUTES PER USER PROFILE ===
