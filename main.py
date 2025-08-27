@@ -559,14 +559,14 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
-        # Venezia - PRIORITA' MASSIMA
-        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Piazza_di_San_Marco_01.jpg/800px-Piazza_di_San_Marco_01.jpg',
-        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Basilica_di_San_Marco_facciata.jpg/800px-Basilica_di_San_Marco_facciata.jpg',
-        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Ponte_di_Rialto_Canal_Grande.jpg/800px-Ponte_di_Rialto_Canal_Grande.jpg',
-        'palazzo ducale venezia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Palazzo_Ducale_Venezia_facade.jpg/800px-Palazzo_Ducale_Venezia_facade.jpg',
-        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Canal_Grande_view.jpg/800px-Canal_Grande_view.jpg',
-        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Caffe_Florian_exterior.jpg/800px-Caffe_Florian_exterior.jpg',
-        'mercato di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Mercato_di_Rialto_fish.jpg/800px-Mercato_di_Rialto_fish.jpg',
+        # Venezia - PRIORITA' MASSIMA (URL Unsplash verificate)
+        'piazza san marco': 'https://images.unsplash.com/photo-1518309478088-58d74e7947e8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'basilica di san marco': 'https://images.unsplash.com/photo-1616591991757-14db9b57dc52?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'ponte di rialto': 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'palazzo ducale venezia': 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'canal grande': 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'caffè florian': 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        'mercato di rialto': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
         'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
         
         # Genova
@@ -732,7 +732,9 @@ async def create_plan(request: PlanRequest):
 @app.post("/get_details")
 async def get_details(request: DetailRequest):
     print(f"Richiesta dettagli per: {request.context}")
-    return await get_contextual_details(request.context)
+    result = await get_contextual_details(request.context)
+    print(f"📤 Risposta dettagli: {result}")
+    return result
 
 @app.get("/get_profile")
 async def get_profile():
