@@ -550,17 +550,17 @@
                     // Aggiungi coordinate al percorso
                     routeCoordinates.push([lat, lng]);
 
-                    // Determina il tipo di marker - FIX: logica semplificata
+                    // Determina il tipo di marker con numerazione sequenziale corretta
                     const isTransport = item.type?.toLowerCase() === 'trasporto' || item.type?.toLowerCase() === 'transport';
                     const markerColor = isTransport ? 'orange' : 'blue';
                     
-                    // FIX: Numerazione continua per tutti i punti non-trasporto
+                    // CORRETTO: Numerazione sequenziale per tutti i waypoint (non solo non-trasporto)
                     let markerIcon;
                     if (isTransport) {
                         markerIcon = '🚶‍♂️';
                     } else {
                         markerIcon = markerIndex.toString();
-                        markerIndex++; // Incrementa qui per il prossimo marker non-trasporto
+                        markerIndex++; // Incrementa per OGNI waypoint principale
                     }
 
                     // Marker personalizzato con icona numerata

@@ -563,7 +563,7 @@ class DynamicRouter:
                 }
             ]
         
-        # Waypoints per Genova
+        # Waypoints per Genova - OTTIMIZZATO per vicinanza geografica
         elif 'genova' in city_lower:
             return [
                 {
@@ -575,15 +575,7 @@ class DynamicRouter:
                     'transport': 'start'
                 },
                 {
-                    'time': '09:45',
-                    'title': 'Via del Campo',
-                    'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
-                    'coordinates': [44.4088, 8.9294],
-                    'context': 'via_del_campo',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '11:00',
+                    'time': '09:30',
                     'title': 'Cattedrale di San Lorenzo',
                     'description': 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941',
                     'coordinates': [44.4070, 8.9307],
@@ -591,7 +583,15 @@ class DynamicRouter:
                     'transport': 'walking'
                 },
                 {
-                    'time': '12:30',
+                    'time': '10:15',
+                    'title': 'Via del Campo',
+                    'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
+                    'coordinates': [44.4088, 8.9294],
+                    'context': 'via_del_campo',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '11:30',
                     'title': 'Porto Antico',
                     'description': 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera',
                     'coordinates': [44.4108, 8.9279],
@@ -599,7 +599,7 @@ class DynamicRouter:
                     'transport': 'walking'
                 },
                 {
-                    'time': '14:00',
+                    'time': '12:30',
                     'title': 'Acquario di Genova',
                     'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari',
                     'coordinates': [44.4108, 8.9279],
@@ -609,7 +609,7 @@ class DynamicRouter:
                 {
                     'type': 'tip',
                     'title': '💡 Genova',
-                    'description': 'Dai caruggi medievali al porto moderno - un viaggio nella storia marittima'
+                    'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
                 }
             ]
         

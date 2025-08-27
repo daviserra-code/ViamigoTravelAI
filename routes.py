@@ -976,7 +976,51 @@ def get_local_place_details(context):
                     {'label': 'Fabrizio De André', 'value': 'Canzone "Via del Campo" (1967)'},
                     {'label': 'Caratteristiche', 'value': 'Negozi storici, farinata, botteghe artigiane'},
                     {'label': 'Mercato', 'value': 'Mercato del Pesce e prodotti locali'}
-                ]
+                ],
+                'opening_hours': 'Sempre accessibile (negozi: 10:00-19:00)',
+                'cost': 'Gratuito'
+            },
+            'cattedrale_san_lorenzo': {
+                'title': 'Cattedrale di San Lorenzo, Genova',
+                'summary': 'Il Duomo di Genova, famoso per la bomba navale britannica inesplosa del 1941. Capolavoro romanico-gotico con tesoro ecclesiastico.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'IX-XIV secolo (romanico-gotico)'},
+                    {'label': 'Facciata', 'value': 'Marmo bianco e nero a strisce orizzontali'},
+                    {'label': 'Bomba 1941', 'value': 'Proiettile navale britannico inesploso (visibile)'},
+                    {'label': 'Tesoro', 'value': 'Santo Graal leggendario, reliquie preziose'},
+                    {'label': 'Portale', 'value': 'Leoni stilofori medievali'},
+                    {'label': 'Curiosità', 'value': 'Miracolo della bomba che non esplose'}
+                ],
+                'opening_hours': 'Lun-Sab 9:00-18:00, Dom 15:00-18:00',
+                'cost': 'Ingresso gratuito, Tesoro €6'
+            },
+            'porto_antico': {
+                'title': 'Porto Antico, Genova',
+                'summary': 'Area portuale storica rinnovata da Renzo Piano per Expo 1992. Centro culturale e turistico con Acquario, Biosfera e Bigo.',
+                'details': [
+                    {'label': 'Progetto Renzo Piano', 'value': '1992 (500° scoperta America)'},
+                    {'label': 'Biosfera', 'value': 'Serra tropicale in vetro e acciaio'},
+                    {'label': 'Bigo', 'value': 'Ascensore panoramico 40m altezza'},
+                    {'label': 'Galata Museo del Mare', 'value': 'Più grande del Mediterraneo'},
+                    {'label': 'Eventi', 'value': 'Concerti, festival, mercatini'},
+                    {'label': 'Ristoranti', 'value': 'Cucina ligure e vista mare'}
+                ],
+                'opening_hours': 'Sempre accessibile (attrazioni 10:00-19:00)',
+                'cost': 'Passeggiata gratuita, attrazioni a pagamento'
+            },
+            'acquario_genova': {
+                'title': 'Acquario di Genova',
+                'summary': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini. Gioiello del Porto Antico progettato da Renzo Piano.',
+                'details': [
+                    {'label': 'Inaugurazione', 'value': '1992 (Expo Colombo)'},
+                    {'label': 'Dimensioni', 'value': '10.000 m², 70 vasche, 6M litri'},
+                    {'label': 'Specie', 'value': '12.000 esemplari, 600 specie'},
+                    {'label': 'Highlights', 'value': 'Delfini, squali, lamantini, pinguini'},
+                    {'label': 'Percorso', 'value': '2.5 ore dalla Liguria ai tropici'},
+                    {'label': 'Novità 2024', 'value': 'Padiglione Cetacei, mondo coralli'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-18:00 (inverno)',
+                'cost': '€29 adulti, €19 bambini 4-12 anni'
             },
             'cattedrale_genova': {
                 'title': 'Cattedrale di San Lorenzo, Genova',
