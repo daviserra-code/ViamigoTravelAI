@@ -603,7 +603,7 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database specifico per Venezia con immagini verificate
     venezia_images = {
-        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Piazza_San_Marco_dall%27alto.jpg/800px-Piazza_San_Marco_dall%27alto.jpg',
+        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Piazza_di_San_Marco_01.jpg/800px-Piazza_di_San_Marco_01.jpg',
         'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Basilica_di_San_Marco_facciata.jpg/800px-Basilica_di_San_Marco_facciata.jpg',
         'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Ponte_di_Rialto_Canal_Grande.jpg/800px-Ponte_di_Rialto_Canal_Grande.jpg',
         'palazzo ducale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Palazzo_Ducale_Venezia_facade.jpg/800px-Palazzo_Ducale_Venezia_facade.jpg',
@@ -616,8 +616,13 @@ async def simulate_real_image_search(location: str, city: str):
     # Combina i database
     known_images.update(venezia_images)
     
+    # Debug: mostra cosa stiamo cercando
+    print(f"🔍 Cercando immagine per: '{location_lower}' in città: {city}")
+    
     # Cerca match esatti o parziali con algoritmo migliorato
     for key, url in known_images.items():
+        print(f"  📝 Controllando chiave: '{key}' vs '{location_lower}'")
+        
         # Prima prova match esatto
         if key == location_lower:
             print(f"Trovata immagine reale (match esatto) per {location}")
