@@ -38,7 +38,13 @@ def dashboard():
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 bg-violet-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                            {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+                            {% if current_user.first_name and current_user.last_name %}
+                                {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
+                            {% elif current_user.email %}
+                                {{ current_user.email[0].upper() }}
+                            {% else %}
+                                U
+                            {% endif %}
                         </div>
                         <button onclick="logout()" class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +60,9 @@ def dashboard():
                 <div class="space-y-4">
                     <!-- Welcome Card -->
                     <div class="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl p-4 text-white">
-                        <h2 class="text-lg font-semibold mb-1">Benvenuto, {{ current_user.first_name }}!</h2>
+                        <h2 class="text-lg font-semibold mb-1">
+                            Benvenuto{% if current_user.first_name %}, {{ current_user.first_name }}{% elif current_user.email %}, {{ current_user.email.split('@')[0] }}{% endif %}!
+                        </h2>
                         <p class="text-sm opacity-90">Pronto per il tuo prossimo viaggio?</p>
                     </div>
                     

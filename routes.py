@@ -28,7 +28,7 @@ class MockUser:
     def __init__(self):
         self.id = "demo_user_123"
         self.email = "marco@email.com"
-        self.first_name = "Marco"
+        self.first_name = None
         self.last_name = "Rossi"
         self.is_authenticated = True
 
@@ -134,7 +134,7 @@ def old_dashboard():
                 <div class="space-y-4">
                     <!-- Welcome Card -->
                     <div class="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl p-4 text-white">
-                        <h2 class="text-lg font-semibold mb-1">Benvenuto, Marco!</h2>
+                        <h2 class="text-lg font-semibold mb-1">Benvenuto!</h2>
                         <p class="text-sm opacity-90">Pronto per il tuo prossimo viaggio?</p>
                     </div>
                     

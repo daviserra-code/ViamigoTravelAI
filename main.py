@@ -30,7 +30,7 @@ app = FastAPI()
 # --- DATABASE SIMULATO ---
 user_profile_db = {
     "user_1": {
-        "name": "Maria Rossi",
+        "name": "Viaggiatore",
         "interests": ["Cibo", "Relax"],
         "pace": "Moderato",
         "budget": "€€"
