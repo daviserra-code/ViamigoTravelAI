@@ -90,19 +90,11 @@ def register():
                                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Password *</label>
-                        <input type="password" name="password" required 
-                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
-                        <div class="text-xs text-gray-400 mt-1">
-                            Minimo 8 caratteri, con maiuscola, minuscola, numero e carattere speciale
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Conferma Password *</label>
-                        <input type="password" name="confirm_password" required 
-                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                    <!-- Password non richiesta per registrazione tester -->
+                    <div class="p-3 bg-green-900/20 rounded-lg border border-green-700">
+                        <p class="text-green-400 text-sm font-medium">✨ Registrazione Semplificata per Tester</p>
+                        <p class="text-green-300 text-xs">Solo nome, cognome ed email richiesti!</p>
+                        <p class="text-green-300 text-xs">Nessuna password necessaria.</p>
                     </div>
                     
                     <div>
@@ -136,9 +128,9 @@ def register():
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             
-            // Validazione client-side
-            if (data.password !== data.confirm_password) {
-                showError('Le password non corrispondono');
+            // Validazione client-side semplificata
+            if (!data.first_name || !data.last_name || !data.email) {
+                showError('Nome, cognome ed email sono obbligatori');
                 return;
             }
             
@@ -205,23 +197,15 @@ def register():
         if not db_session:
             return jsonify({'error': 'Database non disponibile'}), 500
         
-        # Validazioni
-        required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password']
+        # Validazioni semplificate per tester
+        required_fields = ['first_name', 'last_name', 'email']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'Campo {field} obbligatorio'}), 400
         
-        if data['password'] != data['confirm_password']:
-            return jsonify({'error': 'Le password non corrispondono'}), 400
-        
         # Validazione email
         if not validate_email(data['email']):
             return jsonify({'error': 'Formato email non valido'}), 400
-        
-        # Validazione password
-        is_valid, message = validate_password(data['password'])
-        if not is_valid:
-            return jsonify({'error': message}), 400
         
         # Verifica email univoca
         existing_user = User.query.filter_by(email=data['email']).first()
@@ -229,22 +213,19 @@ def register():
             return jsonify({'error': 'Email già registrata'}), 400
         
         try:
-            # Crea nuovo utente
-            new_user = User(
-                id=str(uuid.uuid4()),
-                email=data['email'].lower().strip(),
-                first_name=data['first_name'].strip(),
-                last_name=data['last_name'].strip(),
-                address=data.get('address', '').strip() or None
-            )
-            new_user.set_password(data['password'])
+            # Crea nuovo utente senza password (sistema semplificato)
+            new_user = User()
+            new_user.id = str(uuid.uuid4())
+            new_user.email = data['email'].lower().strip()
+            new_user.first_name = data['first_name'].strip()
+            new_user.last_name = data['last_name'].strip()
             
-            db_session.add(new_user)
-            db_session.commit()
+            db.session.add(new_user)
+            db.session.commit()
             
             return jsonify({
                 'success': True,
-                'message': 'Account creato con successo',
+                'message': 'Account creato con successo! Ora puoi accedere con la tua email.',
                 'user_id': new_user.id
             }), 201
             
@@ -318,14 +299,15 @@ def login():
                         
                         <!-- Credenziali Disponibili -->
                         <div class="p-3 bg-gray-800 rounded-lg border border-gray-600 mb-4">
-                            <p class="text-gray-300 text-sm mb-2">Credenziali Disponibili:</p>
-                            <p class="text-violet-400 text-xs font-mono">demo@viamigo.com / Demo12345!</p>
-                            <p class="text-blue-400 text-xs font-mono">barbara.staltari@gmail.com / viamigo2025</p>
+                            <p class="text-gray-300 text-sm mb-2">💡 <strong>Accesso Semplificato:</strong></p>
+                            <p class="text-green-300 text-xs">✅ Utenti registrati: inserisci solo la tua email</p>
+                            <p class="text-violet-400 text-xs font-mono">🔐 demo@viamigo.com / Demo12345!</p>
+                            <p class="text-blue-400 text-xs font-mono">👑 barbara.staltari@gmail.com / viamigo2025</p>
                         </div>
                         
                         <button type="submit" 
                                 class="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-violet-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-violet-500 font-medium">
-                            Accedi con Demo
+                            Accedi
                         </button>
                         
                         <div class="text-center mt-6">
@@ -454,7 +436,26 @@ def login():
                     }
                 }), 200
             else:
-                return jsonify({'error': 'Credenziali non riconosciute. Usa: demo@viamigo.com / Demo12345! oppure barbara.staltari@gmail.com / viamigo2025'}), 401
+                # Login per utenti registrati - cerca utente per email
+                user = User.query.filter_by(email=data['email'].lower().strip()).first()
+                if user:
+                    # Utente trovato - login automatico
+                    session.permanent = True
+                    login_user(user, remember=True)
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Benvenuto/a {user.first_name}! Login effettuato con successo',
+                        'redirect': '/dashboard',
+                        'user': {
+                            'id': user.id,
+                            'email': user.email,
+                            'first_name': user.first_name,
+                            'last_name': user.last_name
+                        }
+                    }), 200
+                else:
+                    return jsonify({'error': 'Email non trovata. Registrati prima di accedere o usa le credenziali demo/Barbara'}), 401
                 
         except Exception as e:
             return jsonify({'error': f'Errore durante il login: {str(e)}'}), 500
