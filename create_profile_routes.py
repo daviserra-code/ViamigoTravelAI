@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template_string
 from flask_login import login_required, current_user
-from models import UserProfile
+from models import User
 from auth_routes import get_db_session
 import uuid
 

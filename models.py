@@ -1,184 +1,212 @@
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_app import db
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_login import UserMixin
-from sqlalchemy import UniqueConstraint
-import uuid
+from sqlalchemy import UniqueConstraint, JSON, Text
 
-# Import db after app initialization to avoid circular imports
-def get_db():
-    from flask_app import db
-    return db
-
-try:
-    db = get_db()
-except:
-    db = None  # Fallback if no database configured
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-class User(UserMixin, db.Model if db else object):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    
-    if db:
-        id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
-        email = db.Column(db.String, unique=True, nullable=False)
-        first_name = db.Column(db.String, nullable=False)
-        last_name = db.Column(db.String, nullable=False)
-        password_hash = db.Column(db.String, nullable=False)
-        address = db.Column(db.String, nullable=True)  # Optional
-        profile_image_url = db.Column(db.String, nullable=True)  # Optional
-        
-        # Replit OAuth fields (manteniamo compatibilità)
-        replit_user_id = db.Column(db.String, nullable=True)  # Per OAuth Replit
-        
-        created_at = db.Column(db.DateTime, default=datetime.now)
-        updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    id = db.Column(db.String, primary_key=True)
+    email = db.Column(db.String, unique=True, nullable=True)
+    first_name = db.Column(db.String, nullable=True)
+    last_name = db.Column(db.String, nullable=True)
+    profile_image_url = db.Column(db.String, nullable=True)
 
-        # Relazione con UserProfile
-        profile = db.relationship('UserProfile', backref='user', uselist=False, cascade='all, delete-orphan')
-    
-    def set_password(self, password):
-        """Hash e salva la password"""
-        if db:
-            self.password_hash = generate_password_hash(password)
-    
-    def check_password(self, password):
-        """Verifica la password"""
-        if db and hasattr(self, 'password_hash'):
-            return check_password_hash(self.password_hash, password)
-        return False
-    
-    @property
-    def full_name(self):
-        """Nome completo per il display"""
-        first = getattr(self, 'first_name', '') or ''
-        last = getattr(self, 'last_name', '') or ''
-        return f"{first} {last}".strip()
-    
-    def has_complete_profile(self):
-        """Controlla se l'utente ha un profilo completo per la prima configurazione"""
-        # Un utente ha un profilo completo se ha almeno nome, cognome ed email
-        # Per ora consideriamo completo un profilo con questi campi base
-        # In futuro si possono aggiungere altri requisiti
-        return bool(getattr(self, 'first_name', None) and 
-                   getattr(self, 'last_name', None) and 
-                   getattr(self, 'email', None))
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime,
+                           default=datetime.now,
+                           onupdate=datetime.now)
 
-    def to_dict(self):
-        return {
-            'id': getattr(self, 'id', None),
-            'email': getattr(self, 'email', None),
-            'first_name': getattr(self, 'first_name', None),
-            'last_name': getattr(self, 'last_name', None),
-            'profile_image_url': getattr(self, 'profile_image_url', None),
-            'created_at': getattr(self, 'created_at', None).isoformat() if getattr(self, 'created_at', None) else None,
-            'updated_at': getattr(self, 'updated_at', None).isoformat() if getattr(self, 'updated_at', None) else None
-        }
+    # Relazioni con le nuove funzionalità
+    travel_journals = db.relationship('TravelJournal', backref='user', lazy=True, cascade='all, delete-orphan')
+    smart_discoveries = db.relationship('SmartDiscovery', backref='user', lazy=True, cascade='all, delete-orphan')
+    plan_b_events = db.relationship('PlanBEvent', backref='user', lazy=True, cascade='all, delete-orphan')
+
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-class OAuth(OAuthConsumerMixin, db.Model if db else object):
-    if db:
-        user_id = db.Column(db.String, db.ForeignKey(User.id))
-        browser_session_key = db.Column(db.String, nullable=False)
-        user = db.relationship(User)
+class OAuth(OAuthConsumerMixin, db.Model):
+    user_id = db.Column(db.String, db.ForeignKey(User.id))
+    browser_session_key = db.Column(db.String, nullable=False)
+    user = db.relationship(User)
 
-        __table_args__ = (UniqueConstraint(
-            'user_id',
-            'browser_session_key',
-            'provider',
-            name='uq_user_browser_session_key_provider',
-        ),)
+    __table_args__ = (UniqueConstraint(
+        'user_id',
+        'browser_session_key',
+        'provider',
+        name='uq_user_browser_session_key_provider',
+    ),)
 
-# Nuova tabella per il profilo viaggio dell'utente
-class UserProfile(db.Model if db else object):
-    __tablename__ = 'user_profiles'
-    
-    if db:
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False, unique=True)
-        
-        # Interessi - stored as comma-separated string
-        interests = db.Column(db.String, nullable=True)  # es: "Cibo,Arte,Relax"
-        
-        # Ritmo di viaggio
-        travel_pace = db.Column(db.String, nullable=True)  # "Lento", "Moderato", "Veloce"
-        
-        # Budget
-        budget = db.Column(db.String, nullable=True)  # "€", "€€", "€€€"
-        
-        # Timestamps
-        created_at = db.Column(db.DateTime, default=datetime.now)
-        updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    def to_dict(self):
-        return {
-            'id': getattr(self, 'id', None),
-            'user_id': getattr(self, 'user_id', None),
-            'interests': getattr(self, 'interests', '').split(',') if getattr(self, 'interests', '') else [],
-            'travel_pace': getattr(self, 'travel_pace', None),
-            'budget': getattr(self, 'budget', None),
-            'created_at': getattr(self, 'created_at', None).isoformat() if getattr(self, 'created_at', None) else None,
-            'updated_at': getattr(self, 'updated_at', None).isoformat() if getattr(self, 'updated_at', None) else None
-        }
-    
-    def set_interests(self, interests_list):
-        """Converte lista di interessi in stringa comma-separated"""
-        if interests_list:
-            self.interests = ','.join(interests_list)
-        else:
-            self.interests = None
-    
-    def get_interests(self):
-        """Ritorna lista di interessi dalla stringa comma-separated"""
-        if hasattr(self, 'interests') and self.interests:
-            return self.interests.split(',')
-        return []
+# === NUOVE FUNZIONALITÀ INNOVATIVE ===
 
-class PlaceCache(db.Model if db else object):
-    __tablename__ = 'place_cache'
+class TravelJournal(db.Model):
+    """Diario di Viaggio AI - Memoria intelligente delle esperienze"""
+    __tablename__ = 'travel_journals'
     
-    if db:
-        id = db.Column(db.Integer, primary_key=True)
-        cache_key = db.Column(db.String(200), unique=True, nullable=False)
-        place_name = db.Column(db.String(200), nullable=False)
-        city = db.Column(db.String(100), nullable=False)
-        country = db.Column(db.String(100), nullable=False)
-        place_data = db.Column(db.Text, nullable=False)  # JSON data
-        priority_level = db.Column(db.String(50), default='custom')  # italia, europa, mondiale, custom
-        created_at = db.Column(db.DateTime, default=datetime.now)
-        last_accessed = db.Column(db.DateTime, default=datetime.now)
-        access_count = db.Column(db.Integer, default=0)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     
-    def get_place_data(self):
-        """Converte place_data JSON string to dict"""
-        try:
-            import json
-            return json.loads(getattr(self, 'place_data', '{}'))
-        except:
-            return {}
+    # Metadati del viaggio
+    title = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    travel_date = db.Column(db.Date, nullable=False)
+    duration_hours = db.Column(db.Float, nullable=True)
+    distance_km = db.Column(db.Float, nullable=True)
     
-    def update_access(self):
-        """Aggiorna statistiche di accesso"""
-        if db:
-            self.last_accessed = datetime.now()
-            self.access_count = getattr(self, 'access_count', 0) + 1
+    # Contenuto generato dall'AI
+    ai_summary = db.Column(Text, nullable=True)  # Riassunto intelligente
+    highlights = db.Column(JSON, nullable=True)  # Momenti salienti
+    insights = db.Column(JSON, nullable=True)    # Pattern e preferenze dell'utente
+    
+    # Dati dell'itinerario
+    itinerary_data = db.Column(JSON, nullable=True)  # Itinerario completo
+    completed_steps = db.Column(db.Integer, default=0)
+    total_steps = db.Column(db.Integer, default=0)
+    
+    # Rating e feedback
+    user_rating = db.Column(db.Float, nullable=True)  # 1-5 stelle
+    user_notes = db.Column(Text, nullable=True)
+    
+    # Metadati AI
+    ai_confidence = db.Column(db.Float, nullable=True)  # Quanto l'AI è sicura dell'analisi
+    generated_suggestions = db.Column(JSON, nullable=True)  # Suggerimenti per viaggi futuri
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-# Tabella per definire admin (opzionale per future funzionalità)
-class AdminUser(db.Model if db else object):
-    __tablename__ = 'admin_users'
-    
-    if db:
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False, unique=True)
-        role = db.Column(db.String, default='admin')  # admin, super_admin
-        created_at = db.Column(db.DateTime, default=datetime.now)
-        
-        user = db.relationship('User', backref='admin_role')
 
-    def to_dict(self):
-        return {
-            'id': getattr(self, 'id', None),
-            'user_id': getattr(self, 'user_id', None),
-            'role': getattr(self, 'role', None),
-            'created_at': getattr(self, 'created_at', None).isoformat() if getattr(self, 'created_at', None) else None
-        }
+class SmartDiscovery(db.Model):
+    """Scoperte Intelligenti - Suggerimenti contestuali durante il viaggio"""
+    __tablename__ = 'smart_discoveries'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    # Contesto della scoperta
+    discovery_type = db.Column(db.String(50), nullable=False)  # 'restaurant', 'attraction', 'shop', 'event'
+    trigger_location = db.Column(db.String(200), nullable=False)  # Dove è stata rilevata
+    suggested_place = db.Column(db.String(200), nullable=False)  # Cosa è stato suggerito
+    
+    # Dati geografici
+    user_lat = db.Column(db.Float, nullable=False)
+    user_lon = db.Column(db.Float, nullable=False)
+    place_lat = db.Column(db.Float, nullable=False)
+    place_lon = db.Column(db.Float, nullable=False)
+    distance_meters = db.Column(db.Integer, nullable=False)
+    
+    # Logica AI
+    relevance_score = db.Column(db.Float, nullable=False)  # 0-1 quanto è rilevante
+    user_interests_matched = db.Column(JSON, nullable=True)  # Interessi che matchano
+    ai_reasoning = db.Column(Text, nullable=True)  # Perché l'AI l'ha suggerita
+    
+    # Risultato
+    user_action = db.Column(db.String(20), nullable=True)  # 'accepted', 'ignored', 'pending'
+    action_timestamp = db.Column(db.DateTime, nullable=True)
+    
+    # Feedback loop per migliorare l'AI
+    was_useful = db.Column(db.Boolean, nullable=True)
+    user_feedback = db.Column(Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class PlanBEvent(db.Model):
+    """Piano B Dinamico - Gestione intelligente degli imprevisti"""
+    __tablename__ = 'plan_b_events'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    # Contesto dell'imprevisto
+    original_plan = db.Column(JSON, nullable=False)  # Piano originale
+    disruption_type = db.Column(db.String(50), nullable=False)  # 'crowded', 'closed', 'weather', 'delay'
+    disruption_description = db.Column(Text, nullable=False)
+    
+    # Localizzazione
+    city = db.Column(db.String(100), nullable=False)
+    affected_location = db.Column(db.String(200), nullable=False)
+    current_user_location = db.Column(db.String(200), nullable=True)
+    
+    # Soluzioni generate dall'AI
+    ai_alternatives = db.Column(JSON, nullable=False)  # Lista di alternative
+    ai_reasoning = db.Column(Text, nullable=True)  # Logica dell'AI
+    processing_time_seconds = db.Column(db.Float, nullable=True)
+    
+    # Scelta dell'utente
+    selected_option = db.Column(db.String(50), nullable=True)  # 'skip', 'alternative', 'reschedule'
+    selected_alternative = db.Column(JSON, nullable=True)  # Dettagli dell'alternativa scelta
+    
+    # Efficacia della soluzione
+    user_satisfaction = db.Column(db.Float, nullable=True)  # 1-5 stelle
+    time_saved_minutes = db.Column(db.Integer, nullable=True)
+    alternative_rating = db.Column(db.Float, nullable=True)
+    
+    # Machine Learning feedback
+    solution_success = db.Column(db.Boolean, nullable=True)
+    lessons_learned = db.Column(JSON, nullable=True)  # Per migliorare future predizioni
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+
+
+# === TABELLE DI SUPPORTO ===
+
+class UserPreferences(db.Model):
+    """Preferenze utente elaborate dall'AI per personalizzazione"""
+    __tablename__ = 'user_preferences'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False, unique=True)
+    
+    # Preferenze di viaggio
+    favorite_categories = db.Column(JSON, nullable=True)  # ['arte', 'cibo', 'natura']
+    travel_pace = db.Column(db.String(20), nullable=True)  # 'slow', 'medium', 'fast'
+    budget_preference = db.Column(db.String(20), nullable=True)  # 'low', 'medium', 'high'
+    
+    # Pattern comportamentali rilevati dall'AI
+    typical_duration_preference = db.Column(db.Float, nullable=True)  # Ore preferite
+    crowding_tolerance = db.Column(db.Float, nullable=True)  # 0-1, tolleranza alle folle
+    spontaneity_score = db.Column(db.Float, nullable=True)  # 0-1, quanto è spontaneo
+    
+    # Feedback storico
+    avg_satisfaction_rating = db.Column(db.Float, nullable=True)
+    total_trips = db.Column(db.Integer, default=0)
+    successful_plan_b_ratio = db.Column(db.Float, nullable=True)
+    accepted_discoveries_ratio = db.Column(db.Float, nullable=True)
+    
+    # Metadati AI
+    ai_confidence_score = db.Column(db.Float, nullable=True)  # Quanto l'AI è sicura del profiling
+    last_ai_analysis = db.Column(db.DateTime, nullable=True)
+    profile_completeness = db.Column(db.Float, nullable=True)  # 0-1
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class AIInsight(db.Model):
+    """Insights generati dall'AI su pattern e tendenze"""
+    __tablename__ = 'ai_insights'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    insight_type = db.Column(db.String(50), nullable=False)  # 'pattern', 'recommendation', 'trend'
+    insight_category = db.Column(db.String(50), nullable=False)  # 'travel_behavior', 'preferences', 'efficiency'
+    
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(Text, nullable=False)
+    confidence_score = db.Column(db.Float, nullable=False)  # 0-1
+    
+    # Dati di supporto
+    supporting_data = db.Column(JSON, nullable=True)
+    suggested_actions = db.Column(JSON, nullable=True)
+    
+    # Stato dell'insight
+    is_active = db.Column(db.Boolean, default=True)
+    user_viewed = db.Column(db.Boolean, default=False)
+    user_rating = db.Column(db.Float, nullable=True)  # Feedback su utilità
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    expires_at = db.Column(db.DateTime, nullable=True)

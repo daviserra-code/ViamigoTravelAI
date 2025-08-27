@@ -1,5 +1,6 @@
 from flask_app import app, create_tables
 import routes  # noqa: F401
+import advanced_routes  # Nuove funzionalità innovative
 
 # Registra blueprint autenticazione
 from auth_routes import auth_bp

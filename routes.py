@@ -1,6 +1,6 @@
 from flask import session, render_template_string, request, jsonify, redirect, url_for, flash
 from flask_login import current_user, login_required
-from models import User, UserProfile, AdminUser
+from models import User
 import logging
 from functools import wraps
 from datetime import datetime

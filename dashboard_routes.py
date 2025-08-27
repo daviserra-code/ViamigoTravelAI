@@ -79,6 +79,16 @@ def dashboard():
                         </div>
                     </div>
                     
+                    <!-- NUOVA CARD: Compagno di Viaggio Intelligente -->
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-4 text-center">
+                        <div class="text-2xl mb-2">🧠</div>
+                        <h3 class="text-white font-medium text-sm mb-1">Compagno AI</h3>
+                        <p class="text-gray-200 text-xs mb-3">Piano B, Scoperte, Diario</p>
+                        <button onclick="window.location.href='/advanced-features'" class="w-full bg-white text-emerald-600 py-2 rounded-lg text-sm font-medium">
+                            🚀 Prova Ora
+                        </button>
+                    </div>
+
                     <!-- Additional Options -->
                     <div class="bg-gray-800 rounded-xl p-4">
                         <h3 class="text-white font-medium text-sm mb-3">⚙️ Impostazioni Account</h3>

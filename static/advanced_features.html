@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viamigo - Compagno di Viaggio Intelligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
+        .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .phone-screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .page { display: none; }
+        .page.active { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
+        .bottom-nav button.active svg, .bottom-nav button.active span { color: white; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before { content: ''; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 2px; background-color: #374151; }
+        .timeline-item .dot { position: absolute; left: -5px; top: 5px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #1F2937; }
+        
+        /* Stili per le nuove feature */
+        #discovery-card { transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out; }
+        #discovery-card.hidden { opacity: 0; transform: translateY(100%); pointer-events: none; }
+        #plan-b-modal.hidden { display: none; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+
+    <div class="phone-mockup">
+        <div id="main-content" class="phone-screen transition-all duration-300">
+            
+            <!-- PAGINA ITINERARIO AVANZATO (Piano B + Scoperte) -->
+            <div id="page-itinerary" class="page active">
+                <div class="header p-4 pt-8 border-b border-gray-700 bg-gray-900">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="goBack()" class="text-gray-400 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                        </button>
+                        <div class="overflow-hidden">
+                            <p class="text-xs text-gray-400 truncate">Il tuo itinerario intelligente</p>
+                            <h2 id="itinerary-title" class="font-bold text-white text-lg truncate">Pomeriggio culturale a Genova</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-grow relative overflow-y-auto p-4 bg-gray-900">
+                    <div class="timeline" id="smart-timeline">
+                        <!-- Tappa 1 con Piano B -->
+                        <div class="timeline-item relative pb-8">
+                            <div class="dot bg-violet-500"></div>
+                            <p class="text-xs text-gray-400 mb-1">14:30 - 16:30 (2 ore)</p>
+                            <h3 class="font-semibold text-white">Palazzo Ducale</h3>
+                            <p class="text-sm text-gray-300">Mostra su Van Gogh. Orario di punta - possibile affollamento.</p>
+                            
+                            <!-- Bottone Piano B Dinamico -->
+                            <button onclick="triggerPlanB()" class="mt-3 text-xs text-amber-400 font-semibold flex items-center space-x-1 bg-amber-400/10 px-3 py-2 rounded-full hover:bg-amber-400/20 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>C'è un imprevisto? Piano B intelligente</span>
+                            </button>
+                            
+                            <!-- Stato dinamico della tappa -->
+                            <div id="step-status" class="mt-2 hidden">
+                                <div class="flex items-center space-x-2 text-xs">
+                                    <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                    <span class="text-red-400">Affollamento rilevato - Piano B disponibile</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tappa 2 -->
+                        <div class="timeline-item relative pb-8">
+                            <div class="dot bg-gray-500"></div>
+                            <p class="text-xs text-gray-400 mb-1">16:45 - 17:30 (45 min)</p>
+                            <h3 class="font-semibold text-white">Via Garibaldi</h3>
+                            <p class="text-sm text-gray-300">Palazzi dei Rolli UNESCO - passeggiata tra i palazzi storici.</p>
+                        </div>
+                        
+                        <!-- Tappa 3 -->
+                        <div class="timeline-item relative pb-8">
+                            <div class="dot bg-gray-500"></div>
+                            <p class="text-xs text-gray-400 mb-1">17:30 - 18:00</p>
+                            <h3 class="font-semibold text-white">Aperitivo culturale</h3>
+                            <p class="text-sm text-gray-300">Rilassati in uno dei bar storici del centro storico.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Scoperte Intelligenti -->
+                <div id="discovery-card" class="absolute bottom-24 left-4 right-4 bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-2xl hidden">
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-emerald-500 p-2 rounded-full mt-1 flex-shrink-0">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white">🎯 Scoperta Intelligente</h4>
+                            <p id="discovery-text" class="text-sm text-gray-300 mt-1">Sei a 2 minuti da "Pestobene", bottega storica. Corrisponde al tuo interesse 'Cibo locale'.</p>
+                            <p class="text-xs text-gray-400 mt-2">⏱️ Deviazione: 15 minuti • 📍 50 metri</p>
+                            <div class="flex space-x-2 mt-3">
+                                <button onclick="acceptDiscovery()" class="flex-1 text-sm bg-emerald-500 text-white font-semibold py-2 rounded-lg hover:bg-emerald-600 transition-colors">
+                                    ✨ Aggiungi al piano
+                                </button>
+                                <button onclick="ignoreDiscovery()" class="flex-1 text-sm bg-gray-700 text-gray-200 font-semibold py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                    ⏭️ Ignora
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGINA DIARIO DI VIAGGIO AI -->
+            <div id="page-journal" class="page">
+                <div class="header p-4 pt-8 text-center bg-gray-900 border-b border-gray-700">
+                    <h1 class="text-2xl font-bold viamigo-font">📖 I Tuoi Diari</h1>
+                    <p class="text-sm text-gray-400 mt-1">Memoria intelligente dei tuoi viaggi</p>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-900">
+                    <!-- Card Diario Attuale -->
+                    <div class="bg-gradient-to-br from-violet-600/20 to-purple-700/20 border border-violet-500/30 rounded-xl overflow-hidden shadow-lg">
+                        <div class="p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-400 font-semibold">IN CORSO</span>
+                            </div>
+                            <h3 class="font-bold text-white text-lg">Pomeriggio culturale a Genova</h3>
+                            <p class="text-xs text-gray-400 mb-2">27 Agosto 2025 • Oggi</p>
+                            <p class="text-sm text-gray-300 mb-3">Stai esplorando il cuore storico di Genova. L'AI sta registrando le tue impressioni e creando il ricordo perfetto del tuo viaggio...</p>
+                            <div class="flex justify-between text-xs text-gray-400 border-t border-gray-700/50 pt-2 mt-2">
+                                <span>📍 2/3 tappe completate</span>
+                                <span>🚶‍♂️ 1.2 km percorsi</span>
+                                <span>⏱️ 2h 15min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Diario Passato -->
+                    <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=150&fit=crop&crop=top" alt="Milano Duomo" class="w-full h-32 object-cover">
+                        <div class="p-4">
+                            <h3 class="font-bold text-white text-lg">Shopping e arte a Milano</h3>
+                            <p class="text-xs text-gray-400 mb-2">15 Luglio 2025</p>
+                            <p class="text-sm text-gray-300 mb-3">Una giornata tra le vetrine del Quadrilatero della Moda e i capolavori della Pinacoteca di Brera. L'AI ha notato il tuo interesse per l'arte contemporanea...</p>
+                            <div class="flex justify-between text-xs text-gray-400 border-t border-gray-700 pt-2 mt-2">
+                                <span>📍 4 tappe</span>
+                                <span>🚶‍♂️ 4.8 km</span>
+                                <span>⭐ 4.5/5</span>
+                            </div>
+                            <button onclick="viewJournalDetail('milano')" class="mt-2 text-xs text-violet-400 hover:text-violet-300">
+                                📖 Leggi il diario completo →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Insights AI -->
+                    <div class="bg-gray-800 border border-blue-500/30 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <div class="bg-blue-500 p-1.5 rounded-full">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white">🧠 Insight AI</h4>
+                        </div>
+                        <p class="text-sm text-gray-300">I tuoi viaggi mostrano una preferenza per arte rinascimentale e cucina locale. Ti suggerisco Firenze per il prossimo viaggio!</p>
+                        <button onclick="generateSuggestion()" class="mt-2 text-xs text-blue-400 hover:text-blue-300">
+                            ✨ Genera itinerario personalizzato →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DI NAVIGAZIONE AVANZATA -->
+            <div class="bottom-nav h-20 flex items-center justify-around flex-shrink-0 border-t border-gray-700 bg-gray-800">
+                <button class="nav-button text-center text-gray-400" onclick="switchPage('home')">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span class="text-xs">Home</span>
+                </button>
+                
+                <button class="nav-button text-center text-white active" onclick="switchPage('itinerary')">
+                    <svg class="w-6 h-6 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 10l6-3m0 0l6-3m-6 3V7"></path>
+                    </svg>
+                    <span class="text-xs">Itinerario</span>
+                </button>
+                
+                <button class="nav-button text-center text-gray-400" onclick="switchPage('journal')">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span class="text-xs">Diario</span>
+                </button>
+                
+                <button class="nav-button text-center text-gray-400" onclick="switchPage('profile')">
+                    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="text-xs">Profilo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Piano B Dinamico -->
+        <div id="plan-b-modal" class="hidden absolute inset-0 z-20 flex justify-center items-center p-4">
+            <div class="absolute inset-0 bg-black/60" onclick="closePlanB()"></div>
+            <div class="relative w-full max-w-sm bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-2xl">
+                <div class="text-center">
+                    <div class="bg-amber-500 p-3 rounded-full mx-auto mb-4 w-fit">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-lg text-white">🚨 Piano B Intelligente</h3>
+                    <p class="text-sm text-gray-300 mt-2 mb-4">Palazzo Ducale è troppo affollato. L'AI sta ricalcolando il tuo pomeriggio in tempo reale...</p>
+                    
+                    <div id="plan-b-loading" class="mb-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400 mx-auto mb-2"></div>
+                        <p class="text-xs text-gray-400">Analizzando alternative nelle vicinanze...</p>
+                    </div>
+                    
+                    <div id="plan-b-options" class="hidden space-y-3">
+                        <button onclick="selectPlanB('skip')" class="w-full text-left bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition-colors">
+                            <p class="font-semibold text-white">⏭️ Opzione A: Salta la tappa</p>
+                            <p class="text-xs text-gray-400">Prosegui direttamente a Via Garibaldi. Risparmi 2 ore e mantieni il resto del programma.</p>
+                        </button>
+                        
+                        <button onclick="selectPlanB('alternative')" class="w-full text-left bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition-colors">
+                            <p class="font-semibold text-white">🏛️ Opzione B: Alternativa culturale</p>
+                            <p class="text-xs text-gray-400">Visita il vicino Museo del Tesoro. Meno affollato, stessa qualità artistica.</p>
+                        </button>
+                        
+                        <button onclick="selectPlanB('reschedule')" class="w-full text-left bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition-colors">
+                            <p class="font-semibold text-white">⏰ Opzione C: Riprogramma</p>
+                            <p class="text-xs text-gray-400">Sposta Palazzo Ducale a domani mattina alle 9:00. Slot confermato via AI.</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema di navigazione tra pagine
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active', 'text-white'));
+            
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            event.target.closest('.nav-button').classList.add('active', 'text-white');
+        }
+
+        // Piano B Dinamico
+        function triggerPlanB() {
+            document.getElementById('plan-b-modal').classList.remove('hidden');
+            
+            // Simula processo AI di calcolo
+            setTimeout(() => {
+                document.getElementById('plan-b-loading').classList.add('hidden');
+                document.getElementById('plan-b-options').classList.remove('hidden');
+            }, 3000);
+        }
+
+        function closePlanB() {
+            document.getElementById('plan-b-modal').classList.add('hidden');
+            // Reset stato
+            document.getElementById('plan-b-loading').classList.remove('hidden');
+            document.getElementById('plan-b-options').classList.add('hidden');
+        }
+
+        function selectPlanB(option) {
+            let message = '';
+            switch(option) {
+                case 'skip':
+                    message = '✅ Tappa saltata. Itinerario aggiornato automaticamente.';
+                    break;
+                case 'alternative':
+                    message = '✅ Museo del Tesoro aggiunto al programma. Nuove indicazioni pronte.';
+                    break;
+                case 'reschedule':
+                    message = '✅ Palazzo Ducale riprogrammato per domani. Promemoria impostato.';
+                    break;
+            }
+            
+            alert(message);
+            closePlanB();
+            
+            // Aggiorna stato visivo
+            document.getElementById('step-status').classList.remove('hidden');
+            document.getElementById('step-status').innerHTML = `
+                <div class="flex items-center space-x-2 text-xs">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span class="text-green-400">Piano B attivato - itinerario aggiornato</span>
+                </div>
+            `;
+        }
+
+        // Scoperte Intelligenti
+        function showDiscovery() {
+            document.getElementById('discovery-card').classList.remove('hidden');
+        }
+
+        function acceptDiscovery() {
+            alert('✨ "Pestobene" aggiunto al tuo itinerario! Nuove indicazioni disponibili.');
+            document.getElementById('discovery-card').classList.add('hidden');
+        }
+
+        function ignoreDiscovery() {
+            document.getElementById('discovery-card').classList.add('hidden');
+        }
+
+        // Diario AI
+        function viewJournalDetail(city) {
+            alert(`📖 Aprendo il diario completo di ${city.charAt(0).toUpperCase() + city.slice(1)}...`);
+        }
+
+        function generateSuggestion() {
+            alert('🧠 L\'AI sta creando un itinerario personalizzato per Firenze basato sulle tue preferenze...');
+        }
+
+        function goBack() {
+            // Torna alla homepage di Viamigo
+            window.location.href = '/dashboard';
+        }
+
+        // Simulazione scoperte intelligenti durante il viaggio
+        setTimeout(() => {
+            showDiscovery();
+        }, 8000);
+
+        // Simulazione affollamento rilevato
+        setTimeout(() => {
+            document.getElementById('step-status').classList.remove('hidden');
+        }, 5000);
+
+        console.log('🚀 Viamigo Advanced Features - Compagno di Viaggio Intelligente caricato!');
+    </script>
+
+</body>
+</html>
