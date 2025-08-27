@@ -397,7 +397,12 @@ def detect_city_from_locations(start, end):
         if len(city_candidate) > 2:  # Nome città valido
             return city_candidate
     
-    # PRIORITÀ 2: Geocoding automatico per identificare la città
+    # PRIORITÀ 2: Riconoscimento diretto dalle parole chiave
+    for keyword in ['trieste', 'castello miramare', 'piazza unità']:
+        if keyword in text:
+            return 'trieste'
+    
+    # PRIORITÀ 3: Geocoding automatico per identificare la città
     try:
         import requests
         
@@ -437,7 +442,7 @@ def detect_city_from_locations(start, end):
     except Exception as e:
         print(f"Errore geocoding città: {e}")
     
-    # PRIORITÀ 3: Fallback a città italiane principali
+    # PRIORITÀ 4: Fallback a città italiane principali
     major_cities = {
         'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'trastevere'],
         'milano': ['milano', 'milan', 'duomo', 'navigli', 'brera'],
