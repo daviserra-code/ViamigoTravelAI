@@ -238,7 +238,7 @@ def api_get_profile():
         })
 
 @app.route('/plan', methods=['POST'])
-@require_login
+@login_required
 def api_plan_trip():
     """API endpoint per pianificazione viaggi - routing dinamico personalizzato"""
     try:
@@ -1109,6 +1109,71 @@ def get_local_place_details(context):
                 'actionLink': {
                     'text': 'Prenota biglietto online',
                     'url': 'https://www.acquariodigenova.it'
+                }
+            },
+            # FIRENZE
+            'piazza_del_duomo_firenze': {
+                'title': 'Piazza del Duomo, Firenze',
+                'summary': 'Il cuore religioso di Firenze con la magnifica Cattedrale di Santa Maria del Fiore, la cupola del Brunelleschi e il Battistero di San Giovanni. Capolavoro del Rinascimento fiorentino.',
+                'details': [
+                    {'label': 'Cattedrale', 'value': 'Santa Maria del Fiore (1296-1436)'},
+                    {'label': 'Cupola Brunelleschi', 'value': 'Diametro 45m, prima cupola ottagonale senza armature'},
+                    {'label': 'Battistero San Giovanni', 'value': 'XI-XII secolo, Porte del Paradiso (Ghiberti)'},
+                    {'label': 'Campanile di Giotto', 'value': 'XIV secolo, 84 metri, 414 gradini'},
+                    {'label': 'Facciata negogotica', 'value': 'XIX secolo (1887), marmi policromi'},
+                    {'label': 'Biglietti', 'value': 'Duomo gratuito, cupola €20, campanile €15'}
+                ],
+                'opening_hours': 'Duomo: Lun-Sab 10:00-17:00, Dom 13:30-16:45',
+                'cost': 'Duomo gratuito, complesso €20-30',
+                'actionLink': {
+                    'text': 'Prenota cupola',
+                    'url': 'https://www.ilgrandemuseodelduomo.it'
+                }
+            },
+            'piazza_della_signoria_firenze': {
+                'title': 'Piazza della Signoria, Firenze',
+                'summary': 'La piazza politica di Firenze con Palazzo Vecchio, sede del governo cittadino. Museo a cielo aperto con statue rinascimentali e Loggia dei Lanzi.',
+                'details': [
+                    {'label': 'Palazzo Vecchio', 'value': 'Sede del Comune (1299-1314), torre 94m'},
+                    {'label': 'Loggia dei Lanzi', 'value': 'XIV secolo, statue rinascimentali'},
+                    {'label': 'David replica', 'value': 'Copia del capolavoro di Michelangelo'},
+                    {'label': 'Perseo Cellini', 'value': 'Bronzo manierista (1545-1554)'},
+                    {'label': 'Fontana Nettuno', 'value': 'Ammannati (1565), "Il Biancone"'},
+                    {'label': 'Caffè Rivoire', 'value': 'Storico caffè con vista palazzo (1872)'}
+                ],
+                'opening_hours': 'Sempre accessibile, Palazzo Vecchio: 9:00-19:00',
+                'cost': 'Piazza gratuita, Palazzo Vecchio €12.50'
+            },
+            'ponte_vecchio_firenze': {
+                'title': 'Ponte Vecchio, Firenze',
+                'summary': 'Il ponte medievale più famoso del mondo, l\'unico ponte di Firenze sopravvissuto alla Seconda Guerra Mondiale. Caratteristico per le botteghe orafe che lo attraversano.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1345 (ricostruito dopo alluvione 1333)'},
+                    {'label': 'Corridoio Vasariano', 'value': 'Passaggio segreto dei Medici (1565)'},
+                    {'label': 'Botteghe storiche', 'value': 'Orafi dal XVI secolo (prima macellai)'},
+                    {'label': 'Lunghezza', 'value': '95 metri sull\'Arno'},
+                    {'label': 'Guerra mondiale', 'value': 'Unico ponte risparmiato dai tedeschi (1944)'},
+                    {'label': 'Taddeo Gaddi', 'value': 'Allievo di Giotto, progettista del ponte'}
+                ],
+                'opening_hours': 'Sempre accessibile, botteghe: 10:00-19:00',
+                'cost': 'Passeggiata gratuita, shopping vari prezzi'
+            },
+            'basilica_santa_croce_firenze': {
+                'title': 'Basilica di Santa Croce, Firenze',
+                'summary': 'La chiesa francescana più grande del mondo, chiamata "Pantheon di Firenze" per le tombe di Michelangelo, Galileo e Machiavelli. Capolavoro gotico con affreschi di Giotto.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1294-1442, architettura gotica italiana'},
+                    {'label': 'Tomba Michelangelo', 'value': 'Sepolcro del maestro rinascimentale (1564)'},
+                    {'label': 'Tomba Galileo', 'value': 'Monumento al padre della scienza moderna'},
+                    {'label': 'Cappelle Peruzzi e Bardi', 'value': 'Affreschi di Giotto (1320-1325)'},
+                    {'label': 'Crocifisso Donatello', 'value': 'Legno policromo rinascimentale'},
+                    {'label': 'Cappella Pazzi', 'value': 'Brunelleschi, capolavoro architettonico'}
+                ],
+                'opening_hours': 'Lun-Sab 9:30-17:00, Dom 14:00-17:00',
+                'cost': '€8 adulti, €6 ridotto',
+                'actionLink': {
+                    'text': 'Informazioni visite',
+                    'url': 'https://www.santacroceopera.it'
                 }
             },
             'stazione_termini': {

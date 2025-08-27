@@ -126,7 +126,8 @@ class DynamicRouter:
             city_lower = city.lower() if city else ""
             if ('trieste' in city_lower or 'miramare' in city_lower or
                 'genova' in city_lower or 'milano' in city_lower or 
-                'roma' in city_lower or 'venezia' in city_lower):
+                'roma' in city_lower or 'venezia' in city_lower or
+                'firenze' in city_lower):
                 print(f"🎯 Routing ottimizzato per {city}")
                 return self._fallback_itinerary(start, end, city)
             
@@ -660,6 +661,47 @@ class DynamicRouter:
                     'type': 'tip',
                     'title': '💡 Milano',
                     'description': 'Dal gotico al moderno - capitale della moda e dell\'innovazione'
+                }
+            ]
+        
+        elif 'firenze' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza del Duomo',
+                    'description': 'Il cuore religioso di Firenze con la magnifica Cattedrale di Santa Maria del Fiore, la cupola del Brunelleschi e il Battistero di San Giovanni',
+                    'coordinates': [43.7731, 11.2560],
+                    'context': 'piazza_del_duomo_firenze',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Piazza della Signoria',
+                    'description': 'La piazza politica di Firenze con Palazzo Vecchio, la Loggia dei Lanzi e copie delle statue di Michelangelo',
+                    'coordinates': [43.7695, 11.2558],
+                    'context': 'piazza_della_signoria_firenze',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Ponte Vecchio',
+                    'description': 'Il ponte medievale più famoso di Firenze, con le caratteristiche botteghe orafe e vista panoramica sull\'Arno',
+                    'coordinates': [43.7678, 11.2530],
+                    'context': 'ponte_vecchio_firenze',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Basilica di Santa Croce',
+                    'description': 'La chiesa francescana più grande del mondo con affreschi di Giotto e tombe di Michelangelo e Galileo',
+                    'coordinates': [43.7682, 11.2626],
+                    'context': 'basilica_santa_croce_firenze',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Firenze',
+                    'description': f'Itinerario autentico nel cuore del Rinascimento - da {start} a {end}'
                 }
             ]
         
