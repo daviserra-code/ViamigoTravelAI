@@ -163,6 +163,11 @@
 
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
+        
+        console.log('🔧 Inizializzazione script, elementi trovati:');
+        console.log('- timelineContainer:', timelineContainer);
+        console.log('- planButton:', planButton);
+        console.log('- itineraryTitle:', itineraryTitle);
 
         // --- GESTIONE NAVIGAZIONE ---
         navButtons.forEach(button => {
@@ -248,6 +253,7 @@
                 }
                 
                 try {
+                    console.log('🚀 Invio richiesta a /plan con:', { start, end });
                     const response = await fetch('/plan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -259,9 +265,16 @@
                             budget: userPreferences.budget || ""
                         })
                     });
+                    console.log('📡 Risposta ricevuta, status:', response.status);
                     const data = await response.json();
-                    if (data.error) { renderItinerary(null); } 
-                    else {
+                    console.log('💾 Dati JSON ricevuti:', data);
+                    
+                    if (data.error) { 
+                        console.log('❌ Errore nei dati:', data.error);
+                        renderItinerary(null); 
+                    } else {
+                        console.log('✅ Dati validi, processing...');
+                        
                         // Reset della mappa per nuova città
                         if (mapInitialized) {
                             map.remove();
@@ -272,17 +285,20 @@
                         
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
-                        console.log('Dati itinerario ricevuti:', data);
+                        console.log('🔄 Chiamata renderItinerary con:', data);
                         renderItinerary(data);
                         
                         // Estrai e centra la mappa sulla nuova città
                         const cityFromInput = end.toLowerCase();
-                        console.log(`Mappa centrata su: ${cityFromInput}`);
+                        console.log(`🗺️ Mappa centrata su: ${cityFromInput}`);
                         window.currentCityName = cityFromInput;
                         
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
-                } catch (error) { renderItinerary(null); } 
+                } catch (error) { 
+                    console.log('💥 ERRORE nel fetch:', error);
+                    renderItinerary(null); 
+                } 
                 finally { planButton.textContent = "Pianifica il mio giorno"; planButton.disabled = false; }
             });
         }
