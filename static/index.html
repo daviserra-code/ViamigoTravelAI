@@ -505,7 +505,7 @@
             // Array per memorizzare le coordinate del percorso
             const routeCoordinates = [];
             const bounds = L.latLngBounds();
-            let markerIndex = 1;
+            let markerIndex = 1; // Inizia da 1 e incrementa SOLO per waypoint numerati
 
             itineraryData.forEach((item, index) => {
                 console.log(`Analizzando item ${index}:`, item);
@@ -554,13 +554,14 @@
                     const isTransport = item.type?.toLowerCase() === 'trasporto' || item.type?.toLowerCase() === 'transport';
                     const markerColor = isTransport ? 'orange' : 'blue';
                     
-                    // CORRETTO: Numerazione sequenziale per tutti i waypoint (non solo non-trasporto)
+                    // CORRETTO: Numerazione sequenziale semplice - ogni punto visibile ottiene un numero
                     let markerIcon;
                     if (isTransport) {
                         markerIcon = '🚶‍♂️';
+                        // Non incrementare per icone trasporto
                     } else {
                         markerIcon = markerIndex.toString();
-                        markerIndex++; // Incrementa per OGNI waypoint principale
+                        markerIndex++; // Incrementa solo per waypoint numerati
                     }
 
                     // Marker personalizzato con icona numerata
