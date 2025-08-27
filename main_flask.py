@@ -14,6 +14,8 @@ app.register_blueprint(dashboard_bp)
 from create_profile_routes import create_profile_bp
 app.register_blueprint(create_profile_bp)
 
+# Replit OAuth già registrato in routes.py
+
 if __name__ == "__main__":
     # Create tables after all imports are complete
     create_tables()

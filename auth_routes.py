@@ -304,9 +304,27 @@ def login():
                         
                         <div id="errorMessage" class="hidden text-red-400 text-sm bg-red-900/20 p-3 rounded-lg border border-red-700"></div>
                         
+                        <!-- Login con Replit -->
+                        <a href="/auth/replit_auth/login" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-center block mb-4">
+                            🔐 Accedi con Replit
+                        </a>
+                        
+                        <!-- Divisore -->
+                        <div class="flex items-center my-4">
+                            <div class="flex-grow border-t border-gray-600"></div>
+                            <span class="px-3 text-gray-400 text-sm">oppure</span>
+                            <div class="flex-grow border-t border-gray-600"></div>
+                        </div>
+                        
+                        <!-- Credenziali Demo -->
+                        <div class="p-3 bg-gray-800 rounded-lg border border-gray-600 mb-4">
+                            <p class="text-gray-300 text-sm mb-2">Account Demo per Testing:</p>
+                            <p class="text-violet-400 text-xs font-mono">demo@viamigo.com / Demo12345!</p>
+                        </div>
+                        
                         <button type="submit" 
                                 class="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-violet-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-violet-500 font-medium">
-                            Accedi
+                            Accedi con Demo
                         </button>
                         
                         <div class="text-center mt-6">
