@@ -1650,8 +1650,7 @@ def view_profile():
     if not auth_user.is_authenticated:
         return redirect('/auth/login')
         
-    profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
-    
+    # Profilo semplificato senza UserProfile model
     return render_template_string('''
 <!DOCTYPE html>
 <html lang="it">
@@ -1693,30 +1692,16 @@ def view_profile():
             <!-- CONTENUTO PROFILO -->
             <div class="flex-grow overflow-y-auto p-4">
                 <!-- Info Utente -->
+                <!-- Info Utente -->
                 <div class="flex flex-col items-center mb-8">
                     <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-3 border-2 border-violet-500">
                         <span class="text-2xl">👤</span>
                     </div>
-                    <h3 class="text-white text-xl font-semibold">{{ auth_user.first_name }} {{ auth_user.last_name }}</h3>
+                    <h3 class="text-white text-xl font-semibold">{{ auth_user.first_name or 'Utente' }} {{ auth_user.last_name or 'Viamigo' }}</h3>
                     <p class="text-gray-400 text-sm">{{ auth_user.email }}</p>
                 </div>
 
-                {% if not profile %}
-                <!-- Nuovo Profilo -->
-                <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
-                    <div class="text-center">
-                        <div class="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-2xl">✨</span>
-                        </div>
-                        <h3 class="text-white text-lg font-semibold mb-2">Personalizza i tuoi viaggi</h3>
-                        <p class="text-gray-400 mb-6 text-sm">Configura le tue preferenze per ricevere consigli su misura</p>
-                        <button onclick="window.location.href='/profile/create'" class="w-full bg-violet-500 text-white py-3 rounded-xl font-semibold">
-                            Crea il Tuo Profilo
-                        </button>
-                    </div>
-                </div>
-                {% else %}
-                <!-- Profilo Esistente -->
+                <!-- Profilo Semplificato -->
                 <div class="space-y-6">
                     <!-- Interessi -->
                     <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
@@ -1742,7 +1727,7 @@ def view_profile():
                             </div>
                         </div>
                     </div>
-                {% endif %}
+                </div>
 
                 <!-- Azioni -->
                 <div class="space-y-4 mt-8">
