@@ -510,6 +510,7 @@
             itineraryData.forEach((item, index) => {
                 console.log(`Analizzando item ${index}:`, item);
                 if (item.type !== 'tip') {
+                    console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'genova';
                     
@@ -550,23 +551,17 @@
                     // Aggiungi coordinate al percorso
                     routeCoordinates.push([lat, lng]);
 
-                    // Determina il tipo di marker con numerazione sequenziale corretta
-                    const isTransport = item.type?.toLowerCase() === 'trasporto' || item.type?.toLowerCase() === 'transport';
-                    const markerColor = isTransport ? 'orange' : 'blue';
+                    // Colore marker (tutti blu per waypoint normali)
+                    const markerColor = 'blue';
                     
-                    // CORRETTO: Numerazione sequenziale semplice - ogni punto visibile ottiene un numero
-                    let markerIcon;
-                    if (isTransport) {
-                        markerIcon = '🚶‍♂️';
-                        // Non incrementare per icone trasporto
-                    } else {
-                        markerIcon = markerIndex.toString();
-                        markerIndex++; // Incrementa solo per waypoint numerati
-                    }
+                    // FIX FINALE: Ogni waypoint (start, walking) ottiene numero sequenziale
+                    let markerIcon = markerIndex.toString();
+                    console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
+                    markerIndex++; // Incrementa per OGNI waypoint visibile
 
-                    // Marker personalizzato con icona numerata
+                    // Marker personalizzato con numero sequenziale
                     const customIcon = L.divIcon({
-                        className: `custom-marker ${isTransport ? 'transport-marker' : 'activity-marker'}`,
+                        className: 'custom-marker activity-marker',
                         html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
                         iconSize: [32, 32],
                         iconAnchor: [16, 16],
