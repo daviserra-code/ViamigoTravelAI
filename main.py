@@ -67,11 +67,94 @@ def search_real_transport_data(city: str):
         """
     return "Nessun dato di trasporto specifico disponibile per questa città."
 
+async def validate_coordinates_with_nominatim(lat, lon, location_name, city):
+    """
+    Valida coordinate usando OpenStreetMap Nominatim per verificare 
+    che un punto sia effettivamente sulla terraferma e nella città corretta
+    """
+    try:
+        # Reverse geocoding per verificare se le coordinate sono valide
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            url = f"https://nominatim.openstreetmap.org/reverse"
+            params = {
+                "lat": lat,
+                "lon": lon,
+                "format": "json",
+                "addressdetails": 1,
+                "zoom": 14
+            }
+            headers = {"User-Agent": "Viamigo-Travel-App/1.0"}
+            
+            response = await client.get(url, params=params, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Controlla se è in acqua
+                if data.get("category") == "natural" and data.get("type") in ["water", "sea", "ocean"]:
+                    print(f"⚠️ Coordinate {lat},{lon} per {location_name} sono in acqua!")
+                    return False
+                
+                # Controlla se è nella città giusta
+                address = data.get("address", {})
+                found_city = (address.get("city") or address.get("town") or 
+                            address.get("municipality") or address.get("village", "")).lower()
+                
+                if city.lower() in found_city or found_city in city.lower():
+                    print(f"✅ Coordinate {lat},{lon} per {location_name} validate in {found_city}")
+                    return True
+                else:
+                    print(f"⚠️ Coordinate {lat},{lon} per {location_name} non sono in {city} (trovato: {found_city})")
+                    return False
+                    
+    except Exception as e:
+        print(f"Errore validazione coordinate per {location_name}: {e}")
+        return None  # Non possiamo validare, manteniamo le coordinate originali
+
+async def search_correct_coordinates(location_name, city):
+    """
+    Cerca coordinate corrette usando Nominatim search
+    """
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            url = "https://nominatim.openstreetmap.org/search"
+            
+            # Prova diverse query per trovare il luogo
+            search_queries = [
+                f"{location_name}, {city}, Italy",
+                f"{location_name}, {city}",
+                f"{location_name} {city}",
+            ]
+            
+            for query in search_queries:
+                params = {
+                    "q": query,
+                    "format": "json",
+                    "limit": 1,
+                    "countrycodes": "it",
+                    "addressdetails": 1
+                }
+                headers = {"User-Agent": "Viamigo-Travel-App/1.0"}
+                
+                response = await client.get(url, params=params, headers=headers)
+                if response.status_code == 200:
+                    results = response.json()
+                    if results:
+                        result = results[0]
+                        lat = float(result["lat"])
+                        lon = float(result["lon"])
+                        
+                        print(f"🔍 Trovate coordinate per {location_name}: {lat}, {lon}")
+                        return {"lat": lat, "lon": lon}
+                        
+    except Exception as e:
+        print(f"Errore ricerca coordinate per {location_name}: {e}")
+        
+    return None
+
 def fix_italian_coordinates(itinerary_data):
     """
-    Sistema scalabile di correzione coordinate per tutte le città italiane.
-    Previene allucinazioni geografiche dell'AI sostituendo coordinate imprecise
-    con coordinate GPS verificate per luoghi famosi.
+    Sistema dinamico di correzione coordinate che funziona per tutte le città italiane.
+    Usa database locale per luoghi noti + validazione geografica API per nuovi luoghi.
     """
     # Database organizzato per città con coordinate GPS verificate
     italian_coordinates_db = {
@@ -171,6 +254,95 @@ def fix_italian_coordinates(itinerary_data):
     
     return itinerary_data
 
+async def fix_italian_coordinates_async(itinerary_data):
+    """
+    Versione asincrona che usa validazione geografica API per TUTTE le città italiane
+    """
+    # Database locale per luoghi molto frequenti (performance)
+    local_coords_db = {
+        "genova": {
+            "piazza de ferrari": {"lat": 44.4071, "lon": 8.9348},
+            "palazzo ducale": {"lat": 44.4071, "lon": 8.9348},
+            "parchi di nervi": {"lat": 44.3670, "lon": 8.9754},
+            "nervi": {"lat": 44.3670, "lon": 8.9754},
+            "spiaggia di nervi": {"lat": 44.3675, "lon": 8.9760},
+            "acquario di genova": {"lat": 44.4109, "lon": 8.9326},
+            "museo giannettino luxoro": {"lat": 44.3665, "lon": 8.9750},
+        },
+        "venezia": {
+            "piazza san marco": {"lat": 45.4341, "lon": 12.3383},
+            "ponte di rialto": {"lat": 45.4380, "lon": 12.3359},
+            "palazzo ducale": {"lat": 45.4341, "lon": 12.3405},
+            "basilica di san marco": {"lat": 45.4341, "lon": 12.3383},
+            "canal grande": {"lat": 45.4380, "lon": 12.3359},
+        },
+        "milano": {
+            "piazza del duomo": {"lat": 45.4642, "lon": 9.1900},
+            "duomo di milano": {"lat": 45.4642, "lon": 9.1900},
+            "castello sforzesco": {"lat": 45.4702, "lon": 9.1797},
+            "navigli": {"lat": 45.4484, "lon": 9.1694},
+        },
+        "roma": {
+            "colosseo": {"lat": 41.8902, "lon": 12.4922},
+            "fontana di trevi": {"lat": 41.9009, "lon": 12.4833},
+            "pantheon": {"lat": 41.8986, "lon": 12.4769},
+            "vaticano": {"lat": 41.9029, "lon": 12.4534},
+        }
+    }
+    
+    if "itinerary" not in itinerary_data:
+        return itinerary_data
+        
+    for item in itinerary_data["itinerary"]:
+        if "context" in item and "lat" in item and "lon" in item:
+            context_lower = item["context"].lower()
+            title_lower = item.get("title", "").lower()
+            current_lat = item["lat"]
+            current_lon = item["lon"]
+            
+            # Rileva la città
+            detected_city = None
+            for city in local_coords_db.keys():
+                if city in context_lower or city in title_lower:
+                    detected_city = city
+                    break
+            
+            # Prima prova database locale
+            corrected = False
+            if detected_city and detected_city in local_coords_db:
+                city_coords = local_coords_db[detected_city]
+                for location_key, coords in city_coords.items():
+                    if (location_key in context_lower or location_key in title_lower):
+                        item["lat"] = coords["lat"]
+                        item["lon"] = coords["lon"]
+                        print(f"🔧 Coordinate corrette (database locale) per {item['title']}: {current_lat},{current_lon} → {coords['lat']},{coords['lon']}")
+                        corrected = True
+                        break
+                
+                if not corrected:
+                    # Se non nel database locale, valida coordinate AI
+                    validation_result = await validate_coordinates_with_nominatim(
+                        current_lat, current_lon, item['title'], detected_city
+                    )
+                    
+                    if validation_result == False:  # Coordinate in acqua o sbagliate
+                        # Cerca coordinate corrette
+                        correct_coords = await search_correct_coordinates(item['title'], detected_city)
+                        if correct_coords:
+                            item["lat"] = correct_coords["lat"]
+                            item["lon"] = correct_coords["lon"]
+                            print(f"🔧 Coordinate corrette (API search) per {item['title']}: {current_lat},{current_lon} → {correct_coords['lat']},{correct_coords['lon']}")
+            else:
+                # Città non riconosciuta, valida comunque le coordinate
+                validation_result = await validate_coordinates_with_nominatim(
+                    current_lat, current_lon, item['title'], detected_city or "unknown"
+                )
+                
+                if validation_result == False:
+                    print(f"⚠️ Coordinate sospette per {item['title']} in città non riconosciuta")
+    
+    return itinerary_data
+
 # --- FUNZIONE PER L'ITINERARIO PRINCIPALE ---
 async def get_ai_itinerary(start_location: str, end_location: str, interests: List[str] = [], pace: str = "", budget: str = ""):
     api_key = os.getenv("OPENAI_API_KEY")
@@ -248,7 +420,7 @@ async def get_ai_itinerary(start_location: str, end_location: str, interests: Li
             itinerary_data = json.loads(json_content_str)
             
             # Post-processing: correggi coordinate sbagliate per tutte le città italiane
-            itinerary_data = fix_italian_coordinates(itinerary_data)
+            itinerary_data = await fix_italian_coordinates_async(itinerary_data)
             return itinerary_data
     except Exception as e:
         print(f"Errore API Itinerario: {e}")
