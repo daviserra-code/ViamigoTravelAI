@@ -755,6 +755,40 @@ def api_get_details():
                     {'label': 'Mercato', 'value': 'Mercato del Pesce e prodotti locali'}
                 ]
             },
+            'cattedrale_genova': {
+                'title': 'Cattedrale di San Lorenzo, Genova',
+                'summary': 'Il Duomo di Genova, famoso per aver ospitato una bomba navale britannica inesplosa durante la Seconda Guerra Mondiale. Capolavoro di architettura romanico-gotica.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'IX secolo, ricostruita XII-XIV secolo'},
+                    {'label': 'Stile', 'value': 'Romanico-gotico ligure'},
+                    {'label': 'Facciata', 'value': 'Marmo bianco e nero a strisce'},
+                    {'label': 'Bomba inesplosa', 'value': '13 febbraio 1941 (esposta nel museo)'},
+                    {'label': 'Tesoro', 'value': 'Sacro Catino (Sacro Graal), reliquie di San Giovanni'},
+                    {'label': 'Campanile', 'value': 'Torre romanica del XII secolo'},
+                    {'label': 'Ingresso', 'value': 'Gratuito (museo €6)'}
+                ],
+                'timetable': [
+                    {'direction': 'Cattedrale', 'times': 'Lun-Sab 8:00-12:00, 15:00-19:00'},
+                    {'direction': 'Museo del Tesoro', 'times': 'Lun-Sab 9:00-12:00, 15:00-18:00'}
+                ]
+            },
+            'spianata_castelletto': {
+                'title': 'Spianata Castelletto, Genova',
+                'summary': 'Il belvedere più spettacolare di Genova, raggiungibile con la storica funicolare del 1929. Vista panoramica a 360° sulla città e il porto.',
+                'details': [
+                    {'label': 'Altitudine', 'value': '80 metri sul livello del mare'},
+                    {'label': 'Funicolare', 'value': 'Costruita nel 1929, rinnovata nel 2004'},
+                    {'label': 'Durata salita', 'value': '90 secondi (300 metri di percorso)'},
+                    {'label': 'Biglietto funicolare', 'value': '€0.90 (incluso in biglietto AMT)'},
+                    {'label': 'Panorama', 'value': 'Centro storico, porto, Riviera di Ponente'},
+                    {'label': 'Arte Liberty', 'value': 'Villini e palazzi primi 900'},
+                    {'label': 'Miglior orario', 'value': 'Tramonto (18:30-19:30 estate)'}
+                ],
+                'timetable': [
+                    {'direction': 'Funicolare', 'times': '6:00-24:00 ogni 15 minuti'},
+                    {'direction': 'Spianata', 'times': 'Sempre accessibile'}
+                ]
+            },
             'acquario_genova': {
                 'title': 'Acquario di Genova',
                 'summary': 'Il secondo acquario più grande d\'Europa, nel Porto Antico progettato da Renzo Piano. Casa di 12.000 esemplari di 600 specie diverse.',
@@ -770,7 +804,11 @@ def api_get_details():
                 'timetable': [
                     {'direction': 'Estate (giu-set)', 'times': '9:00-20:00 (ultimo ingresso 18:00)'},
                     {'direction': 'Inverno (ott-mag)', 'times': '9:30-19:00 (ultimo ingresso 17:00)'}
-                ]
+                ],
+                'actionLink': {
+                    'text': 'Prenota biglietto online',
+                    'url': 'https://www.acquariodigenova.it'
+                }
             },
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
