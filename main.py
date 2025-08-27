@@ -554,98 +554,11 @@ async def search_wikimedia_image(location: str, city: str):
     return None
 
 async def simulate_real_image_search(location: str, city: str):
-    """Simula la ricerca di immagini reali basandosi su database di luoghi noti"""
-    location_lower = location.lower()
-    
-    # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
-    known_images = {
-        # Venezia - PRIORITA' MASSIMA (SVG locali per evitare CORS)
-        'piazza san marco': '/static/images/piazza_san_marco.svg',
-        'basilica di san marco': '/static/images/piazza_san_marco.svg',
-        'ponte di rialto': '/static/images/piazza_san_marco.svg',
-        'palazzo ducale venezia': '/static/images/piazza_san_marco.svg',
-        'canal grande': '/static/images/piazza_san_marco.svg',
-        'caffè florian': '/static/images/piazza_san_marco.svg',
-        'mercato di rialto': '/static/images/piazza_san_marco.svg',
-        'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
-        
-        # Genova
-        'teatro carlo felice': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
-        'acquario di genova': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800',
-        'palazzo rosso': 'https://images.unsplash.com/photo-1520637836862-4d197d17c383?w=800',
-        'palazzo ducale': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
-        'spianata castelletto': 'https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=800',
-        'cattedrale di san lorenzo': 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800',
-        'mercato orientale': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?w=800',
-        'parchi di nervi': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800',
-        'via del campo': 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
-        'palazzo bianco': 'https://images.unsplash.com/photo-1520637735862-32d197d17c83?w=800',
-        'porto antico': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800',
-        'piazza de ferrari': 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800',
-        'caffè degli specchi': 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800',
-        
-        # Milano
-        'duomo di milano': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
-        'piazza del duomo': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
-        'castello sforzesco': 'https://images.unsplash.com/photo-1565965949354-c40465b06762?w=800',
-        'parco sempione': 'https://images.unsplash.com/photo-1555400242-f5a01e8e8d77?w=800',
-        'teatro alla scala': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-        'navigli': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
-        'galleria vittorio emanuele': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
-        'quadrilatero della moda': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
-        'corso buenos aires': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
-        'brera': 'https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?w=800',
-        'caffè cova montenapoleone': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800',
-        'galleria vittorio emanuele ii': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
-        
-        # Roma
-        'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',
-        'fori imperiali': 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=800',
-        'pantheon': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800',
-        'fontana di trevi': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',
-        'piazza di spagna': 'https://images.unsplash.com/photo-1555992457-c341ea86b4dc?w=800',
-        
-        # Firenze
-        'duomo di firenze': 'https://images.unsplash.com/photo-1543429944-c2bd2ead5d73?w=800',
-        'ponte vecchio': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-        'uffizi': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800'
-    }
-    
-    # Cerca match esatti o parziali con algoritmo migliorato
-    for key, url in known_images.items():
-        # Prima prova match esatto
-        if key == location_lower:
-            print(f"Trovata immagine reale (match esatto) per {location}")
-            return url
-        
-        # Match parziale: luogo contiene chiave
-        if key in location_lower:
-            print(f"Trovata immagine reale (match parziale) per {location}")
-            return url
-        
-        # Match inverso: chiave contiene luogo
-        if location_lower in key:
-            print(f"Trovata immagine reale (match inverso) per {location}")
-            return url
-            
-        # Poi prova match di parole chiave principali
-        key_words = key.split()
-        location_words = location_lower.split()
-        
-        # Se almeno metà delle parole chiave sono presenti
-        if len(key_words) >= 2:
-            matches = sum(1 for word in key_words if word in location_lower)
-            if matches >= len(key_words) // 2:
-                print(f"Trovata immagine reale per {location}")
-                return url
-                
-        # Prova anche match parziale con parole di location
-        if len(location_words) >= 2:
-            matches = sum(1 for word in location_words if word in key)
-            if matches >= len(location_words) // 2:
-                print(f"Trovata immagine reale per {location}")
-                return url
-    
+    """
+    Sistema immagini semplificato: nessuna immagine piuttosto che immagini non funzionanti.
+    L'app funziona perfettamente senza immagini.
+    """
+    print(f"Immagini disabilitate per {location} - l'app funziona senza problemi CORS")
     return None
 
 def should_use_generated_image(location: str):
