@@ -530,13 +530,9 @@ async def get_image_proxy(location: str, city: str):
     if wiki_url:
         return f"/image_proxy?url={wiki_url}"
     
-    # 3. Solo come ultima risorsa: DALL-E (lento e costoso)
-    if should_use_generated_image(location):
-        print(f"⚠️ Nessuna immagine reale trovata, usando DALL-E per {location}")
-        ai_url = await generate_ai_image(location, city)
-        if ai_url:
-            # DALL-E genera URL privati, serve direttamente senza proxy
-            return ai_url
+    # 3. Fallback intelligente: nessuna immagine invece di errori
+    print(f"ℹ️ Nessuna immagine disponibile per {location} - app funziona perfettamente senza")
+    # Non usiamo DALL-E per ora a causa di lentezza e problemi di accesso
     
     print(f"Nessuna immagine disponibile per {location}")
     return None
@@ -545,18 +541,10 @@ async def try_unsplash_search(location: str, city: str):
     """Database curato con URL diretti di immagini gratuiti verificati"""
     location_lower = location.lower()
     
-    # Database con immagini dirette gratuite e funzionanti
+    # Database con solo URL verificati e funzionanti al 100%
     verified_images = {
-        # Roma - Wikipedia Commons verificato
+        # Solo il Colosseo per ora - l'unico URL testato e funzionante
         'colosseo': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        
-        # Venezia - Pixabay immagini dirette
-        'piazza san marco': 'https://cdn.pixabay.com/photo/2014/02/17/10/20/piazza-san-marco-268199_1280.jpg',
-        'basilica di san marco': 'https://cdn.pixabay.com/photo/2016/10/13/09/59/venice-1737168_1280.jpg',
-        'ponte di rialto': 'https://cdn.pixabay.com/photo/2016/06/26/17/05/venice-1479503_1280.jpg',
-        'canal grande': 'https://cdn.pixabay.com/photo/2019/07/09/04/56/venice-4325978_1280.jpg',
-        'palazzo ducale': 'https://cdn.pixabay.com/photo/2014/02/17/10/20/piazza-san-marco-268199_1280.jpg',
-        'caffè florian': 'https://cdn.pixabay.com/photo/2014/02/17/10/20/piazza-san-marco-268199_1280.jpg',
     }
     
     # Cerca match esatto o parziale
