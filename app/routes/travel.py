@@ -6,6 +6,8 @@ import logging
 from typing import List, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.responses import JSONResponse
+import httpx
+import json
 
 from app.models import (
     TravelQuery, TravelResponse, RAGQuery, RAGResult, 
@@ -22,6 +24,89 @@ def get_rag_service(request: Request) -> RAGService:
     """Dependency to get RAG service"""
     chromadb_service = request.app.state.chromadb_service
     return RAGService(chromadb_service)
+
+async def get_location_coordinates(location_name: str, city_context: str) -> Dict[str, float]:
+    """Get real coordinates for a location using geocoding APIs"""
+    try:
+        # Database di coordinate locali per luoghi noti
+        known_locations = {
+            'genova': {
+                'piazza de ferrari': {'lat': 44.4071, 'lng': 8.9348},
+                'acquario di genova': {'lat': 44.4109, 'lng': 8.9326},
+                'palazzo ducale': {'lat': 44.4071, 'lng': 8.9348},
+                'teatro carlo felice': {'lat': 44.4076, 'lng': 8.9330},
+                'cattedrale di san lorenzo': {'lat': 44.4082, 'lng': 8.9309},
+                'palazzo rosso': {'lat': 44.4078, 'lng': 8.9314},
+                'palazzo bianco': {'lat': 44.4082, 'lng': 8.9318},
+                'spianata castelletto': {'lat': 44.4127, 'lng': 8.9264},
+                'mercato orientale': {'lat': 44.4043, 'lng': 8.9380},
+                'porto antico': {'lat': 44.4108, 'lng': 8.9279},
+                'via del campo': {'lat': 44.4065, 'lng': 8.9298},
+                'parchi di nervi': {'lat': 44.3897, 'lng': 8.9834},
+                'museo giannettino luxoro': {'lat': 44.3890, 'lng': 8.9840},
+                'caffè degli specchi': {'lat': 44.4071, 'lng': 8.9348},
+                'lungomare di genova': {'lat': 44.4020, 'lng': 8.9450},
+                'corso italia': {'lat': 44.3950, 'lng': 8.9500},
+                'boccadasse': {'lat': 44.3945, 'lng': 8.9702},
+                'nervi': {'lat': 44.3897, 'lng': 8.9834}
+            }
+        }
+        
+        # Normalizza i nomi per la ricerca
+        city_key = city_context.lower().strip()
+        location_key = location_name.lower().strip()
+        
+        # Cerca prima nel database locale
+        if city_key in known_locations:
+            city_locations = known_locations[city_key]
+            
+            # Match esatto
+            if location_key in city_locations:
+                coords = city_locations[location_key]
+                logger.info(f"Coordinate locali trovate per {location_name}: {coords}")
+                return coords
+                
+            # Match parziale
+            for known_location, coords in city_locations.items():
+                if known_location in location_key or location_key in known_location:
+                    logger.info(f"Coordinate locali (match parziale) per {location_name}: {coords}")
+                    return coords
+        
+        # Fallback: usa OpenStreetMap Nominatim API per geocoding dinamico
+        query = f"{location_name}, {city_context}, Italy"
+        nominatim_url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(nominatim_url, headers={
+                'User-Agent': 'Viamigo/1.0 (travel planning app)'
+            })
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    coords = {
+                        'lat': float(data[0]['lat']),
+                        'lng': float(data[0]['lon'])
+                    }
+                    logger.info(f"Coordinate da Nominatim per {location_name}: {coords}")
+                    return coords
+        
+        # Ultimo fallback: coordinate del centro città
+        city_centers = {
+            'genova': {'lat': 44.4063, 'lng': 8.9314},
+            'milano': {'lat': 45.4642, 'lng': 9.1900},
+            'roma': {'lat': 41.9028, 'lng': 12.4964},
+            'firenze': {'lat': 43.7696, 'lng': 11.2558}
+        }
+        
+        fallback_coords = city_centers.get(city_key, city_centers['genova'])
+        logger.warning(f"Usando coordinate fallback per {location_name}: {fallback_coords}")
+        return fallback_coords
+        
+    except Exception as e:
+        logger.error(f"Errore nel geocoding per {location_name}: {e}")
+        # Fallback finale: Genova centro
+        return {'lat': 44.4063, 'lng': 8.9314}
 
 @router.post("/travel/recommendations", response_model=TravelResponse)
 async def get_travel_recommendations(
@@ -228,10 +313,7 @@ async def plan_itinerary(
                     "description": "Spostamento con mezzi pubblici o a piedi",
                     "type": "transport",
                     "context": "walk",
-                    "coordinates": {
-                        "lat": 44.4063 + (i * 0.01),
-                        "lng": 8.9314 + (i * 0.01)
-                    }
+                    "coordinates": await get_location_coordinates(f"Trasferimento {end}", end)
                 })
             
             # Add main activity
@@ -246,10 +328,7 @@ async def plan_itinerary(
                 "description": rec.description,
                 "type": "activity",
                 "context": "museum",
-                "coordinates": {
-                    "lat": 44.4063 + (i * 0.005),
-                    "lng": 8.9314 + (i * 0.005)
-                }
+                "coordinates": await get_location_coordinates(rec.destination, end)
             })
             
             # Add tip occasionally
