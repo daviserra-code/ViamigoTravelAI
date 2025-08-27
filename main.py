@@ -559,14 +559,14 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
-        # Venezia - PRIORITA' MASSIMA (URL Unsplash verificate)
-        'piazza san marco': 'https://images.unsplash.com/photo-1518309478088-58d74e7947e8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'basilica di san marco': 'https://images.unsplash.com/photo-1616591991757-14db9b57dc52?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'ponte di rialto': 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'palazzo ducale venezia': 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'canal grande': 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'caffè florian': 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-        'mercato di rialto': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
+        # Venezia - PRIORITA' MASSIMA (URL Pixabay più compatibili)
+        'piazza san marco': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
+        'basilica di san marco': 'https://cdn.pixabay.com/photo/2018/08/14/09/58/venice-3605320_1280.jpg',
+        'ponte di rialto': 'https://cdn.pixabay.com/photo/2017/07/24/23/36/bridge-2536475_1280.jpg',
+        'palazzo ducale venezia': 'https://cdn.pixabay.com/photo/2018/08/14/09/58/venice-3605320_1280.jpg',
+        'canal grande': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
+        'caffè florian': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
+        'mercato di rialto': 'https://cdn.pixabay.com/photo/2017/07/24/23/36/bridge-2536475_1280.jpg',
         'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
         
         # Genova

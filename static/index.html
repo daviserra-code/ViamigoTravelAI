@@ -709,11 +709,16 @@
                 
                 // Aggiungi immagine se disponibile
                 if (data.imageUrl) {
+                    console.log(`🖼️ URL immagine ricevuta: ${data.imageUrl}`);
                     content += `<div class="mb-4">
                                   <img src="${data.imageUrl}" alt="${data.title || 'Immagine del luogo'}" 
                                        class="w-full h-48 object-cover rounded-lg shadow-lg" 
-                                       style="max-height: 200px;">
+                                       style="max-height: 200px;"
+                                       onload="console.log('✅ Immagine caricata con successo')" 
+                                       onerror="console.log('❌ Errore caricamento immagine: ${data.imageUrl}')">
                                 </div>`;
+                } else {
+                    console.log('⚠️ Nessun URL immagine ricevuto dal backend');
                 }
                 
                 if (data.summary) {
