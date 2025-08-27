@@ -814,6 +814,77 @@ def get_local_place_details(context):
     """Ottiene dettagli dal database locale per città italiane principali"""
     # Database dinamico dettagli luoghi per città italiane
     place_details = {
+            # TRIESTE - Luoghi specifici con dettagli autentici
+            'piazza_unita_ditalia_trieste': {
+                'title': 'Piazza Unità d\'Italia, Trieste',
+                'summary': 'La piazza più grande d\'Europa affacciata sul mare, capolavoro urbanistico dell\'Impero Asburgico. Circondata da palazzi neoclassici e barocchi.',
+                'details': [
+                    {'label': 'Dimensioni', 'value': '12.280 m² (la più grande piazza europea sul mare)'},
+                    {'label': 'Costruzione', 'value': 'XIX secolo (epoca asburgica)'},
+                    {'label': 'Palazzo Municipio', 'value': 'Sede comunale con torre campanaria (1877)'},
+                    {'label': 'Caffè degli Specchi', 'value': 'Caffè storico (1839) con vista mare'},
+                    {'label': 'Fontana Quattro Continenti', 'value': 'Simbolo dell\'apertura di Trieste al mondo'},
+                    {'label': 'Vista', 'value': 'Golfo di Trieste e Castello di Miramare'}
+                ],
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            },
+            'centro_storico_trieste': {
+                'title': 'Centro Storico, Trieste',
+                'summary': 'Il cuore mitteleuropeo di Trieste con architetture asburgiche, caffè letterari e atmosfera cosmopolita.',
+                'details': [
+                    {'label': 'Via del Corso', 'value': 'Arteria pedonale principale per shopping'},
+                    {'label': 'Caffè San Marco', 'value': 'Caffè letterario frequentato da Joyce e Svevo'},
+                    {'label': 'Teatro Verdi', 'value': 'Teatro dell\'opera del 1801'},
+                    {'label': 'Sinagoga', 'value': 'Una delle più grandi d\'Europa'},
+                    {'label': 'Borgo Teresiano', 'value': 'Quartiere settecentesco con canali'},
+                    {'label': 'Architettura', 'value': 'Mix asburgico-italiano unico al mondo'}
+                ],
+                'opening_hours': 'Sempre accessibile (negozi: 9:00-19:00)',
+                'cost': 'Gratuito (consumi variabili)'
+            },
+            'castello_miramare_trieste': {
+                'title': 'Castello di Miramare',
+                'summary': 'Castello romantico dell\'Arciduca Massimiliano d\'Asburgo (1856-1860) con giardini botanici e vista spettacolare sul golfo.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1856-1860 (Arciduca Massimiliano)'},
+                    {'label': 'Stile', 'value': 'Eclettico (gotico, rinascimentale, medievale)'},
+                    {'label': 'Interni', 'value': 'Arredi originali e sale storiche'},
+                    {'label': 'Giardini', 'value': '22 ettari con 2000+ specie botaniche'},
+                    {'label': 'Vista panoramica', 'value': 'Golfo di Trieste e costa istriana'},
+                    {'label': 'Leggenda', 'value': 'Maledizione di Miramare sui suoi proprietari'}
+                ],
+                'opening_hours': 'Mar-Dom 9:00-19:00 (estate), 9:00-17:00 (inverno)',
+                'cost': '€12 adulti, €8 ridotto, gratuito giardini'
+            },
+            'canal_grande_trieste': {
+                'title': 'Canal Grande, Trieste',
+                'summary': 'Il canale navigabile che attraversa il centro storico, cuore del Borgo Teresiano con ponti storici e caffè affacciati.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'XVIII secolo (Maria Teresa d\'Austria)'},
+                    {'label': 'Lunghezza', 'value': '300 metri navigabili'},
+                    {'label': 'Ponti', 'value': 'Ponte Rosso e Ponte Verde'},
+                    {'label': 'Chiesa Sant\'Antonio', 'value': 'Chiesa neoclassica sulla sponda'},
+                    {'label': 'Caffè storici', 'value': 'Caffè con dehors sui ponti'},
+                    {'label': 'Mercatini', 'value': 'Mercato dell\'antiquariato (domenica)'}
+                ],
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            },
+            'teatro_romano_trieste': {
+                'title': 'Teatro Romano, Trieste',
+                'summary': 'Antico teatro romano del I-II secolo d.C. scavato nella roccia del colle di San Giusto, con vista panoramica sulla città.',
+                'details': [
+                    {'label': 'Epoca', 'value': 'I-II secolo d.C. (epoca augustea)'},
+                    {'label': 'Capacità', 'value': '6000 spettatori (originariamente)'},
+                    {'label': 'Costruzione', 'value': 'Scavato nella roccia carsica'},
+                    {'label': 'Stato', 'value': 'Parzialmente conservato'},
+                    {'label': 'Vista', 'value': 'Panorama su Trieste e il golfo'},
+                    {'label': 'Eventi', 'value': 'Concerti e spettacoli estivi'}
+                ],
+                'opening_hours': 'Sempre accessibile (visite guidate su prenotazione)',
+                'cost': 'Gratuito'
+            },
             # TORINO
             'via_roma_torino': {
                 'title': 'Via Roma, Torino',

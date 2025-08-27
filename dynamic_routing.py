@@ -489,8 +489,63 @@ class DynamicRouter:
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
         """Itinerario di fallback con coordinate reali della città"""
         # Usa coordinate della città se disponibile
-        base_coords = self.city_centers.get(city.lower(), [41.9028, 12.4964])  # Default Roma
+        city_lower = city.lower()
+        if 'trieste' in city_lower or 'miramare' in city_lower:
+            base_coords = [45.6495, 13.7768]  # Trieste preciso
+        else:
+            base_coords = self.city_centers.get(city_lower, [41.9028, 12.4964])  # Default Roma
         
+        # Waypoints specifici per Trieste con coordinate precise
+        if 'trieste' in city_lower or 'miramare' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza Unità d\'Italia',
+                    'description': 'La piazza più grande d\'Europa affacciata sul mare, circondata da eleganti palazzi asburgici',
+                    'coordinates': [45.6465, 13.7738],
+                    'context': 'piazza_unita_ditalia_trieste',
+                    'transport': 'start'
+                },
+                {
+                    'time': '09:45',
+                    'title': 'Centro Storico',
+                    'description': 'Il cuore mitteleuropeo di Trieste con caffè storici e architetture asburgiche',
+                    'coordinates': [45.6490, 13.7760],
+                    'context': 'centro_storico_trieste',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '11:00',
+                    'title': 'Canal Grande',
+                    'description': 'Il canale navigabile che attraversa il centro con caffè storici e ponti caratteristici',
+                    'coordinates': [45.6525, 13.7798],
+                    'context': 'canal_grande_trieste',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:30',
+                    'title': 'Teatro Romano',
+                    'description': 'Antico teatro romano del I-II secolo d.C. con vista sulla città',
+                    'coordinates': [45.6540, 13.7820],
+                    'context': 'teatro_romano_trieste',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Castello di Miramare',
+                    'description': 'Romantico castello dell\'Arciduca Massimiliano con giardini botanici e vista sul golfo',
+                    'coordinates': [45.6495, 13.7768],
+                    'context': 'castello_miramare_trieste',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Trieste',
+                    'description': 'Itinerario autentico attraverso la storia asburgica di Trieste - dalle piazze imperiali al castello romantico'
+                }
+            ]
+        
+        # Itinerario generico per altre città
         return [
             {
                 'time': '09:00',
@@ -501,41 +556,25 @@ class DynamicRouter:
                 'transport': 'start'
             },
             {
-                'time': '09:45',
+                'time': '10:00',
                 'title': f'Centro di {city.title()}',
                 'description': f'Esplora il centro storico di {city.title()} con i suoi monumenti principali',
-                'coordinates': [base_coords[0] + 0.003, base_coords[1] + 0.003],
+                'coordinates': [base_coords[0] + 0.005, base_coords[1] + 0.005],
                 'context': f'centro_{city.lower()}',
                 'transport': 'walking'
             },
             {
-                'time': '11:00',
-                'title': f'Quartiere storico',
-                'description': f'Passeggiata nel quartiere più caratteristico di {city.title()}',
-                'coordinates': [base_coords[0] + 0.006, base_coords[1] + 0.006],
-                'context': f'quartiere_{city.lower()}',
-                'transport': 'walking'
-            },
-            {
-                'time': '12:30',
-                'title': f'Area panoramica',
-                'description': f'Punto panoramico per ammirare {city.title()} dall\'alto',
-                'coordinates': [base_coords[0] + 0.009, base_coords[1] + 0.009],
-                'context': f'panorama_{city.lower()}',
-                'transport': 'walking'
-            },
-            {
-                'time': '14:00',
+                'time': '11:30',
                 'title': end.title(),
                 'description': f'Destinazione finale: {end}',
-                'coordinates': [base_coords[0] + 0.012, base_coords[1] + 0.012],
+                'coordinates': [base_coords[0] + 0.010, base_coords[1] + 0.010],
                 'context': f'{end.lower().replace(" ", "_")}_{city.lower()}',
                 'transport': 'walking'
             },
             {
                 'type': 'tip',
                 'title': f'💡 {city.title()}',
-                'description': f'Itinerario dinamico generato per {city.title()} - coordinate precise e percorsi autentici'
+                'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
             }
         ]
 
