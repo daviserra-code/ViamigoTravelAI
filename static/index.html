@@ -164,10 +164,14 @@
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
         
-        console.log('🔧 Inizializzazione script, elementi trovati:');
+        console.log('🔧 VIAMIGO v2.0 - Inizializzazione script, elementi trovati:');
         console.log('- timelineContainer:', timelineContainer);
         console.log('- planButton:', planButton);
         console.log('- itineraryTitle:', itineraryTitle);
+        
+        // OVERRIDE: Forza il caricamento del JavaScript corretto
+        window.VIAMIGO_DEBUG = true;
+        console.log('✅ VIAMIGO JavaScript caricato correttamente!');
 
         // --- GESTIONE NAVIGAZIONE ---
         navButtons.forEach(button => {
