@@ -341,6 +341,8 @@ def api_plan_trip():
             itinerary = generate_venezia_itinerary(start, end)
         elif city == 'firenze':
             itinerary = generate_firenze_itinerary(start, end)
+        elif city == 'genova':
+            itinerary = generate_genova_itinerary(start, end)
         else:
             # Itinerario generico per città non riconosciute
             itinerary = generate_generic_itinerary(start, end)
@@ -371,7 +373,8 @@ def detect_city_from_locations(start, end):
         'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'termini', 'trastevere', 'pantheon'],
         'milano': ['milano', 'milan', 'duomo', 'navigli', 'brera', 'porta garibaldi'],
         'venezia': ['venezia', 'venice', 'san marco', 'rialto', 'murano', 'burano'],
-        'firenze': ['firenze', 'florence', 'uffizi', 'duomo', 'ponte vecchio', 'oltrarno']
+        'firenze': ['firenze', 'florence', 'uffizi', 'duomo', 'ponte vecchio', 'oltrarno'],
+        'genova': ['genova', 'genoa', 'acquario', 'de ferrari', 'spianata castelletto', 'via del campo']
     }
     
     for city, keywords in city_keywords.items():
@@ -388,35 +391,40 @@ def generate_torino_itinerary(start, end):
             'title': 'Via Roma',
             'description': 'Partenza dalla via pedonale più elegante di Torino, tra portici storici e caffè aristocratici.',
             'coordinates': [45.0703, 7.6869],
-            'context': 'via_roma_torino'
+            'context': 'via_roma_torino',
+            'transport': 'walking'
         },
         {
             'time': '09:30',
             'title': 'Piazza Castello',
             'description': 'Il cuore di Torino con Palazzo Reale, Palazzo Madama e Teatro Regio.',
             'coordinates': [45.0706, 7.6868],
-            'context': 'piazza_castello_torino'
+            'context': 'piazza_castello_torino',
+            'transport': 'walking'
         },
         {
             'time': '10:15',
             'title': 'Mole Antonelliana',
             'description': 'Il simbolo di Torino con il Museo del Cinema. Vista panoramica dalla cupola.',
             'coordinates': [45.0692, 7.6934],
-            'context': 'mole_antonelliana'
+            'context': 'mole_antonelliana',
+            'transport': 'tram'
         },
         {
             'time': '11:00',
             'title': 'Musei Reali',
             'description': 'Palazzo Reale, Armeria Reale e Galleria Sabauda in un unico complesso.',
             'coordinates': [45.0722, 7.6862],
-            'context': 'musei_reali_torino'
+            'context': 'musei_reali_torino',
+            'transport': 'walking'
         },
         {
             'time': '12:30',
             'title': 'Lungo Po',
             'description': 'Passeggiata rilassante lungo il fiume Po fino al Parco del Valentino.',
             'coordinates': [45.0618, 7.6908],
-            'context': 'lungo_po'
+            'context': 'lungo_po',
+            'transport': 'bus'
         },
         {
             'type': 'tip',
@@ -575,6 +583,61 @@ def generate_firenze_itinerary(start, end):
         }
     ]
 
+def generate_genova_itinerary(start, end):
+    """Genera itinerario specifico per Genova"""
+    return [
+        {
+            'time': '09:00',
+            'title': 'Piazza De Ferrari',
+            'description': 'Il cuore di Genova con la famosa fontana. Punto di partenza per esplorare il centro storico.',
+            'coordinates': [44.4071, 8.9348],
+            'context': 'piazza_de_ferrari',
+            'transport': 'walking'
+        },
+        {
+            'time': '09:20',
+            'title': 'Via del Campo',
+            'description': 'La strada più famosa di Genova, cantata da De André. Caruggi medievali autentici.',
+            'coordinates': [44.4076, 8.9290],
+            'context': 'via_del_campo',
+            'transport': 'walking'
+        },
+        {
+            'time': '10:00',
+            'title': 'Cattedrale di San Lorenzo',
+            'description': 'Duomo di Genova con la famosa bomba inesplosa della Seconda Guerra Mondiale.',
+            'coordinates': [44.4076, 8.9321],
+            'context': 'cattedrale_genova',
+            'transport': 'walking'
+        },
+        {
+            'time': '10:45',
+            'title': 'Spianata Castelletto',
+            'description': 'Vista panoramica mozzafiato su Genova. Salita con funicolare storica.',
+            'coordinates': [44.4118, 8.9364],
+            'context': 'spianata_castelletto',
+            'transport': 'funicular'
+        },
+        {
+            'time': '11:30',
+            'title': 'Acquario di Genova',
+            'description': 'Secondo acquario più grande d\'Europa. Metro linea rossa fino a San Giorgio.',
+            'coordinates': [44.4109, 8.9326],
+            'context': 'acquario_genova',
+            'transport': 'metro'
+        },
+        {
+            'type': 'tip',
+            'title': '🚇 Trasporti Genova',
+            'description': 'Metro AMT: €1.50 (100 min). Funicolare Castelletto: €0.90. Biglietto giornaliero: €4.50.'
+        },
+        {
+            'type': 'tip',
+            'title': '🍝 Specialità locale',
+            'description': 'Prova il pesto genovese autentico da Il Genovese o prenditi una farinata in Via del Campo.'
+        }
+    ]
+
 def generate_generic_itinerary(start, end):
     """Genera itinerario generico per città non riconosciute"""
     return [
@@ -583,21 +646,24 @@ def generate_generic_itinerary(start, end):
             'title': start.title(),
             'description': f'Punto di partenza: {start}',
             'coordinates': [45.0, 9.0],  # Coordinate generiche Italia centrale
-            'context': 'generic_start'
+            'context': 'generic_start',
+            'transport': 'walking'
         },
         {
             'time': '10:30',
             'title': 'Centro storico',
             'description': 'Esplora il centro storico della città e i suoi monumenti principali.',
             'coordinates': [45.001, 9.001],
-            'context': 'generic_center'
+            'context': 'generic_center',
+            'transport': 'walking'
         },
         {
             'time': '12:00',
             'title': end.title(),
             'description': f'Destinazione finale: {end}',
             'coordinates': [45.002, 9.002],
-            'context': 'generic_end'
+            'context': 'generic_end',
+            'transport': 'walking'
         },
         {
             'type': 'tip',
@@ -664,6 +730,46 @@ def api_get_details():
                     {'label': 'Castello del Valentino', 'value': 'Residenza sabauda (UNESCO)'},
                     {'label': 'Borgo medievale', 'value': 'Ricostruzione filologica (1884)'},
                     {'label': 'Attività', 'value': 'Jogging, ciclismo, pic-nic'}
+                ]
+            },
+            # GENOVA
+            'piazza_de_ferrari': {
+                'title': 'Piazza De Ferrari, Genova',
+                'summary': 'Il salotto di Genova, circondata da palazzi storici e dominata dalla grande fontana centrale. Cuore del centro storico medievale più esteso d\'Europa.',
+                'details': [
+                    {'label': 'Fontana', 'value': 'Costruita nel 1936, ristrutturata nel 2001'},
+                    {'label': 'Palazzi storici', 'value': 'Palazzo Ducale, Palazzo della Regione'},
+                    {'label': 'Teatro', 'value': 'Teatro Carlo Felice (opera house)'},
+                    {'label': 'Shopping', 'value': 'Gallerie Mazzini, Via XX Settembre'},
+                    {'label': 'Metro', 'value': 'Stazione De Ferrari (linea rossa)'}
+                ]
+            },
+            'via_del_campo': {
+                'title': 'Via del Campo, Genova',
+                'summary': 'La strada più famosa di Genova, resa celebre dalla canzone di Fabrizio De André. Autentico caruggio medievale nel cuore del centro storico.',
+                'details': [
+                    {'label': 'Lunghezza', 'value': '500 metri di storia medievale'},
+                    {'label': 'Epoca', 'value': 'XII secolo (caruggi medievali)'},
+                    {'label': 'Fabrizio De André', 'value': 'Canzone "Via del Campo" (1967)'},
+                    {'label': 'Caratteristiche', 'value': 'Negozi storici, farinata, botteghe artigiane'},
+                    {'label': 'Mercato', 'value': 'Mercato del Pesce e prodotti locali'}
+                ]
+            },
+            'acquario_genova': {
+                'title': 'Acquario di Genova',
+                'summary': 'Il secondo acquario più grande d\'Europa, nel Porto Antico progettato da Renzo Piano. Casa di 12.000 esemplari di 600 specie diverse.',
+                'details': [
+                    {'label': 'Dimensioni', 'value': '9.700 m² di superficie espositiva'},
+                    {'label': 'Apertura', 'value': '1992 (Expo Colombo 500 anni)'},
+                    {'label': 'Architetto', 'value': 'Renzo Piano (Porto Antico)'},
+                    {'label': 'Biglietto', 'value': '€29 adulti, €19 bambini'},
+                    {'label': 'Orari', 'value': '9:00-20:00 (estate), 9:30-19:00 (inverno)'},
+                    {'label': 'Attrazioni', 'value': 'Delfini, squali, lamantini, pinguini'},
+                    {'label': 'Record', 'value': '2° in Europa per grandezza'}
+                ],
+                'timetable': [
+                    {'direction': 'Estate (giu-set)', 'times': '9:00-20:00 (ultimo ingresso 18:00)'},
+                    {'direction': 'Inverno (ott-mag)', 'times': '9:30-19:00 (ultimo ingresso 17:00)'}
                 ]
             },
             'stazione_termini': {
