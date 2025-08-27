@@ -759,7 +759,50 @@
                 if (item.type === 'tip') {
                     timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
                 } else {
-                    timelineContainer.innerHTML += `<div class="timeline-item relative pb-8"><div class="dot bg-gray-500"></div><div class="flex justify-between items-start"><div><p class="text-xs text-gray-400 mb-1">${item.time}</p><h3 class="font-semibold text-white">${item.title}</h3><p class="text-sm text-gray-300">${item.description}</p></div><button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg></button></div></div>`;
+                    // Genera un trigger contestuale intelligente per ogni tappa
+                    const contextualTrigger = generateContextualTrigger(item);
+                    const triggerClass = contextualTrigger.active ? 'border-l-4 border-red-500 bg-red-900/20' : '';
+                    
+                    timelineContainer.innerHTML += `
+                        <div class="timeline-item relative pb-8 ${triggerClass}">
+                            <div class="dot bg-gray-500"></div>
+                            <div class="flex justify-between items-start">
+                                <div class="flex-grow">
+                                    <p class="text-xs text-gray-400 mb-1">${item.time}</p>
+                                    <h3 class="font-semibold text-white">${item.title}</h3>
+                                    <p class="text-sm text-gray-300">${item.description}</p>
+                                    ${contextualTrigger.active ? `
+                                        <div class="mt-2 p-2 bg-red-900/30 rounded border border-red-500/30">
+                                            <div class="flex items-center text-red-300 text-xs mb-1">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                ${contextualTrigger.title}
+                                            </div>
+                                            <p class="text-red-200 text-xs">${contextualTrigger.message}</p>
+                                            <button onclick="triggerAICompanion('${item.context}', '${contextualTrigger.type}')" 
+                                                    class="mt-1 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                                                🧠 Chiedi al Compagno AI
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="flex flex-col space-y-1 ml-2">
+                                    <button class="ai-button p-2 ${themeColors.text}" data-context="${item.context}" title="Dettagli tappa">
+                                        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5z"/>
+                                        </svg>
+                                    </button>
+                                    <button onclick="openAICompanionForLocation('${item.context}')" 
+                                            class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-2 rounded hover:from-emerald-600 hover:to-teal-600 transition-all" 
+                                            title="Compagno AI per questa tappa">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
                 }
             });
             document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
@@ -886,6 +929,100 @@
 
         // Chiudi modal cliccando sull'overlay
         modalOverlay.addEventListener('click', window.closeModal);
+
+        // === SISTEMA TRIGGER CONTESTUALI COMPAGNO AI ===
+        
+        // Genera trigger contestuali intelligenti basati su eventi reali
+        function generateContextualTrigger(item) {
+            const triggers = {
+                museo: [
+                    { type: 'closure', title: 'Museo Chiuso', message: 'Il museo potrebbe essere chiuso oggi. Serve un Piano B?', probability: 0.15 },
+                    { type: 'crowd', title: 'Affollamento', message: 'Orario di punta previsto. Alternative più tranquille?', probability: 0.25 },
+                    { type: 'ticket', title: 'Prenotazione', message: 'Potrebbe essere necessario prenotare. Verifico disponibilità?', probability: 0.20 }
+                ],
+                trasporto: [
+                    { type: 'strike', title: 'Sciopero Metro', message: 'Possibile sciopero dei trasporti. Route alternative?', probability: 0.10 },
+                    { type: 'delay', title: 'Ritardi', message: 'Rallentamenti previsti sulla linea. Calcolo tempi aggiornati?', probability: 0.30 },
+                    { type: 'maintenance', title: 'Manutenzione', message: 'Linea in manutenzione oggi. Percorso alternativo?', probability: 0.08 }
+                ],
+                outdoor: [
+                    { type: 'weather', title: 'Meteo Avverso', message: 'Prevista pioggia. Suggerisco alternative al coperto?', probability: 0.35 },
+                    { type: 'temperature', title: 'Caldo Eccessivo', message: 'Temperature elevate. Luoghi con aria condizionata?', probability: 0.20 }
+                ],
+                restaurant: [
+                    { type: 'full', title: 'Tutto Esaurito', message: 'Ristorante molto richiesto. Prenotazione o alternative?', probability: 0.25 },
+                    { type: 'price', title: 'Budget', message: 'Potrebbe essere costoso. Alternative nella stessa zona?', probability: 0.15 }
+                ]
+            };
+
+            // Determina categoria basata sul contesto
+            let category = 'general';
+            const context = item.context.toLowerCase();
+            
+            if (context.includes('museo') || context.includes('galleria') || context.includes('palazzo')) category = 'museo';
+            else if (context.includes('metro') || context.includes('bus') || context.includes('stazione')) category = 'trasporto';
+            else if (context.includes('parco') || context.includes('giardini') || context.includes('passeggiata')) category = 'outdoor';
+            else if (context.includes('ristorante') || context.includes('trattoria') || context.includes('osteria')) category = 'restaurant';
+
+            if (triggers[category]) {
+                // Simula eventi contestuali realistici
+                const relevantTriggers = triggers[category];
+                const randomTrigger = relevantTriggers[Math.floor(Math.random() * relevantTriggers.length)];
+                
+                // Attiva trigger basato su probabilità realistica
+                const isActive = Math.random() < randomTrigger.probability;
+                
+                return {
+                    active: isActive,
+                    type: randomTrigger.type,
+                    title: randomTrigger.title,
+                    message: randomTrigger.message,
+                    category: category
+                };
+            }
+
+            return { active: false };
+        }
+
+        // Trigger del Compagno AI per evento contestuale
+        window.triggerAICompanion = function(location, eventType) {
+            console.log(`🚨 Trigger AI Companion: ${eventType} a ${location}`);
+            
+            // Apri modal del Compagno AI con contesto specifico
+            const contextMessage = `⚠️ EVENTO RILEVATO: ${eventType.toUpperCase()}\n\nPosizione: ${location}\n\nIl tuo Compagno AI sta analizzando la situazione e preparando soluzioni alternative...`;
+            
+            // Passa al sistema Advanced Features con contesto
+            localStorage.setItem('aiCompanionContext', JSON.stringify({
+                trigger: true,
+                eventType: eventType,
+                location: location,
+                timestamp: new Date().toISOString()
+            }));
+            
+            // Apri il Compagno AI
+            window.location.href = '/advanced-features?trigger=' + eventType + '&location=' + encodeURIComponent(location);
+        };
+
+        // Compagno AI per specifica location
+        window.openAICompanionForLocation = function(location) {
+            console.log(`🧠 Apertura Compagno AI per: ${location}`);
+            
+            localStorage.setItem('aiCompanionContext', JSON.stringify({
+                trigger: false,
+                location: location,
+                mode: 'exploration',
+                timestamp: new Date().toISOString()
+            }));
+            
+            window.location.href = '/advanced-features?location=' + encodeURIComponent(location);
+        };
+
+        // Compagno AI generico
+        window.openAICompanion = function() {
+            console.log(`🧠 Apertura Compagno AI generico`);
+            window.location.href = '/advanced-features';
+        };
+
     });
     </script>
 </body>

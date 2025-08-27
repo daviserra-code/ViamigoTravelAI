@@ -346,6 +346,103 @@
             document.getElementById('step-status').classList.remove('hidden');
         }, 5000);
 
+        // === GESTIONE TRIGGER CONTESTUALI ===
+        handleContextualTriggers();
+        
+        function handleContextualTriggers() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const trigger = urlParams.get('trigger');
+            const location = urlParams.get('location');
+            
+            // Recupera contesto da localStorage
+            const storedContext = localStorage.getItem('aiCompanionContext');
+            if (storedContext) {
+                const context = JSON.parse(storedContext);
+                console.log('📱 Contesto AI ricevuto:', context);
+                
+                if (context.trigger) {
+                    showContextualAlert(context.eventType, context.location);
+                    activatePianoBMode(context.eventType, context.location);
+                } else if (context.location && context.mode === 'exploration') {
+                    showLocationExploration(context.location);
+                }
+                
+                localStorage.removeItem('aiCompanionContext');
+            }
+            
+            if (trigger && location) {
+                showContextualAlert(trigger, decodeURIComponent(location));
+                activatePianoBMode(trigger, decodeURIComponent(location));
+            }
+        }
+        
+        function showContextualAlert(eventType, location) {
+            const alertMessages = {
+                closure: `🚨 MUSEO CHIUSO: ${location} - Preparando alternative...`,
+                strike: `🚨 SCIOPERO TRASPORTI: ${location} - Calcolando percorsi alternativi...`,
+                weather: `🚨 METEO AVVERSO: ${location} - Suggerendo attività al coperto...`,
+                crowd: `🚨 AFFOLLAMENTO: ${location} - Cercando orari migliori...`,
+                full: `🚨 LOCALE PIENO: ${location} - Trovando alternative...`
+            };
+            
+            const message = alertMessages[eventType] || `🚨 EVENTO: ${location}`;
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'fixed top-4 left-4 right-4 z-50 bg-red-900 border border-red-500 rounded-lg p-3 shadow-lg';
+            alertDiv.innerHTML = `
+                <div class="flex items-center text-sm text-red-200">
+                    <div class="flex-grow">${message}</div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-red-400">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            setTimeout(() => { if (alertDiv.parentNode) alertDiv.remove(); }, 8000);
+        }
+        
+        function activatePianoBMode(eventType, location) {
+            const pianoBTab = document.querySelector('[data-feature="piano-b"]');
+            if (pianoBTab) {
+                setTimeout(() => {
+                    pianoBTab.click();
+                    
+                    setTimeout(() => {
+                        const textarea = document.querySelector('#piano-b-content textarea');
+                        if (textarea) {
+                            const contextMessages = {
+                                closure: `Il museo ${location} risulta chiuso. Alternative nella zona?`,
+                                strike: `Sciopero trasporti vicino a ${location}. Come raggiungere la destinazione?`,
+                                weather: `Meteo peggiorato vicino a ${location}. Attività al coperto?`,
+                                crowd: `${location} molto affollato. Alternative più tranquille?`,
+                                full: `Ristorante ${location} al completo. Altre opzioni disponibili?`
+                            };
+                            
+                            textarea.value = contextMessages[eventType] || `Imprevisto presso ${location}. Suggerimenti?`;
+                            
+                            setTimeout(() => {
+                                const sendButton = textarea.closest('.space-y-4').querySelector('button');
+                                if (sendButton) sendButton.click();
+                            }, 2000);
+                        }
+                    }, 500);
+                }, 100);
+            }
+        }
+        
+        function showLocationExploration(location) {
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'fixed top-4 left-4 right-4 z-50 bg-emerald-900 border border-emerald-500 rounded-lg p-3 shadow-lg';
+            notifyDiv.innerHTML = `
+                <div class="flex items-center text-sm text-emerald-200">
+                    <div class="flex-grow">🧠 Modalità Esplorazione: ${location}</div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-emerald-400">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notifyDiv);
+            setTimeout(() => { if (notifyDiv.parentNode) notifyDiv.remove(); }, 5000);
+        }
+        
         console.log('🚀 Viamigo Advanced Features - Compagno di Viaggio Intelligente caricato!');
     </script>
 
