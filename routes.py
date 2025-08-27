@@ -765,11 +765,8 @@ def api_get_details():
         # Prima prova nel database locale (città italiane principali)
         local_result = get_local_place_details(context)
         if local_result:
-            return jsonify({
-                'success': True,
-                'details': local_result,
-                'source': 'local_database'
-            })
+            # Formato corretto per il frontend - dati direttamente, non sotto "details"
+            return jsonify(local_result)
         
         # Se non trovato localmente, controlla cache database
         cached_result = get_cached_place_details(context)
@@ -1144,8 +1141,11 @@ def get_local_place_details(context):
     
     # Cerca nel database dei luoghi
     if context in place_details:
-        return place_details[context]
+        result = place_details[context]
+        print(f"✅ Trovati dettagli per {context}: {result.get('title', 'N/A')}")
+        return result
     else:
+        print(f"❌ Nessun dettaglio trovato per context: {context}")
         return None
 
 def get_cached_place_details(context):
