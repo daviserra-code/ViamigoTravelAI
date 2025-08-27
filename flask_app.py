@@ -13,6 +13,12 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # needed for url_for to generate with https
 
+# Configure session to be permanent
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(days=7)  # Session lasts 7 days
+app.config['SESSION_PERMANENT'] = True
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
+
 # Database configuration
 database_url = os.environ.get("DATABASE_URL")
 if database_url:

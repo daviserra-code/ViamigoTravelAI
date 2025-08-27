@@ -1,5 +1,5 @@
 from flask import session, render_template_string, request, jsonify, redirect, url_for, flash
-from flask_login import current_user
+from flask_login import current_user, login_required
 from models import User, UserProfile, AdminUser
 import logging
 from functools import wraps
@@ -1309,7 +1309,7 @@ def demo_dashboard():
     return redirect('/profile')
 
 @app.route('/profile')
-@require_login
+@login_required
 def view_profile():
     """Visualizza il profilo dell'utente - design mobile uniforme a Viamigo"""
     from flask_login import current_user as auth_user

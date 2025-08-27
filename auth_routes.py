@@ -380,6 +380,8 @@ def login():
             user = User.query.filter_by(email=data['email'].lower().strip()).first()
             
             if user and user.check_password(data['password']):
+                # Login effettuato con successo - sessione permanente 
+                session.permanent = True
                 login_user(user, remember=True)
                 
                 # Determina dove reindirizzare l'utente
