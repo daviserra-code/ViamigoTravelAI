@@ -328,32 +328,37 @@ def api_plan_trip():
         start = data.get('start', '')
         end = data.get('end', '')
         
-        # Mock response per demo - in futuro qui si integrerà l'AI reale
+        # Mock response formato corretto per frontend JavaScript
         mock_response = {
             'success': True,
-            'itinerary': {
-                'title': f'Viaggio da {start} a {end}',
-                'steps': [
-                    {
-                        'time': '09:00',
-                        'location': start,
-                        'description': 'Punto di partenza',
-                        'coordinates': [41.9028, 12.4964]
-                    },
-                    {
-                        'time': '10:30',
-                        'location': 'Tappa intermedia',
-                        'description': 'Scoperta locale interessante',
-                        'coordinates': [41.9020, 12.4950]
-                    },
-                    {
-                        'time': '12:00',
-                        'location': end,
-                        'description': 'Destinazione finale',
-                        'coordinates': [41.8986, 12.4768]
-                    }
-                ]
-            }
+            'itinerary': [
+                {
+                    'time': '09:00',
+                    'title': start,
+                    'description': 'Punto di partenza del tuo viaggio',
+                    'coordinates': [41.9028, 12.4964],
+                    'context': f'dettagli_{start.replace(" ", "_")}'
+                },
+                {
+                    'time': '10:30', 
+                    'title': 'Tappa intermedia',
+                    'description': 'Scoperta locale interessante lungo il percorso',
+                    'coordinates': [41.9020, 12.4950],
+                    'context': 'tappa_intermedia'
+                },
+                {
+                    'time': '12:00',
+                    'title': end,
+                    'description': 'Destinazione finale del tuo itinerario',
+                    'coordinates': [41.8986, 12.4768],
+                    'context': f'dettagli_{end.replace(" ", "_")}'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Consiglio viaggio',
+                    'description': 'Porta sempre con te una bottiglia d\'acqua e scarpe comode per camminare.'
+                }
+            ]
         }
         
         return jsonify(mock_response)
