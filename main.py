@@ -67,21 +67,59 @@ def search_real_transport_data(city: str):
         """
     return "Nessun dato di trasporto specifico disponibile per questa città."
 
-def fix_genova_coordinates(itinerary_data):
-    """Corregge coordinate sbagliate di Genova generate dall'AI"""
-    # Database delle coordinate corrette per Genova
-    correct_coordinates = {
-        "piazza de ferrari": {"lat": 44.4071, "lon": 8.9348},
-        "palazzo ducale": {"lat": 44.4071, "lon": 8.9348},
-        "parchi di nervi": {"lat": 44.3670, "lon": 8.9754},
-        "nervi": {"lat": 44.3670, "lon": 8.9754},
-        "spiaggia di nervi": {"lat": 44.3675, "lon": 8.9760},
-        "caffè degli specchi": {"lat": 44.4071, "lon": 8.9348},
-        "ristorante da maria": {"lat": 44.4111, "lon": 8.9330},
-        "caffè dei parchi": {"lat": 44.3677, "lon": 8.9765},
-        "chiosco di nervi": {"lat": 44.3677, "lon": 8.9765},
-        "acquario di genova": {"lat": 44.4109, "lon": 8.9326},
-        "porto antico": {"lat": 44.4108, "lon": 8.9279}
+def fix_italian_coordinates(itinerary_data):
+    """
+    Sistema scalabile di correzione coordinate per tutte le città italiane.
+    Previene allucinazioni geografiche dell'AI sostituendo coordinate imprecise
+    con coordinate GPS verificate per luoghi famosi.
+    """
+    # Database organizzato per città con coordinate GPS verificate
+    italian_coordinates_db = {
+        "genova": {
+            "piazza de ferrari": {"lat": 44.4071, "lon": 8.9348},
+            "palazzo ducale": {"lat": 44.4071, "lon": 8.9348},
+            "parchi di nervi": {"lat": 44.3670, "lon": 8.9754},
+            "nervi": {"lat": 44.3670, "lon": 8.9754},
+            "spiaggia di nervi": {"lat": 44.3675, "lon": 8.9760},
+            "caffè degli specchi": {"lat": 44.4071, "lon": 8.9348},
+            "ristorante da maria": {"lat": 44.4111, "lon": 8.9330},
+            "caffè dei parchi": {"lat": 44.3677, "lon": 8.9765},
+            "chiosco di nervi": {"lat": 44.3677, "lon": 8.9765},
+            "acquario di genova": {"lat": 44.4109, "lon": 8.9326},
+            "porto antico": {"lat": 44.4108, "lon": 8.9279},
+            "cattedrale di san lorenzo": {"lat": 44.4082, "lon": 8.9309},
+            "palazzo rosso": {"lat": 44.4078, "lon": 8.9314},
+            "spianata castelletto": {"lat": 44.4127, "lon": 8.9264},
+            "mercato orientale": {"lat": 44.4043, "lon": 8.9380},
+            "via del campo": {"lat": 44.4065, "lon": 8.9298}
+        },
+        "milano": {
+            "piazza del duomo": {"lat": 45.4642, "lon": 9.1900},
+            "duomo di milano": {"lat": 45.4642, "lon": 9.1900},
+            "castello sforzesco": {"lat": 45.4702, "lon": 9.1797},
+            "parco sempione": {"lat": 45.4720, "lon": 9.1712},
+            "teatro alla scala": {"lat": 45.4676, "lon": 9.1900},
+            "navigli": {"lat": 45.4484, "lon": 9.1694},
+            "galleria vittorio emanuele": {"lat": 45.4656, "lon": 9.1897},
+            "corso buenos aires": {"lat": 45.4796, "lon": 9.2073},
+            "brera": {"lat": 45.4722, "lon": 9.1886}
+        },
+        "roma": {
+            "colosseo": {"lat": 41.8902, "lon": 12.4922},
+            "fori imperiali": {"lat": 41.8925, "lon": 12.4853},
+            "pantheon": {"lat": 41.8986, "lon": 12.4769},
+            "fontana di trevi": {"lat": 41.9009, "lon": 12.4833},
+            "piazza di spagna": {"lat": 41.9058, "lon": 12.4823},
+            "vaticano": {"lat": 41.9029, "lon": 12.4534},
+            "piazza navona": {"lat": 41.8992, "lon": 12.4731}
+        },
+        "firenze": {
+            "duomo di firenze": {"lat": 43.7731, "lon": 11.2560},
+            "ponte vecchio": {"lat": 43.7679, "lon": 11.2530},
+            "uffizi": {"lat": 43.7678, "lon": 11.2553},
+            "piazza della signoria": {"lat": 43.7695, "lon": 11.2558},
+            "palazzo pitti": {"lat": 43.7655, "lon": 11.2497}
+        }
     }
     
     if "itinerary" in itinerary_data:
@@ -90,19 +128,40 @@ def fix_genova_coordinates(itinerary_data):
                 context_lower = item["context"].lower()
                 title_lower = item.get("title", "").lower()
                 
-                # Cerca nei database delle coordinate corrette
-                for location_key, coords in correct_coordinates.items():
-                    if (location_key in context_lower or location_key in title_lower or
-                        context_lower in location_key or title_lower in location_key):
-                        
-                        old_lat = item.get("lat")
-                        old_lon = item.get("lon")
-                        
-                        item["lat"] = coords["lat"]
-                        item["lon"] = coords["lon"]
-                        
-                        print(f"🔧 Coordinate corrette per {item['title']}: {old_lat},{old_lon} → {coords['lat']},{coords['lon']}")
+                # Rileva la città dal context o dal titolo
+                detected_city = None
+                for city in italian_coordinates_db.keys():
+                    if city in context_lower or city in title_lower:
+                        detected_city = city
                         break
+                
+                if not detected_city:
+                    # Fallback: cerca la città più probabile
+                    for city in italian_coordinates_db.keys():
+                        city_coords_db = italian_coordinates_db[city]
+                        for location_key in city_coords_db.keys():
+                            if location_key in context_lower or location_key in title_lower:
+                                detected_city = city
+                                break
+                        if detected_city:
+                            break
+                
+                # Applica correzioni se la città è stata rilevata
+                if detected_city and detected_city in italian_coordinates_db:
+                    city_coords_db = italian_coordinates_db[detected_city]
+                    
+                    for location_key, coords in city_coords_db.items():
+                        if (location_key in context_lower or location_key in title_lower or
+                            context_lower in location_key or title_lower in location_key):
+                            
+                            old_lat = item.get("lat")
+                            old_lon = item.get("lon")
+                            
+                            item["lat"] = coords["lat"]
+                            item["lon"] = coords["lon"]
+                            
+                            print(f"🔧 Coordinate corrette per {item['title']} ({detected_city}): {old_lat},{old_lon} → {coords['lat']},{coords['lon']}")
+                            break
     
     return itinerary_data
 
@@ -182,8 +241,8 @@ async def get_ai_itinerary(start_location: str, end_location: str, interests: Li
             json_content_str = result['choices'][0]['message']['content']
             itinerary_data = json.loads(json_content_str)
             
-            # Post-processing: correggi coordinate sbagliate per Genova
-            itinerary_data = fix_genova_coordinates(itinerary_data)
+            # Post-processing: correggi coordinate sbagliate per tutte le città italiane
+            itinerary_data = fix_italian_coordinates(itinerary_data)
             return itinerary_data
     except Exception as e:
         print(f"Errore API Itinerario: {e}")

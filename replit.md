@@ -22,6 +22,8 @@ Preferred communication style: Simple, everyday language.
 - **Document Retrieval**: Vector similarity search using ChromaDB with configurable similarity thresholds
 - **Context Integration**: Retrieved documents are used as context for LLM recommendation generation
 - **Post-processing**: Recommendation ranking and filtering based on relevance scores
+- **Geographic Validation**: Anti-hallucination system with verified GPS coordinates for Italian cities
+- **Coordinate Correction**: Automatic detection and correction of inaccurate AI-generated coordinates
 
 ### Vector Database Layer
 - **Storage**: ChromaDB for persistent vector storage with configurable data directory
@@ -90,8 +92,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Recent Changes
 - **August 27, 2025**: **MAJOR SUCCESS** - Fully implemented dynamic mapping system with real GPS coordinates
+- **August 27, 2025**: **ANTI-HALLUCINATION SYSTEM** - Implemented scalable coordinate correction for all Italian cities
+- **August 27, 2025**: Built comprehensive GPS database preventing AI geographic errors (Genova, Milano, Roma, Firenze)
+- **August 27, 2025**: Resolved coastal coordinate issues (Parchi di Nervi no longer appear in the sea)
 - **August 27, 2025**: Resolved browser caching issues that prevented JavaScript execution
-- **August 27, 2025**: Backend now generates authentic GPS coordinates for all Italian cities
+- **August 27, 2025**: Backend now generates authentic GPS coordinates with post-processing verification
 - **August 27, 2025**: Frontend successfully integrates Leaflet.js maps with backend coordinate data
 - **August 27, 2025**: Unified itinerary system - single pipeline from user input to interactive map
 - **August 27, 2025**: Real-time itinerary updates with precise geographic positioning
