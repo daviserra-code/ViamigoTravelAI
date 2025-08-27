@@ -518,64 +518,35 @@ async def search_wikimedia_image(location: str, city: str):
 
 async def get_image_proxy(location: str, city: str):
     """
-    Sistema proxy per immagini: cerca da fonti esterne e serve tramite il nostro backend.
-    Fallback su generazione AI se non trova nulla.
+    Sistema ibrido: database curato + generazione AI per massima affidabilità
     """
-    # 1. Prova Unsplash API con query ottimizzata
-    unsplash_url = await try_unsplash_search(location, city)
-    if unsplash_url:
-        return f"/image_proxy?url={unsplash_url}"
+    # 1. Prova database curato (solo per luoghi famosi con URL verificati)
+    curated_url = await try_unsplash_search(location, city)
+    if curated_url and curated_url == 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg':
+        return f"/image_proxy?url={curated_url}"
     
-    # 2. Prova Wikimedia Commons
-    wiki_url = await search_wikimedia_image(location, city)
-    if wiki_url:
-        return f"/image_proxy?url={wiki_url}"
-    
-    # 3. Fallback: Genera con DALL-E
+    # 2. Per tutti gli altri luoghi: genera direttamente con DALL-E (più affidabile)
+    print(f"🎨 Generando immagine AI per {location}, {city}")
     ai_url = await generate_ai_image(location, city)
     if ai_url:
         return f"/image_proxy?url={ai_url}"
     
-    print(f"Nessuna immagine trovata per {location}")
+    print(f"Nessuna immagine disponibile per {location}")
     return None
 
 async def try_unsplash_search(location: str, city: str):
-    """Database curato di immagini per luoghi famosi con URL affidabili"""
+    """Database limitato con solo URL verificati funzionanti al 100%"""
     location_lower = location.lower()
     
-    # Database di immagini specifiche e verificate per luoghi famosi italiani
-    # URLs Wikimedia testati e funzionanti al 100% - Agosto 2025
-    curated_images = {
-        # Venezia - URLs verificati e funzionanti (usando URL del Colosseo come placeholder)
-        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'palazzo ducale': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        
-        # Roma - URLs verificati e funzionanti  
+    # Solo l'URL che so esistere per sicurezza
+    verified_images = {
         'colosseo': 'https://upload.wikimedia.org/wikipedia/commons/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg',
-        'fontana di trevi': 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Trevi_Fountain%2C_Rome%2C_Italy_2_-_May_2007.jpg',
-        'pantheon': 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Roma-panth02.jpg',
-        'fori imperiali': 'https://upload.wikimedia.org/wikipedia/commons/f/fc/Foro_Romano_Palatino_Rome.JPG',
-        
-        # Milano - URLs verificati e funzionanti
-        'duomo di milano': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Milan_Cathedral_from_Piazza_del_Duomo.jpg',
-        'castello sforzesco': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Milano_Castello_Sforzesco.jpg', 
-        'teatro alla scala': 'https://upload.wikimedia.org/wikipedia/commons/a/a8/La_Scala_Milan_2009.jpg',
-        'navigli': 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Naviglio_grande_milano.jpg',
-        
-        # Firenze - URLs verificati e funzionanti
-        'ponte vecchio': 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Ponte_Vecchio_sunset.JPG',
-        'duomo di firenze': 'https://upload.wikimedia.org/wikipedia/commons/a/a8/View_of_santa_maria_del_fiore_in_florence.jpg',
-        'uffizi': 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Uffizi_Gallery%2C_Florence.jpg',
     }
     
     # Cerca match esatto o parziale
-    for key, url in curated_images.items():
+    for key, url in verified_images.items():
         if key == location_lower or key in location_lower or location_lower in key:
-            print(f"Trovata immagine curata per {location}")
+            print(f"Trovata immagine verificata per {location}")
             return url
     
     return None
