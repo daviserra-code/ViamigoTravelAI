@@ -736,6 +736,115 @@ def get_local_place_details(context):
     """Ottiene dettagli dal database locale per città italiane principali"""
     # Database dinamico dettagli luoghi per città italiane
     place_details = {
+            # === MILANO ===
+            'duomo_milano': {
+                'title': 'Duomo di Milano',
+                'summary': 'Capolavoro gotico con guglie e la Madonnina. Una delle cattedrali più spettacolari del mondo, con terrazze panoramiche che offrono viste mozzafiato sulla città e le Alpi.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1386-1965 (579 anni)'},
+                    {'label': 'Stile', 'value': 'Gotico lombardo'},
+                    {'label': 'Guglie', 'value': '135 guglie con 3.400 statue'},
+                    {'label': 'Madonnina', 'value': '4.16m, oro, dal 1774'},
+                    {'label': 'Vetrate', 'value': '55 finestre istoriate (XV-XX sec.)'},
+                    {'label': 'Terrazze', 'value': 'Ascensore €15, scale €10'},
+                    {'label': 'Cripta', 'value': 'San Carlo Borromeo'},
+                    {'label': 'Curiosità', 'value': 'Meridiana del 1786 ancora funzionante'}
+                ],
+                'timetable': [
+                    {'direction': 'Duomo', 'times': 'Lun-Dom 8:00-19:00 (ultima entrata 18:10)'},
+                    {'direction': 'Terrazze', 'times': 'Lun-Dom 9:00-19:00 (estate fino 21:00)'},
+                    {'direction': 'Museo', 'times': 'Mar-Dom 10:00-18:00 (chiuso lunedì)'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota biglietti',
+                    'url': 'https://www.duomomilano.it'
+                }
+            },
+            'galleria_milano': {
+                'title': 'Galleria Vittorio Emanuele II',
+                'summary': 'Il salotto elegante di Milano, galleria commerciale ottocentesca con cupola di vetro e ferro. Considerata uno dei primi centri commerciali al mondo, ospita boutique di lusso e caffè storici.',
+                'details': [
+                    {'label': 'Inaugurazione', 'value': '1877 (progetto Giuseppe Mengoni)'},
+                    {'label': 'Soprannome', 'value': '"Il Salotto di Milano"'},
+                    {'label': 'Lunghezza', 'value': '196 metri'},
+                    {'label': 'Cupola', 'value': '47 metri altezza, vetro e ferro'},
+                    {'label': 'Mosaici pavimento', 'value': 'Stemmi di Milano, Torino, Firenze, Roma'},
+                    {'label': 'Negozi storici', 'value': 'Prada (dal 1913), Borsalino'},
+                    {'label': 'Caffè storici', 'value': 'Biffi, Savini (dal 1867)'},
+                    {'label': 'Rituale portafortuna', 'value': 'Girare 3 volte sui genitali del toro torinese'}
+                ],
+                'timetable': [
+                    {'direction': 'Negozi', 'times': 'Lun-Dom 10:00-20:00 (alcuni fino 22:00)'},
+                    {'direction': 'Ristoranti', 'times': 'Lun-Dom 12:00-24:00'},
+                    {'direction': 'Caffè storici', 'times': 'Lun-Dom 7:30-20:00'}
+                ]
+            },
+            'scala_milano': {
+                'title': 'Teatro alla Scala',
+                'summary': 'Il tempio dell\'opera mondiale. Dal 1778 il teatro più prestigioso per opera lirica e balletto, con una stagione che apre tradizionalmente il 7 dicembre, festa di Sant\'Ambrogio.',
+                'details': [
+                    {'label': 'Inaugurazione', 'value': '3 agosto 1778 con "L\'Europa riconosciuta" di Salieri'},
+                    {'label': 'Architetto', 'value': 'Giuseppe Piermarini (neoclassico)'},
+                    {'label': 'Posti', 'value': '2.030 spettatori, 6 ordini di palchi'},
+                    {'label': 'Palco reale', 'value': 'Palco n.5 del primo ordine'},
+                    {'label': 'Stagione inaugurale', 'value': '7 dicembre - Sant\'Ambrogio'},
+                    {'label': 'Artisti famosi', 'value': 'Verdi, Puccini, Toscanini, Callas'},
+                    {'label': 'Museo', 'value': 'Costumi, strumenti, memorabilia'},
+                    {'label': 'Curiosità', 'value': 'Ricostruito dopo bombardamento 1943'}
+                ],
+                'timetable': [
+                    {'direction': 'Visite museo', 'times': 'Lun-Dom 9:00-17:30 (ultimo ingresso 17:00)'},
+                    {'direction': 'Spettacoli', 'times': 'Settembre-Luglio (programmazione variabile)'},
+                    {'direction': 'Biglietteria', 'times': 'Lun-Sab 10:00-18:00, Dom 10:00-17:00'}
+                ],
+                'actionLink': {
+                    'text': 'Programma e biglietti',
+                    'url': 'https://www.teatroallascala.org'
+                }
+            },
+            'castello_sforzesco': {
+                'title': 'Castello Sforzesco',
+                'summary': 'Fortezza rinascimentale simbolo del potere dei Duca di Milano. Oggi ospita musei con capolavori di Michelangelo, Leonardo e arte applicata, circondato dal Parco Sempione.',
+                'details': [
+                    {'label': 'Costruzione originale', 'value': '1360 (famiglia Visconti)'},
+                    {'label': 'Trasformazione', 'value': '1450-1499 (Francesco Sforza)'},
+                    {'label': 'Restauro', 'value': '1893-1904 (Luca Beltrami)'},
+                    {'label': 'Musei', 'value': '9 musei specializzati'},
+                    {'label': 'Capolavoro', 'value': 'Pietà Rondanini (ultima opera Michelangelo)'},
+                    {'label': 'Leonardo', 'value': 'Decorazioni Sala delle Asse'},
+                    {'label': 'Torre Filarete', 'value': '70 metri, ricostruita dopo esplosione 1521'},
+                    {'label': 'Cortili', 'value': 'Cortile d\'Armi, Cortile della Rocchetta'}
+                ],
+                'timetable': [
+                    {'direction': 'Musei', 'times': 'Mar-Dom 9:00-17:30 (chiuso lunedì)'},
+                    {'direction': 'Cortili', 'times': 'Lun-Dom 7:00-19:30 (estate fino 20:00)'},
+                    {'direction': 'Visite guidate', 'times': 'Sabato-Domenica 15:00 (prenotazione)'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota musei',
+                    'url': 'https://www.milanocastello.it'
+                }
+            },
+            'parco_sempione': {
+                'title': 'Parco Sempione',
+                'summary': 'Il polmone verde di Milano con l\'Arco della Pace e la Torre Branca. Perfetto per relax, sport e panorami dalla torre. Un\'oasi di tranquillità nel cuore della città.',
+                'details': [
+                    {'label': 'Superficie', 'value': '38.6 ettari (dal 1888)'},
+                    {'label': 'Progettista', 'value': 'Emilio Alemagna (stile inglese)'},
+                    {'label': 'Torre Branca', 'value': '108m, panorama 360° (ascensore)'},
+                    {'label': 'Arco della Pace', 'value': '25m, 1807-1838, Napoleone'},
+                    {'label': 'Arena Civica', 'value': '1807, 30.000 spettatori'},
+                    {'label': 'Acquario', 'value': 'Civico Acquario (1906)'},
+                    {'label': 'Eventi', 'value': 'Concerti estivi, mercatini, sport'},
+                    {'label': 'Fauna', 'value': 'Tartarughe, anatre, scoiattoli'}
+                ],
+                'timetable': [
+                    {'direction': 'Parco', 'times': 'Sempre aperto (illuminato di notte)'},
+                    {'direction': 'Torre Branca', 'times': 'Mar-Dom 10:00-18:00 (estate 21:00)'},
+                    {'direction': 'Bar parco', 'times': 'Lun-Dom 7:00-20:00 (estate 22:00)'}
+                ]
+            },
+            # === TRIESTE ===
             # TRIESTE - Luoghi specifici con dettagli autentici
             'piazza_unita_ditalia_trieste': {
                 'title': 'Piazza Unità d\'Italia, Trieste',
