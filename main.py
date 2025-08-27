@@ -246,37 +246,57 @@ async def search_real_image(location: str, city: str):
 async def search_pixabay_image(location: str, city: str):
     """Cerca immagini su Pixabay (API gratuita)"""
     try:
-        # Costruisci query di ricerca
-        search_query = f"{location} {city} Italy architecture"
+        # Costruisci query di ricerca più semplice e efficace
+        # Prova prima con il nome del luogo specifico
+        search_queries = [
+            f"{location} {city}",  # Query principale
+            f"{location}",         # Solo il luogo
+            f"{city} {location}",  # Città + luogo
+            f"{city} Italy"        # Fallback alla città
+        ]
         
-        # API Pixabay gratuita (18000 request/ora senza key)
         url = "https://pixabay.com/api/"
-        params = {
-            'key': '9656065-a4094594c34f9ac14d7c3d97b',  # Key demo pubblica
-            'q': search_query,
-            'image_type': 'photo',
-            'orientation': 'horizontal',
-            'min_width': 800,
-            'per_page': 3,
-            'safesearch': 'true'
-        }
         
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            data = response.json()
-            
-            if data.get('hits') and len(data['hits']) > 0:
-                # Prendi la prima immagine di buona qualità
-                for hit in data['hits']:
-                    if hit.get('webformatURL'):
-                        print(f"Trovata immagine Pixabay per {location}")
-                        return hit['webformatURL']
-                        
+        # Prova con diverse query in ordine di specificità
+        for search_query in search_queries:
+            try:
+                params = {
+                    'key': '9656065-a4094594c34f9ac14d7c3d97b',
+                    'q': search_query,
+                    'image_type': 'photo',
+                    'orientation': 'horizontal', 
+                    'min_width': 600,  # Requisiti meno stringenti
+                    'per_page': 5,     # Più risultati
+                    'safesearch': 'true',
+                    'category': 'places'  # Filtra per luoghi
+                }
+        
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(url, params=params)
+                    response.raise_for_status()
+                    data = response.json()
+                    
+                    if data.get('hits') and len(data['hits']) > 0:
+                        # Prendi la prima immagine di buona qualità
+                        for hit in data['hits']:
+                            if hit.get('webformatURL'):
+                                print(f"Trovata immagine Pixabay per {location} con query: {search_query}")
+                                return hit['webformatURL']
+                
+                # Se questa query non ha risultati, prova la prossima
+                continue
+                
+            except Exception as e:
+                print(f"Errore Pixabay con query '{search_query}': {e}")
+                continue
+        
+        # Se nessuna query ha funzionato, ritorna None
+        print(f"Nessuna immagine Pixabay trovata per {location} con tutte le query")
+        return None
+        
     except Exception as e:
-        print(f"Errore Pixabay per {location}: {e}")
-        
-    return None
+        print(f"Errore generale Pixabay per {location}: {e}")
+        return None
 
 async def search_wikimedia_image(location: str, city: str):
     """Cerca immagini su Wikimedia Commons"""
@@ -317,6 +337,8 @@ async def simulate_real_image_search(location: str, city: str):
         'via del campo': 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800',
         'palazzo bianco': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800',
         'porto antico': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800',
+        'piazza de ferrari': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
+        'caffè degli specchi': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800',
         
         # Milano
         'duomo di milano': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
@@ -329,6 +351,8 @@ async def simulate_real_image_search(location: str, city: str):
         'quadrilatero della moda': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
         'corso buenos aires': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
         'brera': 'https://images.unsplash.com/photo-1516205651411-aef33a44f7c2?w=800',
+        'caffè cova montenapoleone': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800',
+        'galleria vittorio emanuele ii': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
         
         # Roma
         'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',
@@ -343,15 +367,34 @@ async def simulate_real_image_search(location: str, city: str):
         'uffizi': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800'
     }
     
-    # Cerca match esatti o parziali
+    # Cerca match esatti o parziali con algoritmo migliorato
     for key, url in known_images.items():
         # Prima prova match esatto
         if key in location_lower:
+            print(f"Trovata immagine reale per {location}")
             return url
+        
+        # Prova match inverso (location contiene la key)
+        if location_lower in key:
+            print(f"Trovata immagine reale per {location}")
+            return url
+            
         # Poi prova match di parole chiave principali
         key_words = key.split()
+        location_words = location_lower.split()
+        
+        # Se almeno metà delle parole chiave sono presenti
         if len(key_words) >= 2:
-            if all(word in location_lower for word in key_words):
+            matches = sum(1 for word in key_words if word in location_lower)
+            if matches >= len(key_words) // 2:
+                print(f"Trovata immagine reale per {location}")
+                return url
+                
+        # Prova anche match parziale con parole di location
+        if len(location_words) >= 2:
+            matches = sum(1 for word in location_words if word in key)
+            if matches >= len(location_words) // 2:
+                print(f"Trovata immagine reale per {location}")
                 return url
     
     return None

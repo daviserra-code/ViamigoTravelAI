@@ -95,3 +95,6 @@ Preferred communication style: Simple, everyday language.
 - **January 26, 2025**: Created dedicated `run.py` entry point for deployment with proper environment handling
 - **January 26, 2025**: Fixed workflow configuration to use `python run.py` command for reliable deployment startup
 - **January 26, 2025**: Added support for HEAD requests on health endpoints for deployment monitoring
+- **January 26, 2025**: Fixed static map issue - map now properly resets and updates for new itineraries
+- **January 26, 2025**: Improved image search algorithm with multiple fallback queries and better matching
+- **January 26, 2025**: Enhanced image database with more locations and smarter matching algorithms

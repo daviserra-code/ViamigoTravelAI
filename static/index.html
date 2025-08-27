@@ -273,6 +273,12 @@
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
                         renderItinerary(data);
+                        
+                        // Estrai e centra la mappa sulla nuova città
+                        const cityFromInput = end.toLowerCase();
+                        console.log(`Mappa centrata su: ${cityFromInput}`);
+                        currentCityName = cityFromInput;
+                        
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
                 } catch (error) { renderItinerary(null); } 
@@ -304,6 +310,14 @@
                 } else if (view === 'map') {
                     itineraryListView.classList.add('hidden');
                     itineraryMapView.classList.remove('hidden');
+                    
+                    // Sempre reinizializza la mappa per aggiornare i dati
+                    if (mapInitialized) {
+                        map.remove();
+                        mapInitialized = false;
+                        map = null;
+                        routeLayer = null;
+                    }
                     initializeMap();
                 }
             });
