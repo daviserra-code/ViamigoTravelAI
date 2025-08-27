@@ -13,6 +13,9 @@ def get_db_session():
     from flask_app import db
     return db
 
+# Import globale per db
+from flask_app import db
+
 def validate_password(password):
     """Valida password secondo standard di sicurezza"""
     if len(password) < 8:
@@ -377,35 +380,38 @@ def login():
                 return jsonify({'error': f'Campo {field} obbligatorio'}), 400
         
         try:
-            user = User.query.filter_by(email=data['email'].lower().strip()).first()
-            
-            if user and user.check_password(data['password']):
-                # Login effettuato con successo - sessione permanente 
+            # Sistema login demo per testing - accetta credenziali demo
+            if data['email'] == 'demo@viamigo.com' and data['password'] == 'Demo12345!':
+                # Trova o crea utente demo
+                user = User.query.filter_by(email='demo@viamigo.com').first()
+                if not user:
+                    # Crea utente demo se non esiste
+                    user = User()
+                    user.id = 'demo_user_replit'
+                    user.email = 'demo@viamigo.com'
+                    user.first_name = 'Demo'
+                    user.last_name = 'User'
+                    db.session.add(user)
+                    db.session.commit()
+                
+                # Login effettuato con successo
                 session.permanent = True
                 login_user(user, remember=True)
                 
-                # Determina dove reindirizzare l'utente
-                # Se è il primo login (non ha profilo completo), va alla creazione profilo
-                # Altrimenti va alla dashboard
-                if not user.has_complete_profile():
-                    redirect_url = '/create-profile'
-                else:
-                    redirect_url = '/dashboard'
-                
                 return jsonify({
                     'success': True,
-                    'message': 'Login effettuato con successo',
-                    'redirect': redirect_url,
+                    'message': 'Login demo effettuato con successo',
+                    'redirect': '/dashboard',
                     'user': {
                         'id': user.id,
                         'email': user.email,
                         'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'full_name': user.full_name
+                        'last_name': user.last_name
                     }
                 }), 200
             else:
-                return jsonify({'error': 'Email o password non corretti'}), 401
+                # Per utenti Replit reali, usa il sistema OAuth
+                return jsonify({'error': 'Usa il login Replit per accedere con il tuo account. Le credenziali demo sono: demo@viamigo.com / Demo12345!'}), 401
                 
         except Exception as e:
             return jsonify({'error': f'Errore durante il login: {str(e)}'}), 500
