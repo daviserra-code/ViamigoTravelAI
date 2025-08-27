@@ -559,14 +559,14 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
-        # Venezia - PRIORITA' MASSIMA (URL Pixabay più compatibili)
-        'piazza san marco': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
-        'basilica di san marco': 'https://cdn.pixabay.com/photo/2018/08/14/09/58/venice-3605320_1280.jpg',
-        'ponte di rialto': 'https://cdn.pixabay.com/photo/2017/07/24/23/36/bridge-2536475_1280.jpg',
-        'palazzo ducale venezia': 'https://cdn.pixabay.com/photo/2018/08/14/09/58/venice-3605320_1280.jpg',
-        'canal grande': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
-        'caffè florian': 'https://cdn.pixabay.com/photo/2017/01/06/17/49/venice-1958336_1280.jpg',
-        'mercato di rialto': 'https://cdn.pixabay.com/photo/2017/07/24/23/36/bridge-2536475_1280.jpg',
+        # Venezia - PRIORITA' MASSIMA (URL affidabili senza CORS)
+        'piazza san marco': 'https://picsum.photos/800/600?random=1',
+        'basilica di san marco': 'https://picsum.photos/800/600?random=2',
+        'ponte di rialto': 'https://picsum.photos/800/600?random=3',
+        'palazzo ducale venezia': 'https://picsum.photos/800/600?random=4',
+        'canal grande': 'https://picsum.photos/800/600?random=5',
+        'caffè florian': 'https://picsum.photos/800/600?random=6',
+        'mercato di rialto': 'https://picsum.photos/800/600?random=7',
         'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
         
         # Genova
