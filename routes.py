@@ -205,82 +205,123 @@ def demo_dashboard():
 @app.route('/profile')
 @require_login
 def view_profile():
-    """Visualizza il profilo dell'utente corrente"""
+    """Visualizza il profilo dell'utente - design mobile uniforme a Viamigo"""
     profile = None  # UserProfile.query.filter_by(user_id=current_user.id).first()
     
     return render_template_string('''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Il Mio Profilo - Viamigo</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="bg-gray-50 min-h-screen">
-        <nav class="bg-blue-600 text-white p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <a href="/" class="text-xl font-bold">Viamigo</a>
-                <div class="space-x-4">
-                    <span>Marco Rossi</span>
-                    <a href="/auth/logout" class="bg-red-500 px-3 py-1 rounded">Logout</a>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viamigo - Il Mio Profilo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
+        .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .phone-screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .interest-tag.selected { background-color: #a78bfa; color: #111827; font-weight: 600; }
+        .segmented-control button.selected { background-color: #a78bfa; color: #111827; font-weight: 600; }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+    <div class="phone-mockup">
+        <div class="phone-screen">
+            <!-- HEADER PROFILO -->
+            <div class="header p-4 pt-8 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='/'" class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
+                    <div class="overflow-hidden">
+                        <p class="text-xs text-gray-400">Il tuo account</p>
+                        <h2 class="font-bold text-white text-lg">Profilo & Preferenze</h2>
+                    </div>
                 </div>
             </div>
-        </nav>
-        
-        <div class="container mx-auto p-8">
-            <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Il Mio Profilo</h2>
-                    {% if profile %}
-                        <a href="/profile/edit" class="bg-blue-600 text-white px-4 py-2 rounded">Modifica</a>
-                    {% else %}
-                        <a href="/profile/create" class="bg-green-600 text-white px-4 py-2 rounded">Crea Profilo</a>
-                    {% endif %}
+
+            <!-- CONTENUTO PROFILO -->
+            <div class="flex-grow overflow-y-auto p-4">
+                <!-- Info Utente -->
+                <div class="flex flex-col items-center mb-8">
+                    <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-3 border-2 border-violet-500">
+                        <span class="text-2xl">👤</span>
+                    </div>
+                    <h3 class="text-white text-xl font-semibold">Marco Rossi</h3>
+                    <p class="text-gray-400 text-sm">marco@email.com</p>
                 </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="font-semibold text-gray-700">Informazioni Account</h3>
-                        <p><span class="font-medium">Email:</span> marco@email.com</p>
-                        <p><span class="font-medium">Nome:</span> Marco Rossi</p>
+
+                {% if not profile %}
+                <!-- Nuovo Profilo -->
+                <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">✨</span>
+                        </div>
+                        <h3 class="text-white text-lg font-semibold mb-2">Personalizza i tuoi viaggi</h3>
+                        <p class="text-gray-400 mb-6 text-sm">Configura le tue preferenze per ricevere consigli su misura</p>
+                        <button onclick="window.location.href='/profile/create'" class="w-full bg-violet-500 text-white py-3 rounded-xl font-semibold">
+                            Crea il Tuo Profilo
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Profilo Esistente -->
+                <div class="space-y-6">
+                    <!-- Interessi -->
+                    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                        <h3 class="text-gray-400 text-sm font-medium mb-3">I tuoi interessi</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <span class="bg-violet-500 text-white py-2 px-3 rounded-lg text-sm text-center">Arte</span>
+                            <span class="bg-violet-500 text-white py-2 px-3 rounded-lg text-sm text-center">Cibo</span>
+                            <span class="bg-violet-500 text-white py-2 px-3 rounded-lg text-sm text-center">Storia</span>
+                        </div>
                     </div>
                     
-                    {% if profile %}
-                    <div class="border-t pt-4">
-                        <h3 class="font-semibold text-gray-700 mb-2">Preferenze di Viaggio</h3>
-                        <div class="grid md:grid-cols-3 gap-4">
-                            <div>
-                                <p class="font-medium">Interessi:</p>
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Cibo</span>
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Arte</span>
-                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">Storia</span>
-                                </div>
+                    <!-- Preferenze -->
+                    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                        <h3 class="text-gray-400 text-sm font-medium mb-4">Preferenze</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-300">Ritmo di viaggio</span>
+                                <span class="text-white font-medium">Moderato</span>
                             </div>
-                            
-                            <div>
-                                <p class="font-medium">Ritmo di Viaggio:</p>
-                                <p class="text-gray-600">Moderato</p>
-                            </div>
-                            
-                            <div>
-                                <p class="font-medium">Budget:</p>
-                                <p class="text-gray-600">€€</p>
+                            <div class="flex justify-between">
+                                <span class="text-gray-300">Budget</span>
+                                <span class="text-white font-medium">€€</span>
                             </div>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="border-t pt-4 text-center">
-                        <p class="text-gray-500 mb-4">Non hai ancora configurato le tue preferenze di viaggio.</p>
-                        <a href="/profile/create" class="bg-green-600 text-white px-6 py-2 rounded">Configura Ora</a>
-                    </div>
-                    {% endif %}
+                {% endif %}
+
+                <!-- Azioni -->
+                <div class="space-y-4 mt-8">
+                    <button onclick="window.location.href='/profile/edit'" class="w-full bg-gray-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <span>Modifica Profilo</span>
+                    </button>
+                    
+                    <button onclick="window.location.href='/auth/logout'" class="w-full bg-red-600/20 text-red-400 py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </div>
                 </div>
             </div>
         </div>
-    </body>
-    </html>
+    </div>
+</body>
+</html>
     ''', profile=profile)
 
 @app.route('/profile/create', methods=['GET', 'POST'])
