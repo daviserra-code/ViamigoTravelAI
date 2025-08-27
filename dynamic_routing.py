@@ -97,58 +97,41 @@ class DynamicRouter:
             return self._fallback_itinerary(start, end, city)
     
     def _geocode_location(self, location: str, city: str = "") -> Optional[Tuple[float, float]]:
-        """Geocodifica una località con database locale e API di backup"""
+        """Geocodifica universale per qualsiasi località italiana"""
         try:
             location_lower = location.lower().strip()
             city_lower = city.lower().strip()
             
-            # 1. Controllo diretto per città nel database
+            # 1. Se city è nel database locale, usa quelle coordinate come base
+            base_coords = None
             if city_lower in self.city_centers:
-                return self.city_centers[city_lower]
+                base_coords = self.city_centers[city_lower]
             
-            # 2. Controllo se location contiene il nome di una città (priorità a match esatti)
-            for city_name, coords in self.city_centers.items():
-                if city_name == city_lower or city_name == location_lower:
-                    return coords
-            
-            # 3. Controllo substring solo se non c'è match esatto
-            for city_name, coords in self.city_centers.items():
-                if city_name in location_lower or city_name in city_lower:
-                    return coords
-            
-            # 4. Controllo piazze/luoghi specifici con pattern
+            # 2. Pattern specifici con offset intelligenti
             location_patterns = {
-                'piazza': 'centro',
-                'stazione': 'stazione centrale', 
-                'porto': 'porto',
-                'centro': 'centro storico',
-                'duomo': 'cattedrale',
-                'castello': 'castello'
+                'piazza': (0.001, 0.001),
+                'stazione': (-0.003, 0.002), 
+                'porto': (0.002, -0.003),
+                'lungomare': (0.003, -0.001),
+                'centro': (0, 0),
+                'duomo': (0.001, -0.001),
+                'castello': (-0.002, -0.002),
+                'mercato': (0.002, 0.002)
             }
             
-            # Se la location ha un pattern riconosciuto, usa coordinate città + offset intelligente
-            if city_lower in self.city_centers:
-                city_coords = self.city_centers[city_lower]
-                for pattern, replacement in location_patterns.items():
+            # Se abbiamo coordinate base e un pattern, usa offset
+            if base_coords:
+                for pattern, (offset_lat, offset_lon) in location_patterns.items():
                     if pattern in location_lower:
-                        # Offset diversificato basato su pattern specifici
-                        offsets = {
-                            'piazza': (0.001, 0.001),
-                            'stazione': (-0.003, 0.002), 
-                            'porto': (0.002, -0.003),
-                            'centro': (0, 0),
-                            'duomo': (0.001, -0.001),
-                            'castello': (-0.002, -0.002)
-                        }
-                        offset_lat, offset_lon = offsets.get(pattern, (0.001, 0.001))
-                        # Aggiungi variazione basata su nome specifico per unicità
-                        unique_offset = (hash(location_lower) % 100) / 100000  # 0.00001-0.001
+                        unique_offset = (hash(location_lower) % 100) / 100000
                         return (
-                            city_coords[0] + offset_lat + unique_offset,
-                            city_coords[1] + offset_lon + unique_offset
+                            base_coords[0] + offset_lat + unique_offset,
+                            base_coords[1] + offset_lon + unique_offset
                         )
+                # Se non c'è pattern ma abbiamo coordinate base, usale
+                return base_coords
             
-            # 5. Fallback: Nominatim API con query migliorata
+            # 3. Geocoding API dinamico per qualsiasi località italiana
             query_parts = []
             if location:
                 query_parts.append(location)
@@ -161,32 +144,37 @@ class DynamicRouter:
             params = {
                 'q': query,
                 'format': 'json',
-                'limit': 3,  # Più risultati per migliore accuratezza
+                'limit': 5,
                 'addressdetails': 1,
+                'countrycodes': 'it',
                 'bounded': 1,
-                'countrycodes': 'it'  # Solo Italia
+                'viewbox': '6.0,35.0,19.0,47.0'  # Bounding box Italia
             }
             
             response = requests.get(
                 f"{self.nominatim_base}/search", 
                 params=params, 
-                timeout=8,
+                timeout=10,
                 headers={'User-Agent': 'Viamigo-Travel-App/1.0'}
             )
             
             if response.ok and response.json():
                 results = response.json()
-                # Prendi il primo risultato che sembra accurato
                 for result in results:
                     lat, lon = float(result['lat']), float(result['lon'])
-                    # Verifica che sia in Italia (coordinate ragionevoli)
+                    # Verifica coordinate italiane valide
                     if 35.0 <= lat <= 47.0 and 6.0 <= lon <= 19.0:
+                        
+                        # Salva nel cache per future richieste
+                        if city_lower and city_lower not in self.city_centers:
+                            self.city_centers[city_lower] = [lat, lon]
+                        
                         return (lat, lon)
                 
         except Exception as e:
-            print(f"Errore geocoding {location} in {city}: {e}")
+            print(f"Errore geocoding universale {location} in {city}: {e}")
         
-        # 6. Ultimo fallback: coordinate centro Italia
+        # 4. Fallback finale
         return (42.5, 12.5)
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
@@ -291,31 +279,72 @@ class DynamicRouter:
         mid_lat = (start_coords[0] + end_coords[0]) / 2
         mid_lon = (start_coords[1] + end_coords[1]) / 2
         
-        # Waypoints specifici per città italiane con coordinate realistiche
-        city_waypoints = {
+        # Sistema waypoint dinamico e universale
+        city_lower = city.lower()
+        
+        # Waypoints specifici per città principali
+        specific_waypoints = {
             'roma': ['Centro Storico', 'Piazza di Spagna', 'Campo de\' Fiori'],
             'milano': ['Duomo', 'Galleria Vittorio Emanuele', 'Brera'],
             'venezia': ['Piazza San Marco', 'Ponte di Rialto', 'Dorsoduro'],
             'firenze': ['Piazza del Duomo', 'Ponte Vecchio', 'Piazza della Signoria'],
             'torino': ['Piazza Castello', 'Via Roma', 'Parco del Valentino'],
             'genova': ['Via del Campo', 'Piazza De Ferrari', 'Porto Antico'],
-            'chiavari': ['Centro Storico', 'Lungomare', 'Caruggi medievali'],
-            'rapallo': ['Lungolago', 'Centro Storico', 'Castello sul Mare'],
-            'portofino': ['Piazzetta', 'Chiesa San Giorgio', 'Faro'],
-            'cinque terre': ['Monterosso', 'Vernazza', 'Corniglia'],
-            'pisa': ['Campo dei Miracoli', 'Lungarni', 'Borgo Stretto'],
-            'lucca': ['Mura medievali', 'Piazza Anfiteatro', 'Via Fillungo'],
-            'siena': ['Piazza del Campo', 'Duomo', 'Via di Città']
+            'napoli': ['Spaccanapoli', 'Piazza del Plebiscito', 'Lungomare'],
+            'bologna': ['Piazza Maggiore', 'Le Due Torri', 'Università']
         }
         
-        # Usa waypoints della città corretta e distribuisci coordinate realistiche
-        city_lower = city.lower()
-        if city_lower in self.city_centers:
-            base_coords = self.city_centers[city_lower]
-            names = city_waypoints.get(city_lower, ['Centro Storico', 'Zona Turistica'])
+        # Waypoints generici per città costiere/montane/interne
+        generic_waypoints = {
+            'costiera': ['Centro Storico', 'Lungomare', 'Porto'],
+            'montana': ['Centro Storico', 'Piazza Principale', 'Belvedere'],
+            'interna': ['Centro Storico', 'Piazza del Duomo', 'Via Principale']
+        }
+        
+        # Determina il tipo di città e waypoints appropriati
+        if city_lower in specific_waypoints:
+            names = specific_waypoints[city_lower]
+            base_coords = self.city_centers.get(city_lower, start_coords)
         else:
-            base_coords = start_coords
-            names = ['Centro Storico', 'Zona Turistica']
+            # Classifica automatica del tipo di città
+            coastal_keywords = ['mare', 'porto', 'lungomare', 'costa', 'riviera']
+            mountain_keywords = ['monte', 'val', 'alpe', 'passo', 'colle']
+            
+            city_type = 'interna'  # default
+            if any(keyword in city_lower for keyword in coastal_keywords):
+                city_type = 'costiera'
+            elif any(keyword in city_lower for keyword in mountain_keywords):
+                city_type = 'montana'
+            
+            names = generic_waypoints[city_type]
+            base_coords = self.city_centers.get(city_lower, start_coords)
+        
+        
+        waypoints = []
+        for i, name in enumerate(names[:3]):
+            # Distribuzione intelligente: usa coordinate base della città + offset graduali
+            factor = (i + 1) / (len(names) + 1)
+            
+            # Per città reali, usa coordinate base + piccoli offset realistici
+            if city_lower in self.city_centers:
+                offset_lat = (i - 1) * 0.003  # ~300m per waypoint
+                offset_lon = (i - 1) * 0.003
+                lat = base_coords[0] + offset_lat
+                lon = base_coords[1] + offset_lon
+            else:
+                # Fallback: distribuzione tra start e end
+                lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
+                lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
+            
+            waypoints.append({
+                'name': name,
+                'description': f'Esplora {name} e i suoi dintorni',
+                'estimated_coords': [lat, lon],
+                'visit_duration': '45 min',
+                'transport_from_previous': 'walking'
+            })
+        
+        return waypoints
         
         
         waypoints = []

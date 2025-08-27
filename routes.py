@@ -384,42 +384,72 @@ def api_plan_trip():
         }), 500
 
 def detect_city_from_locations(start, end):
-    """Rileva la città dall'input utente con logica di priorità"""
+    """Rileva la città dall'input utente usando Nominatim API per scalabilità mondiale"""
     text = f"{start} {end}".lower()
     
-    # PRIORITÀ 1: Match esatti di nomi di città (per evitare confusione)
-    exact_city_names = ['chiavari', 'rapallo', 'portofino', 'torino', 'roma', 'milano', 'venezia', 'firenze', 'genova', 'pisa', 'lucca', 'siena']
-    for city_name in exact_city_names:
-        if city_name in text:
-            return city_name
+    # PRIORITÀ 1: Estrazione automatica nome città dai pattern comma-separated
+    import re
     
-    # PRIORITÀ 2: Pattern specifici con città
-    city_patterns = {
-        'chiavari': ['lungomare,chiavari', 'piazza roma,chiavari', 'piazza del mercato,chiavari', 'centro,chiavari', 'porto,chiavari'],
-        'rapallo': ['lungomare,rapallo', 'castello,rapallo'],
-        'torino': ['mole antonelliana', 'palazzo reale torino', 'lungo po'],
-        'roma': ['colosseo', 'vaticano', 'termini roma', 'trastevere', 'pantheon'],
-        'milano': ['duomo milano', 'navigli', 'brera', 'porta garibaldi'],
-        'venezia': ['san marco', 'rialto', 'murano', 'burano'],
-        'firenze': ['uffizi', 'ponte vecchio', 'oltrarno'],
-        'genova': ['acquario genova', 'de ferrari', 'spianata castelletto', 'via del campo']
+    # Pattern: "luogo,città" - estrae la città dopo la virgola
+    comma_patterns = re.findall(r'[^,]+,\s*([a-z\s]+)', text)
+    for city_candidate in comma_patterns:
+        city_candidate = city_candidate.strip()
+        if len(city_candidate) > 2:  # Nome città valido
+            return city_candidate
+    
+    # PRIORITÀ 2: Geocoding automatico per identificare la città
+    try:
+        import requests
+        
+        # Prova a geocodificare l'intero testo per identificare la località
+        params = {
+            'q': f"{start} {end} Italia",
+            'format': 'json',
+            'limit': 1,
+            'addressdetails': 1,
+            'countrycodes': 'it'
+        }
+        
+        response = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params=params,
+            timeout=3,
+            headers={'User-Agent': 'Viamigo/1.0'}
+        )
+        
+        if response.ok and response.json():
+            result = response.json()[0]
+            address = result.get('address', {})
+            
+            # Estrai città dai dati OSM
+            city_candidates = [
+                address.get('city'),
+                address.get('town'), 
+                address.get('village'),
+                address.get('municipality'),
+                address.get('county')
+            ]
+            
+            for city in city_candidates:
+                if city and len(city) > 2:
+                    return city.lower()
+                    
+    except Exception as e:
+        print(f"Errore geocoding città: {e}")
+    
+    # PRIORITÀ 3: Fallback a città italiane principali
+    major_cities = {
+        'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'trastevere'],
+        'milano': ['milano', 'milan', 'duomo', 'navigli', 'brera'],
+        'torino': ['torino', 'turin', 'mole antonelliana'],
+        'venezia': ['venezia', 'venice', 'san marco', 'rialto'],
+        'firenze': ['firenze', 'florence', 'uffizi', 'ponte vecchio'],
+        'genova': ['genova', 'genoa', 'acquario', 'de ferrari'],
+        'napoli': ['napoli', 'naples', 'vesuvio', 'spaccanapoli'],
+        'bologna': ['bologna', 'torri', 'piazza maggiore']
     }
     
-    for city, patterns in city_patterns.items():
-        if any(pattern in text for pattern in patterns):
-            return city
-    
-    # PRIORITÀ 3: Keywords generiche (solo se non c'è match sopra)
-    generic_keywords = {
-        'roma': ['roma', 'rome'],
-        'milano': ['milano', 'milan'], 
-        'torino': ['torino', 'turin'],
-        'venezia': ['venezia', 'venice'],
-        'firenze': ['firenze', 'florence'],
-        'genova': ['genova', 'genoa']
-    }
-    
-    for city, keywords in generic_keywords.items():
+    for city, keywords in major_cities.items():
         if any(keyword in text for keyword in keywords):
             return city
     
