@@ -206,11 +206,17 @@ def planner():
     return redirect('/static/index.html')
 
 @app.route('/get_profile', methods=['GET'])
-@require_login
 def api_get_profile():
     """API endpoint per ottenere profilo utente (per compatibilità con frontend)"""
-    current_user = get_current_user()
-    profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+    from flask_login import current_user
+    
+    # Se non autenticato, usa fallback demo per compatibilità
+    if current_user.is_authenticated:
+        user_id = current_user.id
+    else:
+        user_id = session.get('demo_user_id', 'demo_user_123')
+    
+    profile = UserProfile.query.filter_by(user_id=user_id).first()
     
     if profile:
         return jsonify({
@@ -253,8 +259,15 @@ def api_plan_trip():
             city = detect_city_from_locations(start.lower(), end.lower())
         
         # Ottieni profilo utente per personalizzazione
-        current_user = get_current_user()
-        profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+        from flask_login import current_user as auth_user
+        
+        # Usa utente realmente autenticato se disponibile
+        if auth_user.is_authenticated:
+            user_id = auth_user.id
+        else:
+            user_id = session.get('demo_user_id', 'demo_user_123')
+            
+        profile = UserProfile.query.filter_by(user_id=user_id).first()
         user_interests = profile.interests.split(',') if profile and profile.interests else []
         
         # Prova prima il routing dinamico personalizzato
@@ -1190,7 +1203,13 @@ def demo_dashboard():
 @require_login
 def view_profile():
     """Visualizza il profilo dell'utente - design mobile uniforme a Viamigo"""
-    profile = None  # UserProfile.query.filter_by(user_id=current_user.id).first()
+    from flask_login import current_user as auth_user
+    
+    # Usa utente realmente autenticato
+    if not auth_user.is_authenticated:
+        return redirect('/auth/login')
+        
+    profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
     
     return render_template_string('''
 <!DOCTYPE html>
@@ -1237,8 +1256,8 @@ def view_profile():
                     <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-3 border-2 border-violet-500">
                         <span class="text-2xl">👤</span>
                     </div>
-                    <h3 class="text-white text-xl font-semibold">Marco Rossi</h3>
-                    <p class="text-gray-400 text-sm">marco@email.com</p>
+                    <h3 class="text-white text-xl font-semibold">{{ auth_user.first_name }} {{ auth_user.last_name }}</h3>
+                    <p class="text-gray-400 text-sm">{{ auth_user.email }}</p>
                 </div>
 
                 {% if not profile %}
@@ -1306,13 +1325,17 @@ def view_profile():
     </div>
 </body>
 </html>
-    ''', profile=profile)
+    ''', profile=profile, auth_user=auth_user)
 
 @app.route('/profile/create', methods=['GET', 'POST'])
 @require_login
 def create_profile():
     """Crea un nuovo profilo utente"""
-    current_user = get_current_user()  # Usa mock user
+    from flask_login import current_user as auth_user
+    
+    # Usa utente realmente autenticato
+    if not auth_user.is_authenticated:
+        return redirect('/auth/login')
     
     # Controlla se esiste già un profilo (commentato per permettere test)
     # existing_profile = UserProfile.query.filter_by(user_id=current_user.id).first()
@@ -1323,7 +1346,7 @@ def create_profile():
         data = request.get_json() if request.is_json else request.form
         
         # Controlla se esiste già un profilo
-        existing_profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+        existing_profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
         
         if existing_profile:
             # Aggiorna il profilo esistente invece di crearne uno nuovo
@@ -1341,7 +1364,7 @@ def create_profile():
         else:
             # Crea nuovo profilo
             profile = UserProfile()
-            profile.user_id = current_user.id
+            profile.user_id = auth_user.id
             
             # Gestisce interessi
             interests = data.get('interests', [])
@@ -1502,8 +1525,13 @@ def create_profile():
 @require_login
 def edit_profile():
     """Modifica il profilo dell'utente corrente"""
-    current_user = get_current_user()  # Usa mock user
-    profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+    from flask_login import current_user as auth_user
+    
+    # Usa utente realmente autenticato
+    if not auth_user.is_authenticated:
+        return redirect('/auth/login')
+        
+    profile = UserProfile.query.filter_by(user_id=auth_user.id).first()
     if not profile:
         flash('Devi prima creare un profilo.')
         return redirect(url_for('create_profile'))
