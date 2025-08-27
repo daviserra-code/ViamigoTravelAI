@@ -557,8 +557,18 @@ async def simulate_real_image_search(location: str, city: str):
     """Simula la ricerca di immagini reali basandosi su database di luoghi noti"""
     location_lower = location.lower()
     
-    # Database di immagini reali per luoghi famosi di diverse città italiane
+    # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
+        # Venezia - PRIORITA' MASSIMA
+        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Piazza_di_San_Marco_01.jpg/800px-Piazza_di_San_Marco_01.jpg',
+        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Basilica_di_San_Marco_facciata.jpg/800px-Basilica_di_San_Marco_facciata.jpg',
+        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Ponte_di_Rialto_Canal_Grande.jpg/800px-Ponte_di_Rialto_Canal_Grande.jpg',
+        'palazzo ducale venezia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Palazzo_Ducale_Venezia_facade.jpg/800px-Palazzo_Ducale_Venezia_facade.jpg',
+        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Canal_Grande_view.jpg/800px-Canal_Grande_view.jpg',
+        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Caffe_Florian_exterior.jpg/800px-Caffe_Florian_exterior.jpg',
+        'mercato di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Mercato_di_Rialto_fish.jpg/800px-Mercato_di_Rialto_fish.jpg',
+        'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
+        
         # Genova
         'teatro carlo felice': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
         'acquario di genova': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800',
@@ -600,21 +610,6 @@ async def simulate_real_image_search(location: str, city: str):
         'ponte vecchio': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
         'uffizi': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800'
     }
-    
-    # Database specifico per Venezia con immagini verificate
-    venezia_images = {
-        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Piazza_di_San_Marco_01.jpg/800px-Piazza_di_San_Marco_01.jpg',
-        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Basilica_di_San_Marco_facciata.jpg/800px-Basilica_di_San_Marco_facciata.jpg',
-        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Ponte_di_Rialto_Canal_Grande.jpg/800px-Ponte_di_Rialto_Canal_Grande.jpg',
-        'palazzo ducale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Palazzo_Ducale_Venezia_facade.jpg/800px-Palazzo_Ducale_Venezia_facade.jpg',
-        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Canal_Grande_view.jpg/800px-Canal_Grande_view.jpg',
-        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Caffe_Florian_exterior.jpg/800px-Caffe_Florian_exterior.jpg',
-        'mercato di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Mercato_di_Rialto_fish.jpg/800px-Mercato_di_Rialto_fish.jpg',
-        'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg'
-    }
-    
-    # Combina i database
-    known_images.update(venezia_images)
     
     # Debug: mostra cosa stiamo cercando
     print(f"🔍 Cercando immagine per: '{location_lower}' in città: {city}")
