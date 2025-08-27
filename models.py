@@ -127,6 +127,12 @@ class UserProfile(db.Model if db else object):
             self.interests = ','.join(interests_list)
         else:
             self.interests = None
+    
+    def get_interests(self):
+        """Ritorna lista di interessi dalla stringa comma-separated"""
+        if hasattr(self, 'interests') and self.interests:
+            return self.interests.split(',')
+        return []
 
 class PlaceCache(db.Model if db else object):
     __tablename__ = 'place_cache'
@@ -156,12 +162,6 @@ class PlaceCache(db.Model if db else object):
         if db:
             self.last_accessed = datetime.now()
             self.access_count = getattr(self, 'access_count', 0) + 1
-    
-    def get_interests(self):
-        """Ritorna lista di interessi dalla stringa comma-separated"""
-        if hasattr(self, 'interests') and self.interests:
-            return self.interests.split(',')
-        return []
 
 # Tabella per definire admin (opzionale per future funzionalità)
 class AdminUser(db.Model if db else object):
