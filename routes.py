@@ -2,6 +2,7 @@ from flask import session, render_template_string, request, jsonify, redirect, u
 from flask_login import current_user
 from models import User, UserProfile, AdminUser
 import logging
+from functools import wraps
 
 # Import app and db after initialization to avoid circular imports
 def get_app_db():
@@ -12,8 +13,25 @@ app, db = get_app_db()
 
 # Temporary workaround for auth - create mock endpoints for demo
 def require_login(f):
-    """Mock login decorator for demo"""
-    return f
+    """Mock login decorator for demo - simula utente autenticato"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Per demo, simula sempre un utente loggato con ID fisso
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Mock current_user per demo
+class MockUser:
+    def __init__(self):
+        self.id = "demo_user_123"
+        self.email = "marco@email.com"
+        self.first_name = "Marco"
+        self.last_name = "Rossi"
+        self.is_authenticated = True
+
+def get_current_user():
+    """Restituisce utente mock per demo"""
+    return MockUser()
 
 @app.route('/auth/login')
 def auth_login():
@@ -328,6 +346,8 @@ def view_profile():
 @require_login
 def create_profile():
     """Crea un nuovo profilo utente"""
+    current_user = get_current_user()  # Usa mock user
+    
     # Controlla se esiste già un profilo
     existing_profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if existing_profile:
@@ -433,6 +453,7 @@ def create_profile():
 @require_login
 def edit_profile():
     """Modifica il profilo dell'utente corrente"""
+    current_user = get_current_user()  # Usa mock user
     profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         flash('Devi prima creare un profilo.')
@@ -558,6 +579,7 @@ def edit_profile():
 @require_login
 def delete_profile():
     """Elimina il profilo dell'utente corrente"""
+    current_user = get_current_user()  # Usa mock user
     profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         return jsonify({'success': False, 'message': 'Profilo non trovato'}), 404
@@ -573,6 +595,7 @@ def delete_profile():
 @require_login
 def get_profile_api():
     """API per ottenere il profilo dell'utente corrente"""
+    current_user = get_current_user()  # Usa mock user
     profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         return jsonify({'profile': None})
@@ -603,6 +626,7 @@ def delete_profile_api():
 @require_login
 def admin_profiles():
     """Admin: visualizza tutti i profili"""
+    current_user = get_current_user()  # Usa mock user
     if not is_admin(current_user.id):
         return redirect(url_for('index'))
     
