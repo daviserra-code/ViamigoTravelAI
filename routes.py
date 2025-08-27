@@ -14,10 +14,12 @@ app, db = get_app_db()
 
 # Temporary workaround for auth - create mock endpoints for demo
 def require_login(f):
-    """Mock login decorator for demo - simula utente autenticato"""
+    """Mock login decorator per demo - controlla sessione utente"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Per demo, simula sempre un utente loggato con ID fisso
+        # Controlla se l'utente ha fatto login demo
+        if not session.get('demo_logged_in'):
+            return redirect('/auth/login')
         return f(*args, **kwargs)
     return decorated_function
 
@@ -116,17 +118,28 @@ def auth_login():
         }
         
         function demoLogin() {
-            // Redirect al profilo per demo
-            window.location.href = '/profile';
+            // Imposta sessione demo e redirect al profilo
+            fetch('/auth/demo-login', { method: 'POST' })
+            .then(() => {
+                window.location.href = '/profile';
+            });
         }
     </script>
 </body>
 </html>
     ''')
 
+@app.route('/auth/demo-login', methods=['POST'])
+def auth_demo_login():
+    """Endpoint per accesso demo - imposta sessione utente"""
+    session['demo_logged_in'] = True
+    session['demo_user_id'] = 'demo_user_123'
+    return jsonify({'success': True})
+
 @app.route('/auth/logout')
 def auth_logout():
     """Mock logout endpoint"""
+    session.clear()
     return redirect('/')
 
 # Try to import real auth if available
@@ -156,7 +169,9 @@ def can_edit_profile(profile_user_id, current_user_id):
 
 @app.route('/')
 def index():
-    """Homepage - sempre parte dal login"""
+    """Homepage - se loggato va al profilo, altrimenti al login"""
+    if session.get('demo_logged_in'):
+        return redirect('/profile')
     return redirect('/auth/login')
 
 @app.route('/planner')
