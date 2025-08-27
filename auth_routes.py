@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template_string
+from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template_string, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from models import User, get_db
@@ -253,8 +253,8 @@ def register():
 def login():
     """Login utente esistente"""
     if request.method == 'GET':
-        # Mostra form di login
-        return render_template_string('''
+        # Mostra form di login con header no-cache
+        response = make_response(render_template_string('''
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -354,7 +354,14 @@ def login():
     </script>
 </body>
 </html>
-        ''')
+        '''))
+        
+        # Aggiungi header no-cache per evitare problemi 304
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        
+        return response
     
     elif request.method == 'POST':
         # Processa login
