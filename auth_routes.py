@@ -305,7 +305,7 @@ def login():
                         <div id="errorMessage" class="hidden text-red-400 text-sm bg-red-900/20 p-3 rounded-lg border border-red-700"></div>
                         
                         <!-- Login con Replit -->
-                        <a href="/auth/replit_auth/login" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-center block mb-4">
+                        <a href="/auth_real/login" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-center block mb-4">
                             🔐 Accedi con Replit
                         </a>
                         
@@ -316,10 +316,11 @@ def login():
                             <div class="flex-grow border-t border-gray-600"></div>
                         </div>
                         
-                        <!-- Credenziali Demo -->
+                        <!-- Credenziali Disponibili -->
                         <div class="p-3 bg-gray-800 rounded-lg border border-gray-600 mb-4">
-                            <p class="text-gray-300 text-sm mb-2">Account Demo per Testing:</p>
+                            <p class="text-gray-300 text-sm mb-2">Credenziali Disponibili:</p>
                             <p class="text-violet-400 text-xs font-mono">demo@viamigo.com / Demo12345!</p>
+                            <p class="text-blue-400 text-xs font-mono">barbara.staltari@gmail.com / viamigo2025</p>
                         </div>
                         
                         <button type="submit" 
@@ -398,12 +399,11 @@ def login():
                 return jsonify({'error': f'Campo {field} obbligatorio'}), 400
         
         try:
-            # Sistema login demo per testing - accetta credenziali demo
+            # Sistema login semplificato per Replit users e demo
             if data['email'] == 'demo@viamigo.com' and data['password'] == 'Demo12345!':
-                # Trova o crea utente demo
+                # Utente demo
                 user = User.query.filter_by(email='demo@viamigo.com').first()
                 if not user:
-                    # Crea utente demo se non esiste
                     user = User()
                     user.id = 'demo_user_replit'
                     user.email = 'demo@viamigo.com'
@@ -412,7 +412,6 @@ def login():
                     db.session.add(user)
                     db.session.commit()
                 
-                # Login effettuato con successo
                 session.permanent = True
                 login_user(user, remember=True)
                 
@@ -427,9 +426,35 @@ def login():
                         'last_name': user.last_name
                     }
                 }), 200
+                
+            elif data['email'] == 'barbara.staltari@gmail.com' and data['password'] == 'viamigo2025':
+                # Accesso temporaneo per barbara (owner del progetto)
+                user = User.query.filter_by(email='barbara.staltari@gmail.com').first()
+                if not user:
+                    user = User()
+                    user.id = 'barbara_replit_user'
+                    user.email = 'barbara.staltari@gmail.com'
+                    user.first_name = 'Barbara'
+                    user.last_name = 'Staltari'
+                    db.session.add(user)
+                    db.session.commit()
+                
+                session.permanent = True
+                login_user(user, remember=True)
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Benvenuta Barbara! Login effettuato con successo',
+                    'redirect': '/dashboard',
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    }
+                }), 200
             else:
-                # Per utenti Replit reali, usa il sistema OAuth
-                return jsonify({'error': 'Usa il login Replit per accedere con il tuo account. Le credenziali demo sono: demo@viamigo.com / Demo12345!'}), 401
+                return jsonify({'error': 'Credenziali non riconosciute. Usa: demo@viamigo.com / Demo12345! oppure barbara.staltari@gmail.com / viamigo2025'}), 401
                 
         except Exception as e:
             return jsonify({'error': f'Errore durante il login: {str(e)}'}), 500
