@@ -559,14 +559,14 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
-        # Venezia - PRIORITA' MASSIMA (Wikimedia Commons - immagini reali)
-        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/PiazzaSanMarco1.jpg/800px-PiazzaSanMarco1.jpg',
-        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/San_Marco_front.JPG/800px-San_Marco_front.JPG',
-        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Rialto_Bridge_Feb_2009.jpg/800px-Rialto_Bridge_Feb_2009.jpg',
-        'palazzo ducale venezia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Doge%27s_Palace_-_Venice.jpg/800px-Doge%27s_Palace_-_Venice.jpg',
-        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Canal_Grande_Church_Santa_Maria_della_Salute.jpg/800px-Canal_Grande_Church_Santa_Maria_della_Salute.jpg',
-        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Cafe_Florian_Venice.jpg/800px-Cafe_Florian_Venice.jpg',
-        'mercato di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Rialto_Market_Venice.jpg/800px-Rialto_Market_Venice.jpg',
+        # Venezia - PRIORITA' MASSIMA (SVG locali per evitare CORS)
+        'piazza san marco': '/static/images/piazza_san_marco.svg',
+        'basilica di san marco': '/static/images/piazza_san_marco.svg',
+        'ponte di rialto': '/static/images/piazza_san_marco.svg',
+        'palazzo ducale venezia': '/static/images/piazza_san_marco.svg',
+        'canal grande': '/static/images/piazza_san_marco.svg',
+        'caffè florian': '/static/images/piazza_san_marco.svg',
+        'mercato di rialto': '/static/images/piazza_san_marco.svg',
         'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
         
         # Genova
