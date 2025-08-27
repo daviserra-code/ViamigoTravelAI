@@ -559,14 +559,14 @@ async def simulate_real_image_search(location: str, city: str):
     
     # Database di immagini reali per luoghi famosi - VENEZIA PRIORITA'
     known_images = {
-        # Venezia - PRIORITA' MASSIMA (URL affidabili senza CORS)
-        'piazza san marco': 'https://picsum.photos/800/600?random=1',
-        'basilica di san marco': 'https://picsum.photos/800/600?random=2',
-        'ponte di rialto': 'https://picsum.photos/800/600?random=3',
-        'palazzo ducale venezia': 'https://picsum.photos/800/600?random=4',
-        'canal grande': 'https://picsum.photos/800/600?random=5',
-        'caffè florian': 'https://picsum.photos/800/600?random=6',
-        'mercato di rialto': 'https://picsum.photos/800/600?random=7',
+        # Venezia - PRIORITA' MASSIMA (Wikimedia Commons - immagini reali)
+        'piazza san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/PiazzaSanMarco1.jpg/800px-PiazzaSanMarco1.jpg',
+        'basilica di san marco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/San_Marco_front.JPG/800px-San_Marco_front.JPG',
+        'ponte di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Rialto_Bridge_Feb_2009.jpg/800px-Rialto_Bridge_Feb_2009.jpg',
+        'palazzo ducale venezia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Doge%27s_Palace_-_Venice.jpg/800px-Doge%27s_Palace_-_Venice.jpg',
+        'canal grande': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Canal_Grande_Church_Santa_Maria_della_Salute.jpg/800px-Canal_Grande_Church_Santa_Maria_della_Salute.jpg',
+        'caffè florian': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Cafe_Florian_Venice.jpg/800px-Cafe_Florian_Venice.jpg',
+        'mercato di rialto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Rialto_Market_Venice.jpg/800px-Rialto_Market_Venice.jpg',
         'giardino della biennale': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giardini_Biennale_Venice.jpg/800px-Giardini_Biennale_Venice.jpg',
         
         # Genova
@@ -611,13 +611,8 @@ async def simulate_real_image_search(location: str, city: str):
         'uffizi': 'https://images.unsplash.com/photo-1564069114553-7215e1ff1890?w=800'
     }
     
-    # Debug: mostra cosa stiamo cercando
-    print(f"🔍 Cercando immagine per: '{location_lower}' in città: {city}")
-    
     # Cerca match esatti o parziali con algoritmo migliorato
     for key, url in known_images.items():
-        print(f"  📝 Controllando chiave: '{key}' vs '{location_lower}'")
-        
         # Prima prova match esatto
         if key == location_lower:
             print(f"Trovata immagine reale (match esatto) per {location}")
