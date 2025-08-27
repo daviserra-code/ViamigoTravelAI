@@ -465,17 +465,9 @@ async def health_check(request: Request):
         )
 
 @app.get("/")
-@app.head("/")
-async def read_root(request: Request):
-    # For health check purposes, ensure this endpoint always responds with 200
-    try:
-        if request.method == "HEAD":
-            # For HEAD requests, just return headers without body
-            return JSONResponse(content=None, status_code=200, headers={"Content-Type": "text/html"})
-        return FileResponse('static/index.html')
-    except Exception as e:
-        # Fallback response if static file is not found
-        return {"status": "ok", "service": "viamigo", "message": "Application is running"}
+async def read_root():
+    """Serve the main application page"""
+    return FileResponse('static/index.html')
 
 @app.post("/plan")
 async def create_plan(request: PlanRequest):
