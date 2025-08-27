@@ -1,0 +1,43 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+import os
+from werkzeug.middleware.proxy_fix import ProxyFix
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Initialize Flask app
+app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # needed for url_for to generate with https
+
+# Database configuration
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        'pool_pre_ping': True,
+        "pool_recycle": 300,
+    }
+    
+    # Initialize database
+    db = SQLAlchemy(app)
+else:
+    # Fallback for development without database
+    db = None
+    logging.warning("No DATABASE_URL found, running without database")
+
+# Defer table creation to avoid circular imports
+def create_tables():
+    if db:
+        with app.app_context():
+            try:
+                import models  # noqa: F401
+                db.create_all()
+                logging.info("Database tables created")
+            except Exception as e:
+                logging.error(f"Error creating tables: {e}")
+    else:
+        logging.warning("Skipping table creation - no database configured")
