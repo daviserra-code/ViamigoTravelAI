@@ -347,7 +347,12 @@ def api_plan_trip():
         
         return jsonify({
             'success': True,
-            'itinerary': itinerary
+            'itinerary': itinerary,
+            'routing_info': {
+                'city': city,
+                'realistic_routing': True,
+                'walking_routes': True
+            }
         })
         
         
