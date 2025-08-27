@@ -67,6 +67,45 @@ def search_real_transport_data(city: str):
         """
     return "Nessun dato di trasporto specifico disponibile per questa città."
 
+def fix_genova_coordinates(itinerary_data):
+    """Corregge coordinate sbagliate di Genova generate dall'AI"""
+    # Database delle coordinate corrette per Genova
+    correct_coordinates = {
+        "piazza de ferrari": {"lat": 44.4071, "lon": 8.9348},
+        "palazzo ducale": {"lat": 44.4071, "lon": 8.9348},
+        "parchi di nervi": {"lat": 44.3670, "lon": 8.9754},
+        "nervi": {"lat": 44.3670, "lon": 8.9754},
+        "spiaggia di nervi": {"lat": 44.3675, "lon": 8.9760},
+        "caffè degli specchi": {"lat": 44.4071, "lon": 8.9348},
+        "ristorante da maria": {"lat": 44.4111, "lon": 8.9330},
+        "caffè dei parchi": {"lat": 44.3677, "lon": 8.9765},
+        "chiosco di nervi": {"lat": 44.3677, "lon": 8.9765},
+        "acquario di genova": {"lat": 44.4109, "lon": 8.9326},
+        "porto antico": {"lat": 44.4108, "lon": 8.9279}
+    }
+    
+    if "itinerary" in itinerary_data:
+        for item in itinerary_data["itinerary"]:
+            if "context" in item:
+                context_lower = item["context"].lower()
+                title_lower = item.get("title", "").lower()
+                
+                # Cerca nei database delle coordinate corrette
+                for location_key, coords in correct_coordinates.items():
+                    if (location_key in context_lower or location_key in title_lower or
+                        context_lower in location_key or title_lower in location_key):
+                        
+                        old_lat = item.get("lat")
+                        old_lon = item.get("lon")
+                        
+                        item["lat"] = coords["lat"]
+                        item["lon"] = coords["lon"]
+                        
+                        print(f"🔧 Coordinate corrette per {item['title']}: {old_lat},{old_lon} → {coords['lat']},{coords['lon']}")
+                        break
+    
+    return itinerary_data
+
 # --- FUNZIONE PER L'ITINERARIO PRINCIPALE ---
 async def get_ai_itinerary(start_location: str, end_location: str, interests: List[str] = [], pace: str = "", budget: str = ""):
     api_key = os.getenv("OPENAI_API_KEY")
@@ -141,7 +180,11 @@ async def get_ai_itinerary(start_location: str, end_location: str, interests: Li
             response.raise_for_status()
             result = response.json()
             json_content_str = result['choices'][0]['message']['content']
-            return json.loads(json_content_str)
+            itinerary_data = json.loads(json_content_str)
+            
+            # Post-processing: correggi coordinate sbagliate per Genova
+            itinerary_data = fix_genova_coordinates(itinerary_data)
+            return itinerary_data
     except Exception as e:
         print(f"Errore API Itinerario: {e}")
         return {"error": "Errore durante la generazione dell'itinerario."}
