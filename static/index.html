@@ -484,20 +484,26 @@
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'genova';
                     
-                    // Prova a ottenere coordinate reali
-                    const realCoords = getRealCoordinates(item.title, currentCity);
-                    
+                    // Usa le coordinate dal backend se disponibili, altrimenti fallback
                     let lat, lng;
-                    if (realCoords) {
-                        lat = realCoords.lat;
-                        lng = realCoords.lng;
-                        console.log(`Coordinate reali per ${item.title}: ${lat}, ${lng}`);
+                    if (item.coordinates && item.coordinates.lat && item.coordinates.lng) {
+                        lat = item.coordinates.lat;
+                        lng = item.coordinates.lng;
+                        console.log(`Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
                     } else {
-                        // Fallback: coordinate intorno al centro città
-                        const cityCenter = detectCityFromItinerary(currentItineraryData);
-                        lat = cityCenter.lat + (index * 0.005);
-                        lng = cityCenter.lng + (index * 0.005);
-                        console.log(`Coordinate generate per ${item.title}: ${lat}, ${lng}`);
+                        // Fallback: prova il database locale
+                        const realCoords = getRealCoordinates(item.title, currentCity);
+                        if (realCoords) {
+                            lat = realCoords.lat;
+                            lng = realCoords.lng;
+                            console.log(`Coordinate locali per ${item.title}: ${lat}, ${lng}`);
+                        } else {
+                            // Ultimo fallback: coordinate intorno al centro città
+                            const cityCenter = detectCityFromItinerary(currentItineraryData);
+                            lat = cityCenter.lat + (index * 0.005);
+                            lng = cityCenter.lng + (index * 0.005);
+                            console.log(`Coordinate generate per ${item.title}: ${lat}, ${lng}`);
+                        }
                     }
 
                     // Aggiungi coordinate al percorso

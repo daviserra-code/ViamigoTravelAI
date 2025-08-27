@@ -328,17 +328,18 @@ async def simulate_real_image_search(location: str, city: str):
     known_images = {
         # Genova
         'teatro carlo felice': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
-        'acquario di genova': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800',
+        'acquario di genova': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800',
         'palazzo rosso': 'https://images.unsplash.com/photo-1520637836862-4d197d17c383?w=800',
         'palazzo ducale': 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=800',
         'spianata castelletto': 'https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=800',
         'cattedrale di san lorenzo': 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800',
-        'mercato orientale': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+        'mercato orientale': 'https://images.unsplash.com/photo-1555982105-d25af4182e4e?w=800',
+        'parchi di nervi': 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800',
         'via del campo': 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
         'palazzo bianco': 'https://images.unsplash.com/photo-1520637735862-32d197d17c83?w=800',
         'porto antico': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800',
         'piazza de ferrari': 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800',
-        'caffè degli specchi': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800',
+        'caffè degli specchi': 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800',
         
         # Milano
         'duomo di milano': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',
