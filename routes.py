@@ -155,58 +155,8 @@ def can_edit_profile(profile_user_id, current_user_id):
 
 @app.route('/')
 def index():
-    # Check if user is authenticated (mock for demo)
-    user_authenticated = False  # Since Replit auth not working yet
-    
-    if user_authenticated:
-        # Home page per utenti loggati (mantiene UI originale)
-        return render_template_string('''
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Viamigo - Home</title>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <script src="https://cdn.tailwindcss.com"></script>
-        </head>
-        <body class="bg-gray-50 min-h-screen">
-            <nav class="bg-blue-600 text-white p-4">
-                <div class="container mx-auto flex justify-between items-center">
-                    <h1 class="text-xl font-bold">Viamigo</h1>
-                    <div class="space-x-4">
-                        <span>Ciao, Marco</span>
-                        <a href="/profile" class="bg-blue-500 px-3 py-1 rounded">Profilo</a>
-                        <a href="/auth/logout" class="bg-red-500 px-3 py-1 rounded">Logout</a>
-                    </div>
-                </div>
-            </nav>
-            
-            <div class="container mx-auto p-8">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-4">Benvenuto in Viamigo!</h2>
-                    <p class="text-gray-600 mb-6">Il tuo assistente AI per viaggi personalizzati in Italia.</p>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">Pianifica Viaggio</h3>
-                            <p class="text-sm text-gray-600 mb-4">Crea itinerari personalizzati</p>
-                            <a href="/planner" class="bg-blue-600 text-white px-4 py-2 rounded">Inizia</a>
-                        </div>
-                        
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">Il Tuo Profilo</h3>
-                            <p class="text-sm text-gray-600 mb-4">Gestisci preferenze di viaggio</p>
-                            <a href="/profile" class="bg-green-600 text-white px-4 py-2 rounded">Gestisci</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        ''')
-    else:
-        # Landing page originale con logo e UI esistente
-        return redirect('/static/index.html')
+    """Homepage - sempre parte dal login"""
+    return redirect('/auth/login')
 
 @app.route('/planner')
 def planner():
