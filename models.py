@@ -54,6 +54,15 @@ class User(UserMixin, db.Model if db else object):
         first = getattr(self, 'first_name', '') or ''
         last = getattr(self, 'last_name', '') or ''
         return f"{first} {last}".strip()
+    
+    def has_complete_profile(self):
+        """Controlla se l'utente ha un profilo completo per la prima configurazione"""
+        # Un utente ha un profilo completo se ha almeno nome, cognome ed email
+        # Per ora consideriamo completo un profilo con questi campi base
+        # In futuro si possono aggiungere altri requisiti
+        return bool(getattr(self, 'first_name', None) and 
+                   getattr(self, 'last_name', None) and 
+                   getattr(self, 'email', None))
 
     def to_dict(self):
         return {

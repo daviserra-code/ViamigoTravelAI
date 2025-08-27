@@ -337,7 +337,7 @@ def login():
                 const result = await response.json();
                 
                 if (response.ok) {
-                    window.location.href = '/dashboard';
+                    window.location.href = result.redirect || '/dashboard';
                 } else {
                     showError(result.error || 'Errore durante il login');
                 }
@@ -364,20 +364,34 @@ def login():
         if not db_session:
             return jsonify({'error': 'Database non disponibile'}), 500
         
-        if not data.get('email') or not data.get('password'):
-            return jsonify({'error': 'Email e password obbligatori'}), 400
+        required_fields = ['email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'Campo {field} obbligatorio'}), 400
         
         try:
             user = User.query.filter_by(email=data['email'].lower().strip()).first()
             
             if user and user.check_password(data['password']):
-                login_user(user)
+                login_user(user, remember=True)
+                
+                # Determina dove reindirizzare l'utente
+                # Se è il primo login (non ha profilo completo), va alla creazione profilo
+                # Altrimenti va alla dashboard
+                if not user.has_complete_profile():
+                    redirect_url = '/create-profile'
+                else:
+                    redirect_url = '/dashboard'
+                
                 return jsonify({
                     'success': True,
                     'message': 'Login effettuato con successo',
+                    'redirect': redirect_url,
                     'user': {
                         'id': user.id,
                         'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
                         'full_name': user.full_name
                     }
                 }), 200
