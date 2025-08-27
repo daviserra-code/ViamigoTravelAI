@@ -306,20 +306,38 @@ def create_profile():
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
         
-        # Crea nuovo profilo
-        profile = UserProfile()
-        profile.user_id = current_user.id
+        # Controlla se esiste già un profilo
+        existing_profile = UserProfile.query.filter_by(user_id=current_user.id).first()
         
-        # Gestisce interessi
-        interests = data.get('interests', [])
-        if isinstance(interests, str):
-            interests = [i.strip() for i in interests.split(',') if i.strip()]
-        profile.set_interests(interests)
+        if existing_profile:
+            # Aggiorna il profilo esistente invece di crearne uno nuovo
+            profile = existing_profile
+            
+            # Gestisce interessi
+            interests = data.get('interests', [])
+            if isinstance(interests, str):
+                interests = [i.strip() for i in interests.split(',') if i.strip()]
+            profile.set_interests(interests)
+            
+            profile.travel_pace = data.get('travel_pace')
+            profile.budget = data.get('budget')
+            profile.updated_at = datetime.now()
+        else:
+            # Crea nuovo profilo
+            profile = UserProfile()
+            profile.user_id = current_user.id
+            
+            # Gestisce interessi
+            interests = data.get('interests', [])
+            if isinstance(interests, str):
+                interests = [i.strip() for i in interests.split(',') if i.strip()]
+            profile.set_interests(interests)
+            
+            profile.travel_pace = data.get('travel_pace')
+            profile.budget = data.get('budget')
+            
+            db.session.add(profile)
         
-        profile.travel_pace = data.get('travel_pace')
-        profile.budget = data.get('budget')
-        
-        db.session.add(profile)
         db.session.commit()
         
         if request.is_json:
