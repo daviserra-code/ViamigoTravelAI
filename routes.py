@@ -1328,6 +1328,130 @@ def get_local_place_details(context):
                     'url': 'https://www.visitmuve.it'
                 }
             },
+            # PISA
+            'piazza_miracoli_pisa': {
+                'title': 'Piazza dei Miracoli, Pisa',
+                'summary': 'Patrimonio UNESCO dal 1987, chiamata "dei Miracoli" da D\'Annunzio. Complesso romanico pisano unico al mondo con Torre Pendente, Duomo, Battistero e Camposanto.',
+                'details': [
+                    {'label': 'Patrimonio UNESCO', 'value': '1987 - "Piazza del Duomo"'},
+                    {'label': 'Duomo', 'value': 'Santa Maria Assunta (1063-1118), prototipo romanico pisano'},
+                    {'label': 'Torre Pendente', 'value': '56m altezza, inclinazione 3.97°, 294 gradini'},
+                    {'label': 'Battistero', 'value': 'Più grande d\'Italia (1152-1363), diametro 34.13m'},
+                    {'label': 'Camposanto', 'value': 'Terra Santa dalle Crociate, affreschi del Trionfo della Morte'},
+                    {'label': 'Biglietto unico', 'value': '€25 per tutti i monumenti, Torre €18 separato'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-17:00 (inverno)',
+                'cost': 'Campo gratuito, monumenti €5-18',
+                'actionLink': {
+                    'text': 'Prenota Torre di Pisa',
+                    'url': 'https://www.opapisa.it'
+                }
+            },
+            'torre_pisa': {
+                'title': 'Torre di Pisa',
+                'summary': 'Il campanile più famoso al mondo, simbolo dell\'ingegneria medievale. La pendenza è dovuta al cedimento del terreno durante la costruzione nel XII secolo.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1173-1372 (quasi 200 anni)'},
+                    {'label': 'Architetti', 'value': 'Bonanno Pisano e Gherardo din Gherardo'},
+                    {'label': 'Altezza', 'value': '56.67m lato alto, 55.86m lato basso'},
+                    {'label': 'Piani', 'value': '8 piani, 294 gradini in marmo'},
+                    {'label': 'Pendenza massima', 'value': '5.5° nel 1990, stabilizzata a 3.97°'},
+                    {'label': 'Consolidamento', 'value': 'Progetto 1990-2001, torre sicura per 300 anni'},
+                    {'label': 'Visita', 'value': '30 minuti, massimo 45 persone per turno'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-17:00 (inverno)',
+                'cost': '€18 adulti, prenotazione obbligatoria',
+                'actionLink': {
+                    'text': 'Prenota salita Torre',
+                    'url': 'https://www.opapisa.it/en/tickets/'
+                }
+            },
+            'piazza_cavalieri_pisa': {
+                'title': 'Piazza dei Cavalieri, Pisa',
+                'summary': 'Centro del potere mediceo e sede della prestigiosa Scuola Normale Superiore. Progettata da Vasari come simbolo del dominio fiorentino su Pisa.',
+                'details': [
+                    {'label': 'Progetto Vasari', 'value': '1558-1562, riqualificazione mediceo'},
+                    {'label': 'Palazzo della Carovana', 'value': 'Sede Scuola Normale Superiore (1810)'},
+                    {'label': 'Torre della Muda', 'value': 'Prigione del Conte Ugolino (Dante, Inferno XXXIII)'},
+                    {'label': 'Scuola Normale', 'value': 'Fondata da Napoleone, eccellenza universitaria'},
+                    {'label': 'Chiesa Santo Stefano', 'value': 'Cavalieri di Santo Stefano, ordine mediceo'},
+                    {'label': 'Palazzo dell\'Orologio', 'value': 'Unione di due torri medievali'}
+                ],
+                'opening_hours': 'Sempre accessibile, Scuola Normale: visite guidate su prenotazione',
+                'cost': 'Piazza gratuita, visite Scuola Normale €5'
+            },
+            # CAGLIARI
+            'castello_cagliari': {
+                'title': 'Castello di Cagliari',
+                'summary': 'Quartiere storico fortificato di origine pisana (XIII secolo), cuore del potere sardo-aragonese. Panorama mozzafiato sul Golfo degli Angeli.',
+                'details': [
+                    {'label': 'Fondazione', 'value': 'XIII secolo, dominazione pisana'},
+                    {'label': 'Mura medievali', 'value': 'Torri pisane: San Pancrazio, Elefante'},
+                    {'label': 'Palazzo Regio', 'value': 'Residenza dei Viceré spagnoli e sabaudi'},
+                    {'label': 'Panorama', 'value': 'Vista 360° su Golfo, Molentargius, Sella del Diavolo'},
+                    {'label': 'Citadella dei Musei', 'value': 'Museo Archeologico, Pinacoteca'},
+                    {'label': 'Via Lamarmora', 'value': 'Passeggiata panoramica sulle mura'}
+                ],
+                'opening_hours': 'Sempre accessibile, musei: Mar-Dom 9:00-20:00',
+                'cost': 'Accesso gratuito, musei €5-10'
+            },
+            'cattedrale_cagliari': {
+                'title': 'Cattedrale di Santa Maria, Cagliari',
+                'summary': 'Duomo barocco (XVII secolo) costruito su cattedrale pisana. Conserva il pulpito di Guglielmo da Pisa e cripta con martiri sardi.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'XIII secolo pisana, rifacimento barocco XVII sec'},
+                    {'label': 'Pulpito Guglielmo', 'value': 'Capolavoro romanico (1159-1162)'},
+                    {'label': 'Cripta dei Martiri', 'value': '179 nicchie, martiri sardi paleocristiani'},
+                    {'label': 'Cappella del Braccio', 'value': 'Reliquia Santa Cecilia'},
+                    {'label': 'Tesoro', 'value': 'Oggetti sacri sardo-aragonesi'},
+                    {'label': 'Campanile', 'value': 'Torre medievale, campane storiche'}
+                ],
+                'opening_hours': 'Lun-Sab 8:00-12:30, 16:30-20:00, Dom 8:00-13:00, 16:30-20:00',
+                'cost': 'Ingresso gratuito, cripta €3'
+            },
+            'bastione_saint_remy_cagliari': {
+                'title': 'Bastione di Saint Remy, Cagliari',
+                'summary': 'Terrazza panoramica liberty (1896-1902) simbolo della Cagliari moderna. Vista spettacolare su città, porto e Golfo degli Angeli.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1896-1902, stile liberty'},
+                    {'label': 'Architetto', 'value': 'Giuseppe Costa, ingegnere militare'},
+                    {'label': 'Passeggiata Coperta', 'value': 'Terrazza panoramica, 300m lunghezza'},
+                    {'label': 'Scalinata', 'value': 'Accesso monumentale dal Largo Carlo Felice'},
+                    {'label': 'Vista panoramica', 'value': 'Porto, Golfo, Sella del Diavolo, entroterra'},
+                    {'label': 'Eventi culturali', 'value': 'Concerti, mostre, spettacoli estivi'}
+                ],
+                'opening_hours': 'Sempre accessibile, illuminazione notturna',
+                'cost': 'Accesso gratuito'
+            },
+            # PERUGIA
+            'corso_vannucci_perugia': {
+                'title': 'Corso Vannucci, Perugia',
+                'summary': 'Salotto di Perugia e passeggiata principale della città medievale. Palazzo dei Priori, Galleria Nazionale dell\'Umbria e caffè storici.',
+                'details': [
+                    {'label': 'Palazzo dei Priori', 'value': 'XIII-XV secolo, sede comunale medievale'},
+                    {'label': 'Galleria Nazionale', 'value': 'Pinacoteca con Perugino, Pinturicchio'},
+                    {'label': 'Collegio del Cambio', 'value': 'Affreschi del Perugino (1496-1500)'},
+                    {'label': 'Caffè Sandri', 'value': 'Storico (1860), dolci tipici perugini'},
+                    {'label': 'Loggia di Braccio', 'value': 'Rinascimento umbro (XV secolo)'},
+                    {'label': 'Vista panoramica', 'value': 'Colline umbre, Valle del Tevere'}
+                ],
+                'opening_hours': 'Sempre accessibile, musei: Mar-Dom 8:30-19:30',
+                'cost': 'Passeggiata gratuita, Galleria €8'
+            },
+            'fontana_maggiore_perugia': {
+                'title': 'Fontana Maggiore, Perugia',
+                'summary': 'Capolavoro scultoreo di Nicola e Giovanni Pisano (1278). Simbolo della Perugia medievale e dell\'indipendenza comunale.',
+                'details': [
+                    {'label': 'Architetti', 'value': 'Nicola e Giovanni Pisano (1275-1278)'},
+                    {'label': 'Struttura', 'value': 'Due vasche marmoree poligonali sovrapposte'},
+                    {'label': 'Iconografia', 'value': '50 rilievi: mesi, segni zodiacali, arti liberali'},
+                    {'label': 'Acquedotto', 'value': 'Alimentata dalle sorgenti del Monte Pacciano'},
+                    {'label': 'Restauri', 'value': 'Ultimo intervento 1996-1999'},
+                    {'label': 'Simbolismo', 'value': 'Indipendenza comunale, sapienza medievale'}
+                ],
+                'opening_hours': 'Sempre visibile e accessibile',
+                'cost': 'Visione gratuita'
+            },
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
                 'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',

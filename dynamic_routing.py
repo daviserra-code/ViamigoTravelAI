@@ -869,6 +869,129 @@ class DynamicRouter:
                 }
             ]
         
+        elif 'pisa' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza dei Miracoli',
+                    'description': 'Patrimonio UNESCO con la celebre Torre Pendente, il Duomo romanico pisano e il Battistero',
+                    'coordinates': [43.7230, 10.3966],
+                    'context': 'piazza_miracoli_pisa',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Torre di Pisa',
+                    'description': 'La torre campanaria più famosa al mondo, simbolo dell\'ingegneria medievale e dell\'arte pisana',
+                    'coordinates': [43.7230, 10.3966],
+                    'context': 'torre_pisa',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Camposanto Monumentale',
+                    'description': 'Cimitero gotico con terra santa portata dalle Crociate e affreschi trecenteschi',
+                    'coordinates': [43.7236, 10.3955],
+                    'context': 'camposanto_pisa',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Piazza dei Cavalieri',
+                    'description': 'Centro del potere mediceo con Palazzo della Carovana e la Scuola Normale Superiore',
+                    'coordinates': [43.7197, 10.4017],
+                    'context': 'piazza_cavalieri_pisa',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Pisa',
+                    'description': f'Itinerario nella città della Torre Pendente e delle Repubbliche Marinare - da {start} a {end}'
+                }
+            ]
+        
+        elif 'cagliari' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Castello di Cagliari',
+                    'description': 'Quartiere storico pisano-aragonese con mura medievali e vista panoramica sul Golfo degli Angeli',
+                    'coordinates': [39.2164, 9.1328],
+                    'context': 'castello_cagliari',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Cattedrale di Santa Maria',
+                    'description': 'Duomo barocco con cripta paleocristiana e pulpito di Guglielmo da Pisa (XII secolo)',
+                    'coordinates': [39.2158, 9.1321],
+                    'context': 'cattedrale_cagliari',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Bastione di Saint Remy',
+                    'description': 'Terrazza panoramica liberty con vista a 360° sulla città e il mare',
+                    'coordinates': [39.2144, 9.1308],
+                    'context': 'bastione_saint_remy_cagliari',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Museo Archeologico Nazionale',
+                    'description': 'Tesori della civiltà nuragica sarda, bronzetti e reperti fenicio-punici',
+                    'coordinates': [39.2172, 9.1344],
+                    'context': 'museo_archeologico_cagliari',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Cagliari',
+                    'description': f'Itinerario tra storia nuragica e dominazioni pisane-aragonesi - da {start} a {end}'
+                }
+            ]
+        
+        elif 'perugia' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Corso Vannucci',
+                    'description': 'Salotto di Perugia con Palazzo dei Priori e vista panoramica sulle colline umbre',
+                    'coordinates': [43.1122, 12.3888],
+                    'context': 'corso_vannucci_perugia',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Fontana Maggiore',
+                    'description': 'Capolavoro scultoreo di Nicola e Giovanni Pisano (1278), simbolo della città medievale',
+                    'coordinates': [43.1123, 12.3894],
+                    'context': 'fontana_maggiore_perugia',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Rocca Paolina',
+                    'description': 'Fortezza pontificia cinquecentesca con scale mobili e città sotterranea medievale',
+                    'coordinates': [43.1094, 12.3869],
+                    'context': 'rocca_paolina_perugia',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Arco Etrusco',
+                    'description': 'Porta Augusta del III secolo a.C., testimonianza della Perugia etrusca',
+                    'coordinates': [43.1134, 12.3916],
+                    'context': 'arco_etrusco_perugia',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Perugia',
+                    'description': f'Itinerario tra Etruschi, medioevo e Rinascimento umbro - da {start} a {end}'
+                }
+            ]
+        
         # Itinerario generico per altre città
         return [
             {
