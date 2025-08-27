@@ -407,6 +407,61 @@
             return cityCoordinates.genova;
         }
 
+        // Database delle coordinate reali dei luoghi
+        function getRealCoordinates(locationName, cityName = 'genova') {
+            const locations = {
+                'genova': {
+                    'piazza de ferrari': { lat: 44.4071, lng: 8.9348 },
+                    'acquario di genova': { lat: 44.4109, lng: 8.9326 },
+                    'palazzo ducale': { lat: 44.4071, lng: 8.9348 },
+                    'teatro carlo felice': { lat: 44.4076, lng: 8.9330 },
+                    'cattedrale di san lorenzo': { lat: 44.4082, lng: 8.9309 },
+                    'palazzo rosso': { lat: 44.4078, lng: 8.9314 },
+                    'palazzo bianco': { lat: 44.4082, lng: 8.9318 },
+                    'spianata castelletto': { lat: 44.4127, lng: 8.9264 },
+                    'mercato orientale': { lat: 44.4043, lng: 8.9380 },
+                    'porto antico': { lat: 44.4108, lng: 8.9279 },
+                    'via del campo': { lat: 44.4065, lng: 8.9298 },
+                    'parchi di nervi': { lat: 44.3897, lng: 8.9834 },
+                    'museo giannettino luxoro': { lat: 44.3890, lng: 8.9840 },
+                    'caffè degli specchi': { lat: 44.4071, lng: 8.9348 },
+                    'lungomare di genova': { lat: 44.4020, lng: 8.9450 },
+                    'corso italia': { lat: 44.3950, lng: 8.9500 },
+                    'boccadasse': { lat: 44.3945, lng: 8.9702 },
+                    'passeggiata anita garibaldi': { lat: 44.3920, lng: 8.9600 },
+                    'nervi': { lat: 44.3897, lng: 8.9834 }
+                },
+                'milano': {
+                    'piazza del duomo': { lat: 45.4642, lng: 9.1900 },
+                    'duomo di milano': { lat: 45.4642, lng: 9.1900 },
+                    'castello sforzesco': { lat: 45.4702, lng: 9.1797 },
+                    'parco sempione': { lat: 45.4720, lng: 9.1712 },
+                    'teatro alla scala': { lat: 45.4676, lng: 9.1900 },
+                    'navigli': { lat: 45.4484, lng: 9.1694 },
+                    'galleria vittorio emanuele': { lat: 45.4656, lng: 9.1897 },
+                    'corso buenos aires': { lat: 45.4796, lng: 9.2073 },
+                    'brera': { lat: 45.4722, lng: 9.1886 }
+                }
+            };
+            
+            const cityLocations = locations[cityName.toLowerCase()] || locations['genova'];
+            const locationKey = locationName.toLowerCase();
+            
+            // Cerca match esatto
+            if (cityLocations[locationKey]) {
+                return cityLocations[locationKey];
+            }
+            
+            // Cerca match parziale
+            for (const [key, coords] of Object.entries(cityLocations)) {
+                if (key.includes(locationKey) || locationKey.includes(key)) {
+                    return coords;
+                }
+            }
+            
+            return null;
+        }
+
         // --- AGGIORNA MAPPA CON ITINERARIO ---
         function updateMapWithItinerary(itineraryData) {
             if (!map) return;
@@ -426,11 +481,24 @@
 
             itineraryData.forEach((item, index) => {
                 if (item.type !== 'tip') {
-                    // Rileva le coordinate del centro città per questa mappa
-                    const cityCenter = detectCityFromItinerary(currentItineraryData);
-                    // Usa le coordinate se disponibili, altrimenti usa coordinate casuali intorno al centro città
-                    const lat = item.coordinates?.lat || (cityCenter.lat + (index * 0.005));
-                    const lng = item.coordinates?.lng || (cityCenter.lng + (index * 0.005));
+                    // Rileva la città dall'itinerario
+                    const currentCity = window.currentCityName || 'genova';
+                    
+                    // Prova a ottenere coordinate reali
+                    const realCoords = getRealCoordinates(item.title, currentCity);
+                    
+                    let lat, lng;
+                    if (realCoords) {
+                        lat = realCoords.lat;
+                        lng = realCoords.lng;
+                        console.log(`Coordinate reali per ${item.title}: ${lat}, ${lng}`);
+                    } else {
+                        // Fallback: coordinate intorno al centro città
+                        const cityCenter = detectCityFromItinerary(currentItineraryData);
+                        lat = cityCenter.lat + (index * 0.005);
+                        lng = cityCenter.lng + (index * 0.005);
+                        console.log(`Coordinate generate per ${item.title}: ${lat}, ${lng}`);
+                    }
 
                     // Aggiungi coordinate al percorso
                     routeCoordinates.push([lat, lng]);
