@@ -538,10 +538,18 @@
                     // Aggiungi coordinate al percorso
                     routeCoordinates.push([lat, lng]);
 
-                    // Crea un marker personalizzato con numerazione
-                    const isTransport = item.type === 'transport';
+                    // Determina il tipo di marker - FIX: logica semplificata
+                    const isTransport = item.type?.toLowerCase() === 'trasporto' || item.type?.toLowerCase() === 'transport';
                     const markerColor = isTransport ? 'orange' : 'blue';
-                    const markerIcon = isTransport ? '🚶‍♂️' : markerIndex.toString();
+                    
+                    // FIX: Numerazione continua per tutti i punti non-trasporto
+                    let markerIcon;
+                    if (isTransport) {
+                        markerIcon = '🚶‍♂️';
+                    } else {
+                        markerIcon = markerIndex.toString();
+                        markerIndex++; // Incrementa qui per il prossimo marker non-trasporto
+                    }
 
                     // Marker personalizzato con icona numerata
                     const customIcon = L.divIcon({
@@ -560,12 +568,11 @@
                             <h3 class="font-bold text-sm mb-1">${item.title}</h3>
                             <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
                             <p class="text-xs">${item.description}</p>
-                            ${item.type === 'activity' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
+                            ${item.type === 'activity' || item.type === 'arte' || item.type === 'cibo' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
                         </div>
                     `);
 
                     bounds.extend([lat, lng]);
-                    if (!isTransport) markerIndex++;
                 }
             });
 
