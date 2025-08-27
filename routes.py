@@ -293,6 +293,77 @@ def planner():
     """Redirect alla pagina originale di pianificazione"""
     return redirect('/static/index.html')
 
+@app.route('/get_profile', methods=['GET'])
+@require_login
+def api_get_profile():
+    """API endpoint per ottenere profilo utente (per compatibilità con frontend)"""
+    current_user = get_current_user()
+    profile = UserProfile.query.filter_by(user_id=current_user.id).first()
+    
+    if profile:
+        return jsonify({
+            'success': True,
+            'profile': {
+                'interests': profile.get_interests(),
+                'travel_pace': profile.travel_pace,
+                'budget': profile.budget
+            }
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'profile': {
+                'interests': [],
+                'travel_pace': 'Moderato',
+                'budget': '€€'
+            }
+        })
+
+@app.route('/plan', methods=['POST'])
+@require_login
+def api_plan_trip():
+    """API endpoint per pianificazione viaggi - mockup per demo"""
+    try:
+        data = request.get_json()
+        start = data.get('start', '')
+        end = data.get('end', '')
+        
+        # Mock response per demo - in futuro qui si integrerà l'AI reale
+        mock_response = {
+            'success': True,
+            'itinerary': {
+                'title': f'Viaggio da {start} a {end}',
+                'steps': [
+                    {
+                        'time': '09:00',
+                        'location': start,
+                        'description': 'Punto di partenza',
+                        'coordinates': [41.9028, 12.4964]
+                    },
+                    {
+                        'time': '10:30',
+                        'location': 'Tappa intermedia',
+                        'description': 'Scoperta locale interessante',
+                        'coordinates': [41.9020, 12.4950]
+                    },
+                    {
+                        'time': '12:00',
+                        'location': end,
+                        'description': 'Destinazione finale',
+                        'coordinates': [41.8986, 12.4768]
+                    }
+                ]
+            }
+        }
+        
+        return jsonify(mock_response)
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # === CRUD ROUTES PER USER PROFILE ===
 
 @app.route('/demo-dashboard')  
