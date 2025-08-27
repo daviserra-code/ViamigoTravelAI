@@ -280,9 +280,14 @@ async def plan_itinerary(
         
         # Create travel query for RAG
         from datetime import date
+        # Estrai la città dalla richiesta
+        import re
+        city_match = re.search(r'genova|milano|roma|firenze|venezia|napoli|torino|palermo|bologna', end.lower())
+        destination_city = city_match.group() if city_match else "genova"
+        
         query = TravelQuery(
-            query_text=f"Pianifica un itinerario dettagliato da {start} a {end} con orari, trasporti e attrazioni",
-            destination=end,
+            query_text=f"Pianifica un itinerario dettagliato SOLO a {destination_city.upper()}, Italia da {start} a {end} con orari, trasporti e attrazioni. IMPORTANTE: tutti i luoghi devono essere a {destination_city.upper()}, NON in altre città italiane.",
+            destination=f"{destination_city}, Italia",
             travel_type=TravelType.CULTURAL,
             duration=1,
             start_date=date.today(),
