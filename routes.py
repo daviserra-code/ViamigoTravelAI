@@ -17,35 +17,8 @@ def require_login(f):
 
 @app.route('/auth/login')
 def auth_login():
-    """Mock login endpoint for demo"""
-    return render_template_string('''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Login - Viamigo</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="bg-blue-600 min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold mb-6 text-center">Accesso Temporaneo</h2>
-            <p class="text-gray-600 mb-6 text-center">
-                L'autenticazione Replit è in configurazione.<br>
-                Per ora usa la demo.
-            </p>
-            <div class="space-y-4">
-                <a href="/" class="block w-full bg-blue-600 text-white py-3 rounded text-center">
-                    Torna alla Home
-                </a>
-                <button onclick="history.back()" class="block w-full bg-gray-200 text-gray-700 py-3 rounded text-center">
-                    Indietro
-                </button>
-            </div>
-        </div>
-    </body>
-    </html>
-    ''')
+    """Mock login endpoint - redirects to profile for demo"""
+    return redirect('/profile')
 
 @app.route('/auth/logout')
 def auth_logout():
@@ -83,85 +56,45 @@ def index():
     user_authenticated = False  # Since Replit auth not working yet
     
     if user_authenticated:
-        # Mobile-first home page for logged users
+        # Home page per utenti loggati (mantiene UI originale)
         return render_template_string('''
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Viamigo</title>
+            <title>Viamigo - Home</title>
             <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
             <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-                .mobile-container { max-width: 428px; margin: 0 auto; }
-                .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            </style>
         </head>
-        <body class="bg-gray-100 min-h-screen">
-            <div class="mobile-container bg-white min-h-screen">
-                <!-- Header -->
-                <div class="gradient-bg text-white p-6 pb-8 rounded-b-3xl">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-bold">Viamigo</h1>
-                        <div class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
-                            <span class="text-sm">👤</span>
-                        </div>
-                    </div>
-                    <div>
-                        <h2 class="text-lg mb-1">Ciao, Marco!</h2>
-                        <p class="text-blue-100">Pronto per la prossima avventura?</p>
+        <body class="bg-gray-50 min-h-screen">
+            <nav class="bg-blue-600 text-white p-4">
+                <div class="container mx-auto flex justify-between items-center">
+                    <h1 class="text-xl font-bold">Viamigo</h1>
+                    <div class="space-x-4">
+                        <span>Ciao, Marco</span>
+                        <a href="/profile" class="bg-blue-500 px-3 py-1 rounded">Profilo</a>
+                        <a href="/auth/logout" class="bg-red-500 px-3 py-1 rounded">Logout</a>
                     </div>
                 </div>
-                
-                <!-- Main Actions -->
-                <div class="p-6 -mt-4">
-                    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Azioni Rapide</h3>
-                        <div class="space-y-3">
-                            <a href="/planner" class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
-                                        <span class="text-white text-lg">🗺️</span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Pianifica Viaggio</p>
-                                        <p class="text-sm text-gray-500">Crea nuovo itinerario</p>
-                                    </div>
-                                </div>
-                                <span class="text-blue-500">→</span>
-                            </a>
-                            
-                            <a href="/profile" class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
-                                        <span class="text-white text-lg">⚙️</span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Il Tuo Profilo</p>
-                                        <p class="text-sm text-gray-500">Preferenze viaggio</p>
-                                    </div>
-                                </div>
-                                <span class="text-green-500">→</span>
-                            </a>
+            </nav>
+            
+            <div class="container mx-auto p-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Benvenuto in Viamigo!</h2>
+                    <p class="text-gray-600 mb-6">Il tuo assistente AI per viaggi personalizzati in Italia.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-semibold mb-2">Pianifica Viaggio</h3>
+                            <p class="text-sm text-gray-600 mb-4">Crea itinerari personalizzati</p>
+                            <a href="/planner" class="bg-blue-600 text-white px-4 py-2 rounded">Inizia</a>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Bottom Navigation -->
-                <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg bg-white border-t p-4">
-                    <div class="flex justify-around">
-                        <button class="flex flex-col items-center p-2 text-blue-500">
-                            <span class="text-xl mb-1">🏠</span>
-                            <span class="text-xs">Home</span>
-                        </button>
-                        <button class="flex flex-col items-center p-2 text-gray-400">
-                            <span class="text-xl mb-1">🗺️</span>
-                            <span class="text-xs">Viaggi</span>
-                        </button>
-                        <button class="flex flex-col items-center p-2 text-gray-400">
-                            <span class="text-xl mb-1">👤</span>
-                            <span class="text-xs">Profilo</span>
-                        </button>
+                        
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-semibold mb-2">Il Tuo Profilo</h3>
+                            <p class="text-sm text-gray-600 mb-4">Gestisci preferenze di viaggio</p>
+                            <a href="/profile" class="bg-green-600 text-white px-4 py-2 rounded">Gestisci</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,87 +102,8 @@ def index():
         </html>
         ''')
     else:
-        # Mobile-first login page
-        return render_template_string('''
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Viamigo - Accedi</title>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-                .mobile-container { max-width: 428px; margin: 0 auto; }
-                .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            </style>
-        </head>
-        <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-            <div class="mobile-container w-full">
-                <!-- Logo Section -->
-                <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">✈️</span>
-                    </div>
-                    <h1 class="text-4xl font-bold text-white mb-2">Viamigo</h1>
-                    <p class="text-blue-100">Il tuo assistente AI per viaggi in Italia</p>
-                </div>
-                
-                <!-- Login Card -->
-                <div class="bg-white rounded-3xl p-8 shadow-2xl">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Benvenuto!</h2>
-                    <p class="text-gray-600 text-center mb-8">Accedi per iniziare a pianificare</p>
-                    
-                    <!-- Mock Login Button (Demo) -->
-                    <button onclick="mockLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-lg mb-4 shadow-lg">
-                        Accedi Demo
-                    </button>
-                    
-                    <!-- Auth Button (Real - currently 404) -->
-                    <a href="/auth/login" class="block w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-semibold text-lg text-center mb-6">
-                        Accedi con Replit
-                    </a>
-                    
-                    <div class="text-center">
-                        <p class="text-sm text-gray-500">
-                            Creando un account accetti i nostri<br>
-                            <a href="#" class="text-blue-600">Termini di Servizio</a> e 
-                            <a href="#" class="text-blue-600">Privacy Policy</a>
-                        </p>
-                    </div>
-                </div>
-                
-                <!-- Features Preview -->
-                <div class="mt-8 grid grid-cols-3 gap-4 text-center">
-                    <div class="text-white">
-                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                            <span class="text-lg">🎯</span>
-                        </div>
-                        <p class="text-xs">Personalizzato</p>
-                    </div>
-                    <div class="text-white">
-                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                            <span class="text-lg">🤖</span>
-                        </div>
-                        <p class="text-xs">AI-Powered</p>
-                    </div>
-                    <div class="text-white">
-                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                            <span class="text-lg">📍</span>
-                        </div>
-                        <p class="text-xs">GPS Preciso</p>
-                    </div>
-                </div>
-            </div>
-            
-            <script>
-                function mockLogin() {
-                    // Mock login for demo purposes
-                    window.location.href = '/demo-dashboard';
-                }
-            </script>
-        </body>
-        </html>
-        ''')
+        # Landing page originale con logo e UI esistente
+        return redirect('/static/index.html')
 
 @app.route('/planner')
 def planner():
@@ -258,289 +112,88 @@ def planner():
 
 # === CRUD ROUTES PER USER PROFILE ===
 
-@app.route('/demo-dashboard')
+@app.route('/demo-dashboard')  
 def demo_dashboard():
-    """Demo dashboard per mostrare l'app funzionante"""
-    return render_template_string('''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Viamigo - Dashboard</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            .mobile-container { max-width: 428px; margin: 0 auto; }
-            .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        </style>
-    </head>
-    <body class="bg-gray-100 min-h-screen">
-        <div class="mobile-container bg-white min-h-screen">
-            <!-- Header -->
-            <div class="gradient-bg text-white p-6 pb-8 rounded-b-3xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold">Viamigo</h1>
-                    <button onclick="showProfileMenu()" class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
-                        <span class="text-sm">👤</span>
-                    </button>
-                </div>
-                <div>
-                    <h2 class="text-lg mb-1">Ciao, Marco!</h2>
-                    <p class="text-blue-100">Hai 2 viaggi pianificati</p>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="p-6 -mt-4">
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h3 class="text-lg font-semibold mb-4">Azioni Rapide</h3>
-                    <div class="space-y-3">
-                        <a href="/profile" class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
-                                    <span class="text-white text-lg">🗺️</span>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Crea Profilo</p>
-                                    <p class="text-sm text-gray-500">Personalizza preferenze</p>
-                                </div>
-                            </div>
-                            <span class="text-blue-500">→</span>
-                        </a>
-                        
-                        <a href="/planner" class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
-                                    <span class="text-white text-lg">✨</span>
-                                </div>
-                                <div>
-                                    <p class="font-medium">AI Planner</p>
-                                    <p class="text-sm text-gray-500">Pianificatore originale</p>
-                                </div>
-                            </div>
-                            <span class="text-green-500">→</span>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Recent Trips -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-20">
-                    <h3 class="text-lg font-semibold mb-4">I Tuoi Viaggi</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mr-3">
-                                    <span class="text-orange-600 text-lg">🏛️</span>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Roma - 3 giorni</p>
-                                    <p class="text-sm text-gray-500">Maggio 2025</p>
-                                </div>
-                            </div>
-                            <span class="text-gray-400">💾</span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-3">
-                                    <span class="text-blue-600 text-lg">🏖️</span>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Costiera Amalfitana</p>
-                                    <p class="text-sm text-gray-500">Giugno 2025</p>
-                                </div>
-                            </div>
-                            <span class="text-gray-400">💾</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Bottom Navigation -->
-            <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg bg-white border-t p-4">
-                <div class="flex justify-around">
-                    <button class="flex flex-col items-center p-2 text-blue-500">
-                        <span class="text-xl mb-1">🏠</span>
-                        <span class="text-xs">Home</span>
-                    </button>
-                    <button class="flex flex-col items-center p-2 text-gray-400">
-                        <span class="text-xl mb-1">🗺️</span>
-                        <span class="text-xs">Viaggi</span>
-                    </button>
-                    <button onclick="window.location.href='/profile'" class="flex flex-col items-center p-2 text-gray-400">
-                        <span class="text-xl mb-1">👤</span>
-                        <span class="text-xs">Profilo</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <script>
-            function showProfileMenu() {
-                alert('Menu Profilo: Impostazioni, Logout, ecc.');
-            }
-        </script>
-    </body>
-    </html>
-    ''')
+    """Demo di accesso per mostrare l'integrazione profilo"""
+    return redirect('/profile')
 
 @app.route('/profile')
 @require_login
 def view_profile():
-    """Visualizza e gestisci il profilo utente con UI mobile"""
-    # Mock profile data for demo
+    """Visualizza il profilo dell'utente corrente"""
     profile = None  # UserProfile.query.filter_by(user_id=current_user.id).first()
     
     return render_template_string('''
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Profilo - Viamigo</title>
+        <title>Il Mio Profilo - Viamigo</title>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            .mobile-container { max-width: 428px; margin: 0 auto; }
-            .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        </style>
     </head>
-    <body class="bg-gray-100 min-h-screen">
-        <div class="mobile-container bg-white min-h-screen">
-            <!-- Header -->
-            <div class="gradient-bg text-white p-6 pb-8 rounded-b-3xl">
+    <body class="bg-gray-50 min-h-screen">
+        <nav class="bg-blue-600 text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="text-xl font-bold">Viamigo</a>
+                <div class="space-x-4">
+                    <span>Marco Rossi</span>
+                    <a href="/auth/logout" class="bg-red-500 px-3 py-1 rounded">Logout</a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container mx-auto p-8">
+            <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <button onclick="history.back()" class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
-                        <span class="text-sm">←</span>
-                    </button>
-                    <h1 class="text-xl font-bold">Il Mio Profilo</h1>
-                    <button onclick="editProfile()" class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
-                        <span class="text-sm">✏️</span>
-                    </button>
+                    <h2 class="text-2xl font-bold">Il Mio Profilo</h2>
+                    {% if profile %}
+                        <a href="/profile/edit" class="bg-blue-600 text-white px-4 py-2 rounded">Modifica</a>
+                    {% else %}
+                        <a href="/profile/create" class="bg-green-600 text-white px-4 py-2 rounded">Crea Profilo</a>
+                    {% endif %}
                 </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-white bg-opacity-30 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span class="text-2xl">👤</span>
-                    </div>
-                    <h2 class="text-lg font-semibold">Marco Rossi</h2>
-                    <p class="text-blue-100">marco@email.com</p>
-                </div>
-            </div>
-            
-            <!-- Profile Content -->
-            <div class="p-6 -mt-4">
-                {% if not profile %}
-                <!-- Crea Profilo -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <div class="text-center">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-2xl">✨</span>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">Personalizza i tuoi viaggi</h3>
-                        <p class="text-gray-600 mb-6">Configura le tue preferenze per ricevere consigli su misura</p>
-                        <button onclick="createProfile()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold">
-                            Crea il Tuo Profilo
-                        </button>
-                    </div>
-                </div>
-                {% else %}
-                <!-- Profilo Esistente -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <h3 class="text-lg font-semibold mb-4">Preferenze di Viaggio</h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-sm text-gray-500 mb-2">I tuoi interessi</p>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">🍝 Cibo</span>
-                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">🎨 Arte</span>
-                                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">🏛️ Storia</span>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Ritmo di viaggio</p>
-                                <p class="font-medium">🐌 Lento</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Budget</p>
-                                <p class="font-medium">💰 €€</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
                 
-                <!-- Settings -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-20">
-                    <h3 class="text-lg font-semibold mb-4">Impostazioni</h3>
-                    
-                    <div class="space-y-3">
-                        <button onclick="editProfile()" class="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl">
-                            <div class="flex items-center">
-                                <span class="text-lg mr-3">✏️</span>
-                                <span>Modifica Profilo</span>
-                            </div>
-                            <span class="text-gray-400">→</span>
-                        </button>
-                        
-                        <button onclick="exportData()" class="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl">
-                            <div class="flex items-center">
-                                <span class="text-lg mr-3">📥</span>
-                                <span>Esporta Dati</span>
-                            </div>
-                            <span class="text-gray-400">→</span>
-                        </button>
-                        
-                        <button onclick="deleteProfile()" class="flex items-center justify-between w-full p-4 bg-red-50 rounded-xl text-red-600">
-                            <div class="flex items-center">
-                                <span class="text-lg mr-3">🗑️</span>
-                                <span>Elimina Profilo</span>
-                            </div>
-                            <span class="text-red-400">→</span>
-                        </button>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-700">Informazioni Account</h3>
+                        <p><span class="font-medium">Email:</span> marco@email.com</p>
+                        <p><span class="font-medium">Nome:</span> Marco Rossi</p>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Bottom Navigation -->
-            <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg bg-white border-t p-4">
-                <div class="flex justify-around">
-                    <button onclick="window.location.href='/demo-dashboard'" class="flex flex-col items-center p-2 text-gray-400">
-                        <span class="text-xl mb-1">🏠</span>
-                        <span class="text-xs">Home</span>
-                    </button>
-                    <button class="flex flex-col items-center p-2 text-gray-400">
-                        <span class="text-xl mb-1">🗺️</span>
-                        <span class="text-xs">Viaggi</span>
-                    </button>
-                    <button class="flex flex-col items-center p-2 text-blue-500">
-                        <span class="text-xl mb-1">👤</span>
-                        <span class="text-xs">Profilo</span>
-                    </button>
+                    
+                    {% if profile %}
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold text-gray-700 mb-2">Preferenze di Viaggio</h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="font-medium">Interessi:</p>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Cibo</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Arte</span>
+                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">Storia</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p class="font-medium">Ritmo di Viaggio:</p>
+                                <p class="text-gray-600">Moderato</p>
+                            </div>
+                            
+                            <div>
+                                <p class="font-medium">Budget:</p>
+                                <p class="text-gray-600">€€</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="border-t pt-4 text-center">
+                        <p class="text-gray-500 mb-4">Non hai ancora configurato le tue preferenze di viaggio.</p>
+                        <a href="/profile/create" class="bg-green-600 text-white px-6 py-2 rounded">Configura Ora</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        
-        <script>
-            function createProfile() {
-                window.location.href = '/profile/create';
-            }
-            
-            function editProfile() {
-                window.location.href = '/profile/edit';
-            }
-            
-            function exportData() {
-                alert('Funzionalità di esportazione dati in arrivo!');
-            }
-            
-            function deleteProfile() {
-                if (confirm('Sei sicuro di voler eliminare il tuo profilo?')) {
-                    alert('Profilo eliminato (demo)');
-                }
-            }
-        </script>
     </body>
     </html>
     ''', profile=profile)
