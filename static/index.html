@@ -562,13 +562,24 @@
 
                     const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
                     
-                    // Popup con informazioni della fermata
+                    // Popup con informazioni della fermata e icona trasporto
+                    const transportIcons = {
+                        'walking': '🚶',
+                        'metro': '🚇',
+                        'bus': '🚌',
+                        'tram': '🚋',
+                        'funicular': '🚡',
+                        'taxi': '🚕'
+                    };
+                    
+                    const transportIcon = transportIcons[item.transport] || '🚶';
+                    
                     marker.bindPopup(`
                         <div class="text-gray-900 max-w-xs">
                             <h3 class="font-bold text-sm mb-1">${item.title}</h3>
-                            <p class="text-xs text-gray-600 mb-2">${item.time || ''}</p>
-                            <p class="text-xs">${item.description}</p>
-                            ${item.type === 'activity' || item.type === 'arte' || item.type === 'cibo' ? `<button onclick="openModal('${item.context}')" class="mt-2 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
+                            <p class="text-xs text-gray-600 mb-1">${item.time || ''} ${transportIcon}</p>
+                            <p class="text-xs mb-2">${item.description}</p>
+                            ${item.context && !item.type ? `<button onclick="openModal('${item.context}')" class="mt-1 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
                         </div>
                     `);
 

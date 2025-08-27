@@ -90,7 +90,10 @@ Preferred communication style: Simple, everyday language.
 - **Process Management**: Automatic restart capabilities with proper port monitoring
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
-### Recent Changes
+### Recent Changes  
+- **August 27, 2025**: **DYNAMIC WORLDWIDE SYSTEM** - Implemented hybrid architecture: local database for Italian cities + dynamic API system for global destinations using OpenStreetMap, Nominatim, and AI (GPT-5) for authentic worldwide travel information
+- **August 27, 2025**: **REALISTIC STREET ROUTING** - Integrated OpenRouteService API for authentic pedestrian routes replacing straight-line paths, with multi-modal transport support (walking, metro, bus, tram, funicular)
+- **August 27, 2025**: **CITY-SPECIFIC ITINERARIES** - Added comprehensive support for Torino, Roma, Milano, Venezia, Firenze, Genova with authentic local details, transport costs, and cultural information
 - **August 27, 2025**: **COMPLETE SYSTEM INTEGRATION** - Fully functional Viamigo app with Flask backend, PostgreSQL database, and original frontend
 - **August 27, 2025**: **API ENDPOINTS WORKING** - `/plan` and `/get_profile` endpoints successfully serving frontend requests
 - **August 27, 2025**: **PERSISTENT SESSION SYSTEM** - Demo login with session management enabling fluid navigation

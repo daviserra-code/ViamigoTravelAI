@@ -759,6 +759,29 @@ def get_local_place_details(context):
                     {'direction': 'Ascensore panoramico', 'times': 'Mar-Dom 9:00-19:00 (ultima salita)'}
                 ]
             },
+            'musei_reali_torino': {
+                'title': 'Musei Reali, Torino',
+                'summary': 'Il più importante complesso museale del Piemonte, residenza dei Savoia. Include Palazzo Reale, Armeria Reale, Galleria Sabauda e Biblioteca Reale con codici di Leonardo.',
+                'details': [
+                    {'label': 'Patrimonio UNESCO', 'value': 'Residenze sabaude (1997)'},
+                    {'label': 'Palazzo Reale', 'value': 'Residenza ufficiale Casa Savoia (1646)'},
+                    {'label': 'Armeria Reale', 'value': 'Collezione armi antiche più ricca al mondo'},
+                    {'label': 'Galleria Sabauda', 'value': 'Capolavori Van Dyck, Rembrandt, Pollaiolo'},
+                    {'label': 'Biblioteca Reale', 'value': 'Autoritratto di Leonardo da Vinci'},
+                    {'label': 'Biglietto unico', 'value': '€15 (ridotto €2), gratuito <18 anni'},
+                    {'label': 'Prenotazione', 'value': 'Consigliata nei weekend'}
+                ],
+                'timetable': [
+                    {'direction': 'Mar-Dom', 'times': '9:00-19:00 (ultimo ingresso 18:00)'},
+                    {'direction': 'Lunedì', 'times': 'Chiuso (eccetto festivi)'},
+                    {'direction': 'Palazzo Reale', 'times': 'Visite guidate ogni ora'},
+                    {'direction': 'Armeria Reale', 'times': 'Accesso libero con biglietto'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota la visita',
+                    'url': 'https://www.museireali.beniculturali.it'
+                }
+            },
             'lungo_po': {
                 'title': 'Lungo Po, Torino',
                 'summary': 'Le passeggiate lungo il fiume Po offrono scorci romantici di Torino. Dal centro storico al Parco del Valentino.',
