@@ -322,36 +322,55 @@ def api_get_profile():
 @app.route('/plan', methods=['POST'])
 @require_login
 def api_plan_trip():
-    """API endpoint per pianificazione viaggi - sistema dinamico mondiale"""
+    """API endpoint per pianificazione viaggi - routing dinamico personalizzato"""
     try:
         data = request.get_json()
-        start = data.get('start', '').lower()
-        end = data.get('end', '').lower()
+        start = data.get('start', '').strip()
+        end = data.get('end', '').strip()
+        city = data.get('city', '').strip()
+        duration = data.get('duration', 'half_day')
         
-        # Rilevamento automatico città dal testo
-        city = detect_city_from_locations(start, end)
+        if not start or not end:
+            return jsonify({
+                'success': False,
+                'error': 'Start e end sono obbligatori'
+            }), 400
         
-        if city == 'torino':
-            itinerary = generate_torino_itinerary(start, end)
-        elif city == 'roma':
-            itinerary = generate_roma_itinerary(start, end)
-        elif city == 'milano':
-            itinerary = generate_milano_itinerary(start, end)
-        elif city == 'venezia':
-            itinerary = generate_venezia_itinerary(start, end)
-        elif city == 'firenze':
-            itinerary = generate_firenze_itinerary(start, end)
-        elif city == 'genova':
-            itinerary = generate_genova_itinerary(start, end)
-        else:
-            # Itinerario generico per città non riconosciute
-            itinerary = generate_generic_itinerary(start, end)
+        # Sistema di riconoscimento città migliorato se non specificata
+        if not city:
+            city = detect_city_from_locations(start.lower(), end.lower())
+        
+        # Prova prima il routing dinamico personalizzato
+        from dynamic_routing import dynamic_router
+        itinerary = dynamic_router.generate_personalized_itinerary(
+            start, end, city, duration
+        )
+        
+        # Se il routing dinamico fallisce, usa template specifici
+        if not itinerary or len(itinerary) < 3:
+            print(f"Fallback a template per {city}")
+            if city == 'torino':
+                itinerary = generate_torino_itinerary(start, end)
+            elif city == 'roma':
+                itinerary = generate_roma_itinerary(start, end)
+            elif city == 'milano':
+                itinerary = generate_milano_itinerary(start, end)
+            elif city == 'venezia':
+                itinerary = generate_venezia_itinerary(start, end)
+            elif city == 'firenze':
+                itinerary = generate_firenze_itinerary(start, end)
+            elif city == 'genova':
+                itinerary = generate_genova_itinerary(start, end)
+            else:
+                itinerary = generate_generic_itinerary(start, end)
         
         return jsonify({
             'success': True,
             'itinerary': itinerary,
             'routing_info': {
                 'city': city,
+                'routing_type': 'dynamic_personalized',
+                'generated_for': f"{start} → {end}",
                 'realistic_routing': True,
                 'walking_routes': True
             }

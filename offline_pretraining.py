@@ -4,6 +4,7 @@ Sistema di pre-training offline per popolare il database
 con informazioni complete sui luoghi turistici principali
 """
 
+import sys
 import json
 from flask_app import app, db
 from models import PlaceCache
