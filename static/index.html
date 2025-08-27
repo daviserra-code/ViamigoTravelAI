@@ -519,11 +519,19 @@
                         lat = item.lat;
                         lng = item.lon;
                         console.log(`✓ Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
+                    } else if (item.coordinates && Array.isArray(item.coordinates) && item.coordinates.length === 2) {
+                        // Formato array [lat, lng] dal backend
+                        lat = item.coordinates[0];
+                        lng = item.coordinates[1];
+                        console.log(`✓ Coordinate backend array per ${item.title}: ${lat}, ${lng}`);
                     } else if (item.coordinates && item.coordinates.lat && item.coordinates.lng) {
                         lat = item.coordinates.lat;
                         lng = item.coordinates.lng;
                         console.log(`✓ Coordinate dal backend (formato coordinates) per ${item.title}: ${lat}, ${lng}`);
                     } else {
+                        console.log(`❌ ERRORE: Nessuna coordinata valida per ${item.title}`);
+                        console.log(`Dati ricevuti:`, item);
+                        
                         // Fallback: prova il database locale
                         const realCoords = getRealCoordinates(item.title, currentCity);
                         if (realCoords) {
@@ -531,11 +539,11 @@
                             lng = realCoords.lng;
                             console.log(`⚠ Coordinate locali per ${item.title}: ${lat}, ${lng}`);
                         } else {
-                            // Ultimo fallback: coordinate intorno al centro città
+                            // Ultimo fallback: centro città predefinito
                             const cityCenter = detectCityFromItinerary(currentItineraryData);
                             lat = cityCenter.lat + (index * 0.005);
                             lng = cityCenter.lng + (index * 0.005);
-                            console.log(`Coordinate generate per ${item.title}: ${lat}, ${lng}`);
+                            console.log(`🔄 Fallback coordinate per ${item.title}: ${lat}, ${lng}`);
                         }
                     }
 

@@ -110,23 +110,41 @@ class DynamicRouter:
         Genera itinerario personalizzato da start a end
         """
         try:
-            # 1. Geocoding di start e end
+            # 1. Determina città prima del geocoding per contest
+            if not city:
+                # Estrai città dagli input (pattern "luogo, città")
+                import re
+                text = f"{start} {end}".lower()
+                comma_patterns = re.findall(r'[^,]+,\s*([a-z\s]+)', text)
+                for city_candidate in comma_patterns:
+                    city_candidate = city_candidate.strip()
+                    if len(city_candidate) > 2:
+                        city = city_candidate
+                        break
+            
+            # 2. Usa subito il fallback ottimizzato per città conosciute
+            city_lower = city.lower() if city else ""
+            if ('trieste' in city_lower or 'miramare' in city_lower or
+                'genova' in city_lower or 'milano' in city_lower or 
+                'roma' in city_lower or 'venezia' in city_lower):
+                print(f"🎯 Routing ottimizzato per {city}")
+                return self._fallback_itinerary(start, end, city)
+            
+            # 3. Geocoding per città non specifiche
             start_coords = self._geocode_location(start, city)
             end_coords = self._geocode_location(end, city)
             
             if not start_coords or not end_coords:
                 return self._fallback_itinerary(start, end, city)
             
-            # 2. Determina città se non specificata
+            # 4. Sistema dinamico per altre città
             if not city:
                 city = self._detect_city_from_coords(start_coords)
             
-            # 3. Genera punti intermedi intelligenti
             waypoints = self._generate_smart_waypoints(
                 start_coords, end_coords, city, duration, user_interests
             )
             
-            # 4. Costruisci itinerario finale
             itinerary = self._build_itinerary(
                 start, end, start_coords, end_coords, waypoints, city
             )
@@ -495,7 +513,7 @@ class DynamicRouter:
         else:
             base_coords = self.city_centers.get(city_lower, [41.9028, 12.4964])  # Default Roma
         
-        # Waypoints specifici per Trieste con coordinate precise
+        # Waypoints ottimizzati per città principali con coordinate precise
         if 'trieste' in city_lower or 'miramare' in city_lower:
             return [
                 {
@@ -542,6 +560,106 @@ class DynamicRouter:
                     'type': 'tip',
                     'title': '💡 Trieste',
                     'description': 'Itinerario autentico attraverso la storia asburgica di Trieste - dalle piazze imperiali al castello romantico'
+                }
+            ]
+        
+        # Waypoints per Genova
+        elif 'genova' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza De Ferrari',
+                    'description': 'Il salotto di Genova con la grande fontana e palazzi storici',
+                    'coordinates': [44.4076, 8.9338],
+                    'context': 'piazza_de_ferrari',
+                    'transport': 'start'
+                },
+                {
+                    'time': '09:45',
+                    'title': 'Via del Campo',
+                    'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
+                    'coordinates': [44.4088, 8.9294],
+                    'context': 'via_del_campo',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '11:00',
+                    'title': 'Cattedrale di San Lorenzo',
+                    'description': 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941',
+                    'coordinates': [44.4070, 8.9307],
+                    'context': 'cattedrale_san_lorenzo',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:30',
+                    'title': 'Porto Antico',
+                    'description': 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera',
+                    'coordinates': [44.4108, 8.9279],
+                    'context': 'porto_antico',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '14:00',
+                    'title': 'Acquario di Genova',
+                    'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari',
+                    'coordinates': [44.4108, 8.9279],
+                    'context': 'acquario_genova',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Genova',
+                    'description': 'Dai caruggi medievali al porto moderno - un viaggio nella storia marittima'
+                }
+            ]
+        
+        # Waypoints per Milano
+        elif 'milano' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Duomo di Milano',
+                    'description': 'Capolavoro gotico con guglie e la Madonnina. Terrazze panoramiche',
+                    'coordinates': [45.4642, 9.1900],
+                    'context': 'duomo_milano',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:00',
+                    'title': 'Galleria Vittorio Emanuele II',
+                    'description': 'Salotto elegante di Milano, galleria commerciale ottocentesca',
+                    'coordinates': [45.4655, 9.1897],
+                    'context': 'galleria_milano',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '11:00',
+                    'title': 'Teatro alla Scala',
+                    'description': 'Il tempio dell\'opera mondiale, con museo e visite guidate',
+                    'coordinates': [45.4678, 9.1895],
+                    'context': 'scala_milano',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Castello Sforzesco',
+                    'description': 'Fortezza rinascimentale con musei e capolavori di Michelangelo',
+                    'coordinates': [45.4706, 9.1799],
+                    'context': 'castello_sforzesco',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Parco Sempione',
+                    'description': 'Polmone verde con l\'Arco della Pace e Torre Branca',
+                    'coordinates': [45.4737, 9.1760],
+                    'context': 'parco_sempione',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Milano',
+                    'description': 'Dal gotico al moderno - capitale della moda e dell\'innovazione'
                 }
             ]
         
