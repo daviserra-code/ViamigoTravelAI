@@ -169,12 +169,126 @@ def can_edit_profile(profile_user_id, current_user_id):
 
 @app.route('/')
 def index():
-    """Homepage - se loggato va al profilo, altrimenti al login"""
-    if session.get('demo_logged_in'):
-        return redirect('/profile')
-    return redirect('/auth/login')
+    """Homepage - se loggato mostra dashboard, altrimenti login"""
+    if not session.get('demo_logged_in'):
+        return redirect('/auth/login')
+    
+    # Dashboard/Home per utenti loggati
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viamigo - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
+        .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .phone-screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+    <div class="phone-mockup">
+        <div class="phone-screen">
+            <!-- HEADER -->
+            <div class="header p-4 pt-8 border-b border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold viamigo-font">Viamigo</h1>
+                        <p class="text-xs text-gray-400">Il tuo assistente di viaggio</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="window.location.href='/profile'" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </button>
+                        <button onclick="window.location.href='/auth/logout'" class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENUTO DASHBOARD -->
+            <div class="flex-grow overflow-y-auto p-4">
+                <div class="space-y-4">
+                    <!-- Welcome Card -->
+                    <div class="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl p-4 text-white">
+                        <h2 class="text-lg font-semibold mb-1">Benvenuto, Marco!</h2>
+                        <p class="text-sm opacity-90">Pronto per il tuo prossimo viaggio?</p>
+                    </div>
+                    
+                    <!-- Action Cards -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gray-800 rounded-xl p-4 text-center">
+                            <div class="text-2xl mb-2">🗺️</div>
+                            <h3 class="text-white font-medium text-sm mb-1">Pianifica Viaggio</h3>
+                            <p class="text-gray-400 text-xs mb-3">Crea itinerari personalizzati</p>
+                            <button onclick="window.location.href='/planner'" class="w-full bg-violet-500 text-white py-2 rounded-lg text-sm font-medium">
+                                Inizia
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gray-800 rounded-xl p-4 text-center">
+                            <div class="text-2xl mb-2">👤</div>
+                            <h3 class="text-white font-medium text-sm mb-1">Il Tuo Profilo</h3>
+                            <p class="text-gray-400 text-xs mb-3">Gestisci preferenze</p>
+                            <button onclick="window.location.href='/profile'" class="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium">
+                                Gestisci
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Destinazioni Suggerite -->
+                    <div class="mt-6">
+                        <h3 class="text-white font-semibold mb-3">Destinazioni Popolari</h3>
+                        <div class="space-y-3">
+                            <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
+                                <div class="text-2xl">🏛️</div>
+                                <div class="flex-grow">
+                                    <h4 class="text-white font-medium text-sm">Roma</h4>
+                                    <p class="text-gray-400 text-xs">Città eterna, arte e storia</p>
+                                </div>
+                                <button class="text-violet-400 text-sm">Esplora</button>
+                            </div>
+                            
+                            <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
+                                <div class="text-2xl">🎭</div>
+                                <div class="flex-grow">
+                                    <h4 class="text-white font-medium text-sm">Venezia</h4>
+                                    <p class="text-gray-400 text-xs">Canali romantici e cultura</p>
+                                </div>
+                                <button class="text-violet-400 text-sm">Esplora</button>
+                            </div>
+                            
+                            <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
+                                <div class="text-2xl">🎨</div>
+                                <div class="flex-grow">
+                                    <h4 class="text-white font-medium text-sm">Firenze</h4>
+                                    <p class="text-gray-400 text-xs">Rinascimento e arte</p>
+                                </div>
+                                <button class="text-violet-400 text-sm">Esplora</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    ''')
 
 @app.route('/planner')
+@require_login
 def planner():
     """Redirect alla pagina originale di pianificazione"""
     return redirect('/static/index.html')
