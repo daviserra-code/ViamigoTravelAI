@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
@@ -28,6 +29,19 @@ else:
     # Fallback for development without database
     db = None
     logging.warning("No DATABASE_URL found, running without database")
+
+# Initialize Flask-Login
+if db:
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Effettua il login per accedere a questa pagina.'
+
+    # User loader for Flask-Login
+    @login_manager.user_loader
+    def load_user(user_id):
+        from models import User
+        return User.query.get(user_id)
 
 # Defer table creation to avoid circular imports
 def create_tables():

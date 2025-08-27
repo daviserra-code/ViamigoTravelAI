@@ -1,0 +1,428 @@
+from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template_string
+from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import check_password_hash
+from models import User, get_db
+import uuid
+import re
+
+# Blueprint per routes di autenticazione
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+def get_db_session():
+    """Helper per ottenere sessione database"""
+    db = get_db()
+    return db.session if db else None
+
+def validate_password(password):
+    """Valida password secondo standard di sicurezza"""
+    if len(password) < 8:
+        return False, "La password deve essere di almeno 8 caratteri"
+    if not re.search(r'[A-Z]', password):
+        return False, "La password deve contenere almeno una lettera maiuscola"
+    if not re.search(r'[a-z]', password):
+        return False, "La password deve contenere almeno una lettera minuscola"
+    if not re.search(r'\d', password):
+        return False, "La password deve contenere almeno un numero"
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, "La password deve contenere almeno un carattere speciale"
+    return True, "Password valida"
+
+def validate_email(email):
+    """Valida formato email"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    """Registrazione nuovo utente"""
+    if request.method == 'GET':
+        # Mostra form di registrazione
+        return render_template_string('''
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione - Viamigo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-violet-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-violet-600">Viamigo</h1>
+                <p class="text-gray-600">Crea il tuo account</p>
+            </div>
+            
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                    <input type="text" name="first_name" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cognome *</label>
+                    <input type="text" name="last_name" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" name="email" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <input type="password" name="password" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="text-xs text-gray-500 mt-1">
+                        Minimo 8 caratteri, con maiuscola, minuscola, numero e carattere speciale
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Conferma Password *</label>
+                    <input type="password" name="confirm_password" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Indirizzo (opzionale)</label>
+                    <input type="text" name="address" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div id="errorMessage" class="hidden text-red-600 text-sm"></div>
+                
+                <button type="submit" 
+                        class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    Crea Account
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <p class="text-sm text-gray-600">
+                    Hai già un account? 
+                    <a href="/auth/login" class="text-violet-600 hover:text-violet-700 font-medium">Accedi qui</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Validazione client-side
+            if (data.password !== data.confirm_password) {
+                showError('Le password non corrispondono');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Account creato con successo! Ora puoi effettuare il login.');
+                    window.location.href = '/auth/login';
+                } else {
+                    showError(result.error || 'Errore durante la registrazione');
+                }
+            } catch (error) {
+                showError('Errore di connessione');
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+        ''')
+    
+    elif request.method == 'POST':
+        # Processa registrazione
+        data = request.get_json()
+        db_session = get_db_session()
+        
+        if not db_session:
+            return jsonify({'error': 'Database non disponibile'}), 500
+        
+        # Validazioni
+        required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'Campo {field} obbligatorio'}), 400
+        
+        if data['password'] != data['confirm_password']:
+            return jsonify({'error': 'Le password non corrispondono'}), 400
+        
+        # Validazione email
+        if not validate_email(data['email']):
+            return jsonify({'error': 'Formato email non valido'}), 400
+        
+        # Validazione password
+        is_valid, message = validate_password(data['password'])
+        if not is_valid:
+            return jsonify({'error': message}), 400
+        
+        # Verifica email univoca
+        existing_user = User.query.filter_by(email=data['email']).first()
+        if existing_user:
+            return jsonify({'error': 'Email già registrata'}), 400
+        
+        try:
+            # Crea nuovo utente
+            new_user = User(
+                id=str(uuid.uuid4()),
+                email=data['email'].lower().strip(),
+                first_name=data['first_name'].strip(),
+                last_name=data['last_name'].strip(),
+                address=data.get('address', '').strip() or None
+            )
+            new_user.set_password(data['password'])
+            
+            db_session.add(new_user)
+            db_session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Account creato con successo',
+                'user_id': new_user.id
+            }), 201
+            
+        except Exception as e:
+            db_session.rollback()
+            return jsonify({'error': f'Errore durante la registrazione: {str(e)}'}), 500
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login utente esistente"""
+    if request.method == 'GET':
+        # Mostra form di login
+        return render_template_string('''
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Viamigo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-violet-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-violet-600">Viamigo</h1>
+                <p class="text-gray-600">Accedi al tuo account</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" name="password" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                
+                <div id="errorMessage" class="hidden text-red-600 text-sm"></div>
+                
+                <button type="submit" 
+                        class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    Accedi
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <p class="text-sm text-gray-600">
+                    Non hai un account? 
+                    <a href="/auth/register" class="text-violet-600 hover:text-violet-700 font-medium">Registrati qui</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    showError(result.error || 'Errore durante il login');
+                }
+            } catch (error) {
+                showError('Errore di connessione');
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+        ''')
+    
+    elif request.method == 'POST':
+        # Processa login
+        data = request.get_json()
+        db_session = get_db_session()
+        
+        if not db_session:
+            return jsonify({'error': 'Database non disponibile'}), 500
+        
+        if not data.get('email') or not data.get('password'):
+            return jsonify({'error': 'Email e password obbligatori'}), 400
+        
+        try:
+            user = User.query.filter_by(email=data['email'].lower().strip()).first()
+            
+            if user and user.check_password(data['password']):
+                login_user(user)
+                return jsonify({
+                    'success': True,
+                    'message': 'Login effettuato con successo',
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'full_name': user.full_name
+                    }
+                }), 200
+            else:
+                return jsonify({'error': 'Email o password non corretti'}), 401
+                
+        except Exception as e:
+            return jsonify({'error': f'Errore durante il login: {str(e)}'}), 500
+
+@auth_bp.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    """Logout utente"""
+    logout_user()
+    return jsonify({'success': True, 'message': 'Logout effettuato con successo'}), 200
+
+@auth_bp.route('/profile', methods=['GET'])
+@login_required
+def get_profile():
+    """Ottieni profilo utente corrente"""
+    return jsonify({
+        'user': {
+            'id': current_user.id,
+            'email': current_user.email,
+            'first_name': current_user.first_name,
+            'last_name': current_user.last_name,
+            'full_name': current_user.full_name,
+            'address': current_user.address,
+            'profile_image_url': current_user.profile_image_url
+        }
+    }), 200
+
+@auth_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    """Aggiorna profilo utente"""
+    data = request.get_json()
+    db_session = get_db_session()
+    
+    if not db_session:
+        return jsonify({'error': 'Database non disponibile'}), 500
+    
+    try:
+        # Aggiorna i campi consentiti
+        if 'first_name' in data and data['first_name'].strip():
+            current_user.first_name = data['first_name'].strip()
+        if 'last_name' in data and data['last_name'].strip():
+            current_user.last_name = data['last_name'].strip()
+        if 'email' in data and data['email'].strip():
+            email = data['email'].lower().strip()
+            if validate_email(email):
+                # Verifica che l'email non sia già in uso da un altro utente
+                existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
+                if existing_user:
+                    return jsonify({'error': 'Email già in uso'}), 400
+                current_user.email = email
+            else:
+                return jsonify({'error': 'Formato email non valido'}), 400
+        if 'address' in data:
+            current_user.address = data['address'].strip() or None
+        
+        db_session.commit()
+        return jsonify({'message': 'Profilo aggiornato con successo'}), 200
+        
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({'error': f'Errore durante l\'aggiornamento: {str(e)}'}), 500
+
+@auth_bp.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    """Cambia password utente"""
+    data = request.get_json()
+    db_session = get_db_session()
+    
+    if not db_session:
+        return jsonify({'error': 'Database non disponibile'}), 500
+    
+    required_fields = ['current_password', 'new_password', 'confirm_password']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'Campo {field} obbligatorio'}), 400
+    
+    if data['new_password'] != data['confirm_password']:
+        return jsonify({'error': 'Le password non corrispondono'}), 400
+    
+    # Verifica password attuale
+    if not current_user.check_password(data['current_password']):
+        return jsonify({'error': 'Password attuale non corretta'}), 400
+    
+    # Validazione nuova password
+    is_valid, message = validate_password(data['new_password'])
+    if not is_valid:
+        return jsonify({'error': message}), 400
+    
+    try:
+        current_user.set_password(data['new_password'])
+        db_session.commit()
+        return jsonify({'message': 'Password cambiata con successo'}), 200
+        
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({'error': f'Errore durante il cambio password: {str(e)}'}), 500

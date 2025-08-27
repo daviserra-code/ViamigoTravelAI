@@ -1,7 +1,9 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
+import uuid
 
 # Import db after app initialization to avoid circular imports
 def get_db():
@@ -18,17 +20,40 @@ class User(UserMixin, db.Model if db else object):
     __tablename__ = 'users'
     
     if db:
-        id = db.Column(db.String, primary_key=True)
-        email = db.Column(db.String, unique=True, nullable=True)
-        first_name = db.Column(db.String, nullable=True)
-        last_name = db.Column(db.String, nullable=True)
-        profile_image_url = db.Column(db.String, nullable=True)
+        id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+        email = db.Column(db.String, unique=True, nullable=False)
+        first_name = db.Column(db.String, nullable=False)
+        last_name = db.Column(db.String, nullable=False)
+        password_hash = db.Column(db.String, nullable=False)
+        address = db.Column(db.String, nullable=True)  # Optional
+        profile_image_url = db.Column(db.String, nullable=True)  # Optional
+        
+        # Replit OAuth fields (manteniamo compatibilità)
+        replit_user_id = db.Column(db.String, nullable=True)  # Per OAuth Replit
         
         created_at = db.Column(db.DateTime, default=datetime.now)
         updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
         # Relazione con UserProfile
         profile = db.relationship('UserProfile', backref='user', uselist=False, cascade='all, delete-orphan')
+    
+    def set_password(self, password):
+        """Hash e salva la password"""
+        if db:
+            self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        """Verifica la password"""
+        if db and hasattr(self, 'password_hash'):
+            return check_password_hash(self.password_hash, password)
+        return False
+    
+    @property
+    def full_name(self):
+        """Nome completo per il display"""
+        first = getattr(self, 'first_name', '') or ''
+        last = getattr(self, 'last_name', '') or ''
+        return f"{first} {last}".strip()
 
     def to_dict(self):
         return {

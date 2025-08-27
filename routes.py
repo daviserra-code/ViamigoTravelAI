@@ -169,11 +169,27 @@ def can_edit_profile(profile_user_id, current_user_id):
 
 @app.route('/')
 def index():
-    """Homepage - se loggato mostra dashboard, altrimenti login"""
+    """Homepage - redirect basato su stato autenticazione"""
+    from flask_login import current_user
+    
+    # Se l'utente è autenticato con Flask-Login, va alla dashboard
+    if current_user.is_authenticated:
+        return redirect('/dashboard')
+    
+    # Altrimenti controlla il fallback demo per compatibilità
+    if session.get('demo_logged_in'):
+        return redirect('/planner')
+    
+    # Nessuna autenticazione: redirect al login
+    return redirect('/auth/login')
+
+@app.route('/old_dashboard')
+def old_dashboard():
+    """Vecchia dashboard mobile per compatibilità"""
     if not session.get('demo_logged_in'):
         return redirect('/auth/login')
     
-    # Dashboard/Home per utenti loggati
+    # Dashboard/Home per utenti loggati (design mobile)
     return render_template_string('''
 <!DOCTYPE html>
 <html lang="it">
