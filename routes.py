@@ -3,6 +3,7 @@ from flask_login import current_user
 from models import User, UserProfile, AdminUser
 import logging
 from functools import wraps
+from datetime import datetime
 
 # Import app and db after initialization to avoid circular imports
 def get_app_db():
