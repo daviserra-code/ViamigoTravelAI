@@ -1176,6 +1176,158 @@ def get_local_place_details(context):
                     'url': 'https://www.santacroceopera.it'
                 }
             },
+            # NAPOLI
+            'piazza_plebiscito_napoli': {
+                'title': 'Piazza del Plebiscito, Napoli',
+                'summary': 'La piazza più grande e maestosa di Napoli, circondata dalla Basilica di San Francesco di Paola e dal Palazzo Reale. Cuore della Napoli borbonica.',
+                'details': [
+                    {'label': 'Superficie', 'value': '25.000 m² (una delle più grandi d\'Italia)'},
+                    {'label': 'Basilica San Francesco', 'value': 'Neoclassica (1816-1846), ispirata al Pantheon'},
+                    {'label': 'Palazzo Reale', 'value': 'Residenza dei Viceré e Borbone (1600-1858)'},
+                    {'label': 'Leggenda', 'value': 'Attraversare a occhi chiusi tra le statue porta fortuna'},
+                    {'label': 'Eventi', 'value': 'Concerti, manifestazioni, Capodanno'},
+                    {'label': 'Metro', 'value': 'Toledo (Linea 1) - stazione più bella d\'Europa'}
+                ],
+                'opening_hours': 'Sempre accessibile, Palazzo Reale: 9:00-20:00',
+                'cost': 'Piazza gratuita, Palazzo Reale €6'
+            },
+            'castel_nuovo_napoli': {
+                'title': 'Castel Nuovo (Maschio Angioino), Napoli',
+                'summary': 'Fortezza medievale simbolo di Napoli, costruita dagli Angioini. L\'Arco di Trionfo aragonese è considerato il primo monumento rinascimentale del Sud Italia.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1279-1282 (Carlo I d\'Angiò)'},
+                    {'label': 'Arco di Trionfo', 'value': '1467, primo Rinascimento napoletano'},
+                    {'label': 'Torri', 'value': '5 torri cilindriche, Torre del Beverello'},
+                    {'label': 'Museo Civico', 'value': 'Arte napoletana XIV-XVIII secolo'},
+                    {'label': 'Sala dei Baroni', 'value': 'Volta stellata, capolavoro gotico catalano'},
+                    {'label': 'Biglietto', 'value': '€6 adulti, €3 ridotto'}
+                ],
+                'opening_hours': 'Lun-Sab 8:30-19:00, Dom 8:30-14:00',
+                'cost': '€6 adulti, gratuito <18 anni UE'
+            },
+            'spaccanapoli_napoli': {
+                'title': 'Spaccanapoli, Napoli',
+                'summary': 'L\'antica strada greco-romana che divide il centro storico UNESCO. 2.800 anni di storia stratificata in un unico decumano.',
+                'details': [
+                    {'label': 'Lunghezza', 'value': '2 km da Via Duomo a Via Monteoliveto'},
+                    {'label': 'Epoca', 'value': 'Decumano inferiore greco-romano (V sec. a.C.)'},
+                    {'label': 'Patrimonio UNESCO', 'value': 'Centro storico (1995)'},
+                    {'label': 'Chiese storiche', 'value': 'Gesù Nuovo, Santa Chiara, San Domenico'},
+                    {'label': 'Artigianato', 'value': 'Presepi di San Gregorio Armeno'},
+                    {'label': 'Cultura popolare', 'value': 'Caffè, pizzerie storiche, santini'}
+                ],
+                'opening_hours': 'Sempre accessibile, chiese vari orari',
+                'cost': 'Passeggiata gratuita'
+            },
+            # BOLOGNA  
+            'piazza_maggiore_bologna': {
+                'title': 'Piazza Maggiore, Bologna',
+                'summary': 'Il cuore medievale di Bologna, chiamata "il salotto" dai bolognesi. Circondata da palazzi storici e dominata dalla Basilica di San Petronio.',
+                'details': [
+                    {'label': 'Epoca', 'value': 'XIII secolo (epoca comunale)'},
+                    {'label': 'Basilica San Petronio', 'value': 'Quinta chiesa più grande al mondo'},
+                    {'label': 'Palazzo del Podestà', 'value': 'XIII secolo, Torre dell\'Arengo'},
+                    {'label': 'Palazzo Re Enzo', 'value': 'Prigione del re di Sardegna (1249-1272)'},
+                    {'label': 'Curiosità', 'value': 'Meridiana più lunga del mondo (San Petronio)'},
+                    {'label': 'Eventi', 'value': 'Cinema sotto le stelle, mercatini, concerti'}
+                ],
+                'opening_hours': 'Sempre accessibile, San Petronio: 7:45-18:30',
+                'cost': 'Piazza gratuita, musei vari prezzi'
+            },
+            'due_torri_bologna': {
+                'title': 'Le Due Torri (Asinelli e Garisenda), Bologna',
+                'summary': 'Simboli medievali della "Bologna delle cento torri". La Torre degli Asinelli è la più alta torre pendente d\'Italia.',
+                'details': [
+                    {'label': 'Torre Asinelli', 'value': '97.2m altezza, 498 gradini, pendenza 2.23m'},
+                    {'label': 'Torre Garisenda', 'value': '48m altezza, pendenza 3.22m (più della Torre di Pisa)'},
+                    {'label': 'Costruzione', 'value': 'XII secolo (1109-1119)'},
+                    {'label': 'Torri originarie', 'value': 'Circa 100 torri medievali (20 superstiti)'},
+                    {'label': 'Salita Asinelli', 'value': '€5, vista panoramica 360°'},
+                    {'label': 'Dante', 'value': 'Citate nella Divina Commedia (Inferno XXXI)'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:30-19:00 (estate), 9:30-17:00 (inverno)',
+                'cost': '€5 salita Torre Asinelli'
+            },
+            # PALERMO
+            'cattedrale_palermo': {
+                'title': 'Cattedrale di Palermo',
+                'summary': 'Capolavoro dell\'arte arabo-normanna Patrimonio UNESCO. Sintesi unica di culture musulmana, bizantina e latina.',
+                'details': [
+                    {'label': 'Patrimonio UNESCO', 'value': 'Palermo arabo-normanna (2015)'},
+                    {'label': 'Fondazione', 'value': '1185 (su moschea del IX secolo)'},
+                    {'label': 'Tombe reali', 'value': 'Federico II, Ruggero II, Costanza d\'Altavilla'},
+                    {'label': 'Tesoro', 'value': 'Corona di Costanza (XII sec), gioielli normanni'},
+                    {'label': 'Cripta', 'value': 'Sarcofagi imperiali e arcivescovili'},
+                    {'label': 'Biglietto completo', 'value': '€7 (cattedrale, cripta, tesoro, tetti)'}
+                ],
+                'opening_hours': 'Lun-Sab 7:00-19:00, Dom 8:00-13:00, 16:00-19:00',
+                'cost': 'Ingresso gratuito, percorso completo €7'
+            },
+            'palazzo_normanni_palermo': {
+                'title': 'Palazzo dei Normanni, Palermo',
+                'summary': 'Palazzo reale più antico d\'Europa ancora in uso. La Cappella Palatina custodisce i mosaici bizantini più belli al mondo.',
+                'details': [
+                    {'label': 'Fondazione', 'value': 'IX secolo arabo, ampliato da Normanni (XI-XII sec)'},
+                    {'label': 'Cappella Palatina', 'value': 'Mosaici bizantini (1132-1143), capolavoro mondiale'},
+                    {'label': 'Sala di Ruggero', 'value': 'Mosaici profani con scene di caccia'},
+                    {'label': 'Parlamento Siciliano', 'value': 'Sede attuale dell\'Assemblea Regionale'},
+                    {'label': 'Appartamenti Reali', 'value': 'Sale di rappresentanza borboniche'},
+                    {'label': 'Biglietto', 'value': '€12 adulti, €10 ridotto'}
+                ],
+                'opening_hours': 'Lun-Mer-Gio-Ven-Sab 8:15-17:40, Dom 8:15-13:00',
+                'cost': '€12 adulti, gratuito <18 anni UE',
+                'actionLink': {
+                    'text': 'Prenota la visita',
+                    'url': 'https://www.federicosecondo.org'
+                }
+            },
+            # VENEZIA
+            'piazza_san_marco_venezia': {
+                'title': 'Piazza San Marco, Venezia',
+                'summary': 'L\'unica "piazza" di Venezia (le altre sono "campi"), chiamata da Napoleone "il salotto più elegante d\'Europa". Cuore politico e religioso della Serenissima.',
+                'details': [
+                    {'label': 'Basilica San Marco', 'value': 'Capolavoro bizantino (1063), Pala d\'Oro'},
+                    {'label': 'Palazzo Ducale', 'value': 'Residenza del Doge, Ponte dei Sospiri'},
+                    {'label': 'Campanile', 'value': '98.6m, "el paron de casa" (il padrone di casa)'},
+                    {'label': 'Procuratie', 'value': 'Palazzi porticati, oggi musei e caffè storici'},
+                    {'label': 'Acqua alta', 'value': 'Passerelle in legno durante le maree eccezionali'},
+                    {'label': 'Caffè Florian', 'value': 'Dal 1720, caffè più antico al mondo'}
+                ],
+                'opening_hours': 'Sempre accessibile, Basilica: 9:30-17:00',
+                'cost': 'Piazza gratuita, Basilica €3, Palazzo Ducale €25'
+            },
+            'ponte_di_rialto_venezia': {
+                'title': 'Ponte di Rialto, Venezia',
+                'summary': 'Il più famoso e antico dei quattro ponti che attraversano il Canal Grande. Capolavoro rinascimentale con botteghe integrate nella struttura.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1588-1591 (Antonio da Ponte)'},
+                    {'label': 'Struttura', 'value': 'Arco unico 28m luce, 24 botteghe'},
+                    {'label': 'Storia', 'value': 'Sostituisce ponti di legno crollati'},
+                    {'label': 'Mercato di Rialto', 'value': '1000 anni, pesce fresco ogni mattina'},
+                    {'label': 'Vista panoramica', 'value': 'Canal Grande, palazzi storici'},
+                    {'label': 'Curiosità', 'value': 'Progetto vincente contro Michelangelo e Palladio'}
+                ],
+                'opening_hours': 'Sempre accessibile, mercato: 7:30-12:00',
+                'cost': 'Attraversamento gratuito'
+            },
+            'ca_rezzonico_venezia': {
+                'title': 'Ca\' Rezzonico, Venezia',
+                'summary': 'Palazzo barocco del XVIII secolo, sede del Museo del Settecento Veneziano. Affreschi di Tiepolo e vita aristocratica della Serenissima.',
+                'details': [
+                    {'label': 'Architetto', 'value': 'Baldassarre Longhena (1667)'},
+                    {'label': 'Affreschi Tiepolo', 'value': 'Salone da ballo, Allegoria nuziale'},
+                    {'label': 'Collezione', 'value': 'Mobili, dipinti, costumi del Settecento'},
+                    {'label': 'Robert Browning', 'value': 'Poeta inglese, morì qui nel 1889'},
+                    {'label': 'Canal Grande', 'value': 'Vista privilegiata dalla terrazza'},
+                    {'label': 'Biglietto', 'value': '€10 adulti, €7.50 ridotto'}
+                ],
+                'opening_hours': 'Mer-Lun 10:00-18:00 (chiuso martedì)',
+                'cost': '€10 adulti, gratuito <6 anni',
+                'actionLink': {
+                    'text': 'Musei di Venezia',
+                    'url': 'https://www.visitmuve.it'
+                }
+            },
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
                 'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',

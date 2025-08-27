@@ -705,6 +705,170 @@ class DynamicRouter:
                 }
             ]
         
+        elif 'napoli' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza del Plebiscito',
+                    'description': 'La piazza più grande di Napoli con la Basilica di San Francesco di Paola e il Palazzo Reale',
+                    'coordinates': [40.8358, 14.2488],
+                    'context': 'piazza_plebiscito_napoli',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Castel Nuovo (Maschio Angioino)',
+                    'description': 'Fortezza medievale simbolo di Napoli con l\'Arco di Trionfo aragonese',
+                    'coordinates': [40.8387, 14.2534],
+                    'context': 'castel_nuovo_napoli',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Spaccanapoli',
+                    'description': 'Il decumano che divide la città antica, cuore pulsante della Napoli storica',
+                    'coordinates': [40.8518, 14.2681],
+                    'context': 'spaccanapoli_napoli',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Lungomare Caracciolo',
+                    'description': 'Passeggiata panoramica sul Golfo di Napoli con vista su Vesuvio e Capri',
+                    'coordinates': [40.8280, 14.2147],
+                    'context': 'lungomare_napoli',
+                    'transport': 'metro'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Napoli',
+                    'description': f'Itinerario tra storia borbonica e cultura partenopea - da {start} a {end}'
+                }
+            ]
+        
+        elif 'bologna' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza Maggiore',
+                    'description': 'Il cuore medievale di Bologna con la Basilica di San Petronio e Palazzo del Podestà',
+                    'coordinates': [44.4949, 11.3426],
+                    'context': 'piazza_maggiore_bologna',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Le Due Torri',
+                    'description': 'Asinelli e Garisenda, simboli medievali della Bologna delle cento torri',
+                    'coordinates': [44.4944, 11.3464],
+                    'context': 'due_torri_bologna',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Università di Bologna',
+                    'description': 'La più antica università del mondo occidentale (1088), culla della cultura europea',
+                    'coordinates': [44.4963, 11.3517],
+                    'context': 'universita_bologna',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Mercato di Mezzo',
+                    'description': 'Mercato storico con specialità gastronomiche bolognesi e osterie tradizionali',
+                    'coordinates': [44.4957, 11.3438],
+                    'context': 'mercato_mezzo_bologna',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Bologna',
+                    'description': f'Itinerario nella Dotta, Grassa e Rossa - da {start} a {end}'
+                }
+            ]
+        
+        elif 'palermo' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Cattedrale di Palermo',
+                    'description': 'Capolavoro arabo-normanno Patrimonio UNESCO con tombe reali e tesoro',
+                    'coordinates': [38.1156, 13.3565],
+                    'context': 'cattedrale_palermo',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Palazzo dei Normanni',
+                    'description': 'Palazzo reale con la Cappella Palatina, mosaici bizantini più belli al mondo',
+                    'coordinates': [38.1099, 13.3515],
+                    'context': 'palazzo_normanni_palermo',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Mercato di Ballarò',
+                    'description': 'Mercato storico multietnico, cuore pulsante della Palermo popolare',
+                    'coordinates': [38.1138, 13.3461],
+                    'context': 'mercato_ballaro_palermo',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Teatro Massimo',
+                    'description': 'Il teatro lirico più grande d\'Italia, terzo in Europa dopo Opéra di Parigi e Staatsoper di Vienna',
+                    'coordinates': [38.1198, 13.3581],
+                    'context': 'teatro_massimo_palermo',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Palermo',
+                    'description': f'Itinerario tra culture araba, normanna e barocca - da {start} a {end}'
+                }
+            ]
+        
+        elif 'venezia' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': 'Piazza San Marco',
+                    'description': 'Il salotto d\'Europa con la Basilica di San Marco, il Palazzo Ducale e il celebre Campanile',
+                    'coordinates': [45.4342, 12.3383],
+                    'context': 'piazza_san_marco_venezia',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Ponte di Rialto',
+                    'description': 'Il ponte più famoso di Venezia con i negozi storici e vista panoramica sul Canal Grande',
+                    'coordinates': [45.4380, 12.3360],
+                    'context': 'ponte_di_rialto_venezia',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Ca\' Rezzonico',
+                    'description': 'Splendido palazzo barocco museo del Settecento veneziano con opere di Tiepolo e Canaletto',
+                    'coordinates': [45.4328, 12.3267],
+                    'context': 'ca_rezzonico_venezia',
+                    'transport': 'vaporetto'
+                },
+                {
+                    'time': '13:30',
+                    'title': 'Ponte dell\'Accademia',
+                    'description': 'Punto panoramico strategico per ammirare il Canal Grande e la basilica della Salute',
+                    'coordinates': [45.4318, 12.3281],
+                    'context': 'ponte_dellaccademia_venezia',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': '💡 Venezia',
+                    'description': f'Itinerario autentico attraverso i luoghi iconici della Serenissima - da {start} a {end}'
+                }
+            ]
+        
         # Itinerario generico per altre città
         return [
             {
