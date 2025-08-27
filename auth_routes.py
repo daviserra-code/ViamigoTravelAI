@@ -10,8 +10,8 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 def get_db_session():
     """Helper per ottenere sessione database"""
-    db = get_db()
-    return db.session if db else None
+    from flask_app import db
+    return db
 
 def validate_password(password):
     """Valida password secondo standard di sicurezza"""
