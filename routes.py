@@ -675,13 +675,51 @@ def generate_generic_itinerary(start, end):
 @app.route('/get_details', methods=['POST'])
 @require_login
 def api_get_details():
-    """API endpoint per dettagli luoghi - mockup per demo"""
+    """API endpoint per dettagli luoghi - sistema ibrido locale + dinamico"""
     try:
         data = request.get_json()
         context = data.get('context', '')
         
-        # Database dinamico dettagli luoghi per città italiane
-        place_details = {
+        # Prima prova nel database locale (città italiane principali)
+        local_result = get_local_place_details(context)
+        if local_result:
+            return jsonify({
+                'success': True,
+                'details': local_result,
+                'source': 'local_database'
+            })
+        
+        # Se non trovato localmente, usa API dinamiche
+        place_name = data.get('place_name', context.replace('_', ' '))
+        city = data.get('city', '')
+        country = data.get('country', '')
+        
+        from dynamic_places_api import dynamic_places
+        dynamic_result = dynamic_places.get_place_info(place_name, city, country)
+        
+        if dynamic_result:
+            return jsonify({
+                'success': True,
+                'details': dynamic_result,
+                'source': 'dynamic_api'
+            })
+        
+        # Fallback se entrambi falliscono
+        return jsonify({
+            'success': False,
+            'error': 'Informazioni non disponibili per questo luogo'
+        }), 404
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+def get_local_place_details(context):
+    """Ottiene dettagli dal database locale per città italiane principali"""
+    # Database dinamico dettagli luoghi per città italiane
+    place_details = {
             # TORINO
             'via_roma_torino': {
                 'title': 'Via Roma, Torino',
@@ -914,22 +952,13 @@ def api_get_details():
                     'url': 'https://stadiodomiziano.com'
                 }
             }
-        }
-        
-        details = place_details.get(context, {
-            'title': 'Luogo di interesse',
-            'summary': 'Informazioni non disponibili per questo luogo.',
-            'details': []
-        })
-        
-        return jsonify(details)
-        
-    except Exception as e:
-        return jsonify({
-            'title': 'Errore',
-            'summary': f'Errore nel caricamento: {str(e)}',
-            'details': []
-        }), 500
+    }
+    
+    # Cerca nel database dei luoghi
+    if context in place_details:
+        return place_details[context]
+    else:
+        return None
 
 @app.route('/save_preferences', methods=['POST'])
 @require_login
