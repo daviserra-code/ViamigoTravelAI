@@ -272,6 +272,7 @@
                         
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
+                        console.log('Dati itinerario ricevuti:', data);
                         renderItinerary(data);
                         
                         // Estrai e centra la mappa sulla nuova città
@@ -484,12 +485,16 @@
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'genova';
                     
-                    // Usa le coordinate dal backend se disponibili, altrimenti fallback
+                    // Usa le coordinate dal backend (formato lat/lon) se disponibili
                     let lat, lng;
-                    if (item.coordinates && item.coordinates.lat && item.coordinates.lng) {
+                    if (item.lat && item.lon) {
+                        lat = item.lat;
+                        lng = item.lon;
+                        console.log(`Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
+                    } else if (item.coordinates && item.coordinates.lat && item.coordinates.lng) {
                         lat = item.coordinates.lat;
                         lng = item.coordinates.lng;
-                        console.log(`Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
+                        console.log(`Coordinate dal backend (formato coordinates) per ${item.title}: ${lat}, ${lng}`);
                     } else {
                         // Fallback: prova il database locale
                         const realCoords = getRealCoordinates(item.title, currentCity);
