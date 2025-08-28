@@ -241,15 +241,18 @@ class DynamicRouter:
             return tuple(self.city_centers[city_lower])
         
         # 5. Fallback geografico intelligente per città richiesta
-        if city_lower == 'genova':
+        if 'genova' in city_lower:
             print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Genova")
             return (44.4056, 8.9463)  # Genova centro
-        elif city_lower == 'milano':
+        elif 'milano' in city_lower:
             print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Milano")
             return (45.4642, 9.1900)  # Milano centro
+        elif 'roma' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Roma")
+            return (41.9028, 12.4964)  # Roma centro
         else:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Italia")
-            return (41.9028, 12.4964)  # Roma come centro Italia
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Genova come default")
+            return (44.4056, 8.9463)  # Default Genova invece di Roma
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
         """Rileva la città dalle coordinate con precisione migliorata"""
