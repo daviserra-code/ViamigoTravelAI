@@ -202,7 +202,7 @@ def old_dashboard():
     ''')
 
 @app.route('/planner')
-@require_login
+@login_required
 def planner():
     """Redirect alla pagina originale di pianificazione"""
     return redirect('/static/index.html')
@@ -673,7 +673,7 @@ def generate_generic_itinerary(start, end):
     ]
 
 @app.route('/get_details', methods=['POST'])
-@require_login
+@login_required
 def api_get_details():
     """API endpoint per dettagli luoghi - sistema ibrido locale + dinamico"""
     try:
@@ -1594,7 +1594,7 @@ def save_to_cache(context, place_name, city, country, place_data):
         print(f"Errore salvataggio cache: {e}")
 
 @app.route('/save_preferences', methods=['POST'])
-@require_login
+@login_required
 def api_save_preferences():
     """API endpoint per salvare preferenze utente"""
     try:
@@ -1756,7 +1756,7 @@ def view_profile():
     ''', auth_user=auth_user)
 
 @app.route('/profile/create', methods=['GET', 'POST'])
-@require_login  
+@login_required  
 def create_profile():
     """Pagina creazione profilo semplificata"""
     from flask_login import current_user as auth_user
@@ -1897,7 +1897,7 @@ def create_profile():
     ''')
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
-@require_login
+@login_required
 def edit_profile():
     """Pagina modifica profilo semplificata"""
     from flask_login import current_user as auth_user
@@ -2080,7 +2080,7 @@ def edit_profile():
     ''', profile=profile)
 
 @app.route('/profile/delete', methods=['DELETE'])
-@require_login
+@login_required
 def delete_profile():
     """Elimina il profilo dell'utente corrente"""
     current_user = get_current_user()  # Usa mock user
@@ -2096,7 +2096,7 @@ def delete_profile():
 # === API ROUTES ===
 
 @app.route('/api/profile', methods=['GET'])
-@require_login
+@login_required
 def get_profile_api():
     """API per ottenere il profilo dell'utente corrente"""
     current_user = get_current_user()  # Usa mock user
@@ -2107,19 +2107,19 @@ def get_profile_api():
     return jsonify({'profile': profile.to_dict()})
 
 @app.route('/api/profile', methods=['POST'])
-@require_login
+@login_required
 def create_profile_api():
     """API per creare un profilo"""
     return create_profile()
 
 @app.route('/api/profile', methods=['PUT'])
-@require_login
+@login_required
 def update_profile_api():
     """API per aggiornare un profilo"""
     return edit_profile()
 
 @app.route('/api/profile', methods=['DELETE'])
-@require_login
+@login_required
 def delete_profile_api():
     """API per eliminare un profilo"""
     return delete_profile()
@@ -2127,7 +2127,7 @@ def delete_profile_api():
 # === ADMIN ROUTES (per funzionalità future) ===
 
 @app.route('/admin/profiles')
-@require_login
+@login_required
 def admin_profiles():
     """Admin: visualizza tutti i profili"""
     current_user = get_current_user()  # Usa mock user

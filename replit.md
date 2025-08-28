@@ -91,6 +91,7 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 28, 2025**: **SESSION ROUTING DEPLOYMENT RISOLTO** - Sostituiti tutti i @require_login con @login_required per consistency Flask-Login. Route /planner ora accessibile dopo autenticazione anche nel deployment
 - **August 28, 2025**: **DEPLOYMENT ENTRY POINT RISOLTO** - Corretto run.py per usare Flask app con tutti i blueprint registrati invece di FastAPI. Deployment ora funzionante con login panel corretto
 - **August 28, 2025**: **DEPLOYMENT ROUTING FISSATO** - Route principale / ora sempre redirect a /auth/login per comportamento consistente tra dev e deployment. Nella versione deployata ora si parte sempre dal login panel
 - **August 27, 2025**: **SESSION PERSISTENCE PERFEZIONATO** - Fix LoginManager login_view da 'auth.login' a '/auth/login'. Sistema cookies e Flask-Login ora completamente funzionante: login → session → profilo accessibile
