@@ -528,7 +528,11 @@ class DynamicRouter:
         end_lower = end.lower().strip()
         
         # Ottieni coordinate reali del punto di partenza e destinazione
-        start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
+        # Fix coordinate di partenza per città specifica
+        if city_lower == 'genova':
+            start_coords = [44.4056, 8.9463]  # Piazza De Ferrari Genova
+        else:
+            start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [41.9028, 12.4964])
         
         # Per Nervi, usa coordinate specifiche note
         if 'nervi' in end_lower or 'parchi' in end_lower:
