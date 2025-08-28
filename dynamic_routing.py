@@ -579,15 +579,15 @@ class DynamicRouter:
                         'time': '09:00',
                         'title': 'Stazione Genova Nervi',
                         'description': 'Partenza dalla stazione ferroviaria di Nervi, borgo elegante della Riviera di Levante',
-                        'coordinates': [44.3878, 8.9515],
+                        'coordinates': [44.3814, 9.0402],
                         'context': 'stazione_nervi',
                         'transport': 'start'
                     },
                     {
                         'time': '09:15',
-                        'title': 'Passeggiata Anita Garibaldi',
+                        'title': 'Passeggiata Anita Garibaldi - Inizio',
                         'description': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
-                        'coordinates': [44.3885, 8.9525],
+                        'coordinates': [44.3820, 9.0410],
                         'context': 'passeggiata_nervi',
                         'transport': 'walking'
                     },
@@ -595,24 +595,24 @@ class DynamicRouter:
                         'time': '10:00',
                         'title': 'Parchi di Nervi',
                         'description': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
-                        'coordinates': [44.3895, 8.9535],
+                        'coordinates': [44.3825, 9.0415],
                         'context': 'parchi_nervi',
                         'transport': 'walking'
                     },
                     {
                         'time': '10:45',
                         'title': 'Villa Gropallo - Museo Frugone',
-                        'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca',
-                        'coordinates': [44.3902, 8.9542],
+                        'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca nei Parchi di Nervi',
+                        'coordinates': [44.3830, 9.0420],
                         'context': 'villa_gropallo',
                         'transport': 'walking'
                     },
                     {
                         'time': '11:30',
-                        'title': 'Torre Gropallo',
-                        'description': 'Antica torre di avvistamento con vista spettacolare sulla costa ligure',
-                        'coordinates': [44.3910, 8.9550],
-                        'context': 'torre_gropallo',
+                        'title': 'Passeggiata Anita Garibaldi - Capolungo',
+                        'description': 'Punto panoramico finale della passeggiata con vista spettacolare sulla costa ligure',
+                        'coordinates': [44.3835, 9.0425],
+                        'context': 'capolungo_nervi',
                         'transport': 'walking'
                     },
                     {
