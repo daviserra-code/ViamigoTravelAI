@@ -11,7 +11,7 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Backend Architecture
-- **Framework**: FastAPI with asynchronous support for high-performance API operations
+- **Framework**: Hybrid architecture - FastAPI for AI/API endpoints, Flask for web interface and authentication
 - **Architecture Pattern**: Service-oriented architecture with clear separation of concerns
 - **Application Lifecycle**: Managed startup/shutdown with proper resource initialization and cleanup
 - **Routing**: Modular route organization with separate modules for travel recommendations and health checks
