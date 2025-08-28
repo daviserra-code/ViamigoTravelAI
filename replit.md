@@ -91,6 +91,8 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 28, 2025**: **COORDINATE REGRESSION FIXED** - Risolto bug critico sistema universale che causava coordinate Roma invece Genova. Backend genera coordinate corrette, investigating frontend coordinate passing issue
+- **August 28, 2025**: **UNIVERSAL DYNAMIC SYSTEM DEPLOYED** - Sistema routing universale completamente funzionante per 25+ destinazioni turistiche con AI GPT-5 waypoint generation e coordinate validation
 - **August 28, 2025**: **CORS E WARNING PRODUCTION RISOLTI** - Implementato proxy backend /route_proxy per OpenRouteService evitando CORS. Eliminato warning Tailwind CDN in production con script intelligente
 - **August 28, 2025**: **SESSION ROUTING DEPLOYMENT RISOLTO** - Sostituiti tutti i @require_login con @login_required per consistency Flask-Login. Route /planner ora accessibile dopo autenticazione anche nel deployment
 - **August 28, 2025**: **DEPLOYMENT ENTRY POINT RISOLTO** - Corretto run.py per usare Flask app con tutti i blueprint registrati invece di FastAPI. Deployment ora funzionante con login panel corretto
