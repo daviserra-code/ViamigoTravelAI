@@ -207,6 +207,38 @@ def planner():
     """Redirect alla pagina originale di pianificazione"""
     return redirect('/static/index.html')
 
+@app.route('/route_proxy')
+def route_proxy():
+    """Proxy per OpenRouteService API per evitare CORS"""
+    try:
+        import requests
+        
+        profile = request.args.get('profile', 'foot-walking')
+        start = request.args.get('start')
+        end = request.args.get('end')
+        
+        if not start or not end:
+            return jsonify({'error': 'Parametri start/end richiesti'}), 400
+        
+        api_key = '5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c'
+        url = f'https://api.openrouteservice.org/v2/directions/{profile}'
+        
+        params = {
+            'api_key': api_key,
+            'start': start,
+            'end': end
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({'error': f'API error: {response.status_code}'}), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/get_profile', methods=['GET'])
 def api_get_profile():
     """API endpoint per ottenere profilo utente (per compatibilità con frontend)"""

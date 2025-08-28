@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viamigo - Travel App v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suppress Tailwind CDN warning in production
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                if (args[0] && args[0].includes('cdn.tailwindcss.com should not be used')) {
+                    return; // Suppress this specific warning
+                }
+                originalWarn.apply(console, args);
+            };
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
@@ -694,7 +706,7 @@
                     // Nota: OpenRouteService gratuito ha limitazioni su alcuni profili
                     // Usiamo foot-walking come base universale
                     
-                    const response = await fetch(`https://api.openrouteservice.org/v2/directions/${routeProfile}?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`);
+                    const response = await fetch(`/route_proxy?profile=${routeProfile}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`);
                     
                     if (response.ok) {
                         const data = await response.json();

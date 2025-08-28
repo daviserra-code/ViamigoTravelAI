@@ -1,0 +1,82 @@
+(index):64  cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+(anonymous) @ (index):64
+(anonymous) @ (index):64
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+index.html:167 🔧 VIAMIGO v2.0 - Inizializzazione script, elementi trovati:
+index.html:168 - timelineContainer: div.timeline
+index.html:169 - planButton: button#plan-button.w-full.font-bold.py-4.rounded-xl.text-lg.bg-violet-500.text-white
+index.html:170 - itineraryTitle: h2#itinerary-title.font-bold.text-white.text-lg.truncate
+index.html:174 ✅ VIAMIGO JavaScript caricato correttamente!
+index.html:263 🚀 Invio richiesta a /plan con: {start: 'Piazza De Ferrari, Genova', end: 'parchi di nervi,genova'}
+index.html:275 📡 Risposta ricevuta, status: 200
+index.html:277 💾 Dati JSON ricevuti: {itinerary: Array(6), routing_info: {…}, success: true}
+index.html:283 ✅ Dati validi, processing...
+index.html:295 🔄 Chiamata renderItinerary con: {itinerary: Array(6), routing_info: {…}, success: true}
+index.html:749 🔄 renderItinerary chiamata con dati: {itinerary: Array(6), routing_info: {…}, success: true}
+index.html:757 🗺️ Aggiornamento mappa con itinerario...
+index.html:300 🗺️ Mappa centrata su: parchi di nervi,genova
+index.html:402 Mappa centrata su: genova (da currentCityName)
+ Analizzando item 0: {context: 'piazza_de_ferrari', coordinates: Array(2), description: 'Il salotto di Genova con la grande fontana e palazzi storici', time: '09:00', title: 'Piazza De Ferrari', …}
+ 📍 Processando waypoint: Piazza De Ferrari, markerIndex attuale: 1
+ ✓ Coordinate backend array per Piazza De Ferrari: 44.4076, 8.9338
+ 🔢 Assegnando numero 1 a Piazza De Ferrari
+ Analizzando item 1: {context: 'cattedrale_san_lorenzo', coordinates: Array(2), description: 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941', time: '09:30', title: 'Cattedrale di San Lorenzo', …}
+ 📍 Processando waypoint: Cattedrale di San Lorenzo, markerIndex attuale: 2
+index.html:530 ✓ Coordinate backend array per Cattedrale di San Lorenzo: 44.407, 8.9307
+index.html:562 🔢 Assegnando numero 2 a Cattedrale di San Lorenzo
+index.html:514 Analizzando item 2: {context: 'via_del_campo', coordinates: Array(2), description: 'La strada più famosa dei caruggi genovesi, immortalata da De André', time: '10:15', title: 'Via del Campo', …}
+index.html:516 📍 Processando waypoint: Via del Campo, markerIndex attuale: 3
+index.html:530 ✓ Coordinate backend array per Via del Campo: 44.4088, 8.9294
+index.html:562 🔢 Assegnando numero 3 a Via del Campo
+index.html:514 Analizzando item 3: {context: 'porto_antico', coordinates: Array(2), description: 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera', time: '11:30', title: 'Porto Antico', …}
+index.html:516 📍 Processando waypoint: Porto Antico, markerIndex attuale: 4
+index.html:530 ✓ Coordinate backend array per Porto Antico: 44.4108, 8.9279
+index.html:562 🔢 Assegnando numero 4 a Porto Antico
+index.html:514 Analizzando item 4: {context: 'acquario_genova', coordinates: Array(2), description: "Secondo acquario più grande d'Europa con 12.000 esemplari", time: '12:30', title: 'Acquario di Genova', …}
+index.html:516 📍 Processando waypoint: Acquario di Genova, markerIndex attuale: 5
+index.html:530 ✓ Coordinate backend array per Acquario di Genova: 44.4108, 8.9279
+index.html:562 🔢 Assegnando numero 5 a Acquario di Genova
+index.html:514 Analizzando item 5: {description: 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno', title: '💡 Genova', type: 'tip'}
+index.html:683 🛣️ Disegno percorso realistico per 5 punti
+index.html:1  Access to fetch at 'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9338,44.4076&end=8.9307,44.407' from origin 'https://viamigo-travel-ai-daviserra3.replit.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index.html:697   GET https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9338,44.4076&end=8.9307,44.407 net::ERR_FAILED 403 (Forbidden)
+drawRealisticRoute @ index.html:697
+updateMapWithItinerary @ index.html:603
+initializeMap @ index.html:376
+(anonymous) @ index.html:345
+index.html:732 ❌ Errore routing da punto 0 a punto 1: TypeError: Failed to fetch
+    at drawRealisticRoute (index.html:697:44)
+    at updateMapWithItinerary (index.html:603:17)
+    at initializeMap (index.html:376:17)
+    at HTMLButtonElement.<anonymous> (index.html:345:21)
+index.html:1  Access to fetch at 'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9307,44.407&end=8.9294,44.4088' from origin 'https://viamigo-travel-ai-daviserra3.replit.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index.html:697   GET https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9307,44.407&end=8.9294,44.4088 net::ERR_FAILED 403 (Forbidden)
+drawRealisticRoute @ index.html:697
+await in drawRealisticRoute
+updateMapWithItinerary @ index.html:603
+initializeMap @ index.html:376
+(anonymous) @ index.html:345
+index.html:732 ❌ Errore routing da punto 1 a punto 2: TypeError: Failed to fetch
+    at drawRealisticRoute (index.html:697:44)
+index.html:1  Access to fetch at 'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9294,44.4088&end=8.9279,44.4108' from origin 'https://viamigo-travel-ai-daviserra3.replit.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index.html:697   GET https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9294,44.4088&end=8.9279,44.4108 net::ERR_FAILED 403 (Forbidden)
+drawRealisticRoute @ index.html:697
+await in drawRealisticRoute
+updateMapWithItinerary @ index.html:603
+initializeMap @ index.html:376
+(anonymous) @ index.html:345
+index.html:732 ❌ Errore routing da punto 2 a punto 3: TypeError: Failed to fetch
+    at drawRealisticRoute (index.html:697:44)
+index.html:1  Access to fetch at 'https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9279,44.4108&end=8.9279,44.4108' from origin 'https://viamigo-travel-ai-daviserra3.replit.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index.html:697   GET https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c&start=8.9279,44.4108&end=8.9279,44.4108 net::ERR_FAILED 403 (Forbidden)
+drawRealisticRoute @ index.html:697
+await in drawRealisticRoute
+updateMapWithItinerary @ index.html:603
+initializeMap @ index.html:376
+(anonymous) @ index.html:345
+index.html:732 ❌ Errore routing da punto 3 a punto 4: TypeError: Failed to fetch
+    at drawRealisticRoute (index.html:697:44)
