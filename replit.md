@@ -91,6 +91,8 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 28, 2025**: **VERONA COMPATIBILITY CRISIS** - Utente riporta "risultati disastrosi" per itinerari Verona nell'app deployata. Necessaria investigazione completa del sistema di coordinate per tutte le città italiane. Corretti fallback geografici per 8+ città principali (Milano, Roma, Verona, Firenze, Napoli, Torino, Bologna)
+- **August 28, 2025**: **DASHBOARD NAVIGATION ADDED** - Aggiunto pulsante dashboard nell'header dell'app mobile per accesso diretto alla dashboard completa
 - **August 28, 2025**: **COORDINATE REGRESSION FIXED** - Risolto bug critico sistema universale che causava coordinate Roma invece Genova. Backend genera coordinate corrette, investigating frontend coordinate passing issue
 - **August 28, 2025**: **UNIVERSAL DYNAMIC SYSTEM DEPLOYED** - Sistema routing universale completamente funzionante per 25+ destinazioni turistiche con AI GPT-5 waypoint generation e coordinate validation
 - **August 28, 2025**: **CORS E WARNING PRODUCTION RISOLTI** - Implementato proxy backend /route_proxy per OpenRouteService evitando CORS. Eliminato warning Tailwind CDN in production con script intelligente

@@ -129,7 +129,8 @@ class DynamicRouter:
                 'roma' in city_lower or 'venezia' in city_lower or
                 'firenze' in city_lower or 'napoli' in city_lower or
                 'bologna' in city_lower or 'palermo' in city_lower or
-                'pisa' in city_lower or 'cagliari' in city_lower or 'perugia' in city_lower):
+                'pisa' in city_lower or 'cagliari' in city_lower or 'perugia' in city_lower or
+                'verona' in city_lower or 'torino' in city_lower):
                 print(f"🎯 Routing ottimizzato per {city} - coordinate verificate")
                 return self._fallback_itinerary(start, end, city)
             
@@ -250,9 +251,35 @@ class DynamicRouter:
         elif 'roma' in city_lower:
             print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Roma")
             return (41.9028, 12.4964)  # Roma centro
+        elif 'verona' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Verona")
+            return (45.4384, 10.9916)  # Verona centro
+        elif 'firenze' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Firenze")
+            return (43.7696, 11.2558)  # Firenze centro
+        elif 'napoli' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Napoli")
+            return (40.8518, 14.2681)  # Napoli centro
+        elif 'torino' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Torino")
+            return (45.0703, 7.6869)  # Torino centro
+        elif 'bologna' in city_lower:
+            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Bologna")
+            return (44.4949, 11.3426)  # Bologna centro
         else:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Genova come default")
-            return (44.4056, 8.9463)  # Default Genova invece di Roma
+            # Per città non riconosciute, determina regione e usa centro regionale appropriato
+            if any(keyword in city_lower for keyword in ['nord', 'lombardia', 'veneto', 'piemonte']):
+                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Milano come centro Nord")
+                return (45.4642, 9.1900)  # Milano per Nord Italia
+            elif any(keyword in city_lower for keyword in ['centro', 'toscana', 'lazio', 'umbria']):
+                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Firenze come centro Centro")
+                return (43.7696, 11.2558)  # Firenze per Centro Italia
+            elif any(keyword in city_lower for keyword in ['sud', 'campania', 'sicilia', 'calabria']):
+                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Napoli come centro Sud")
+                return (40.8518, 14.2681)  # Napoli per Sud Italia
+            else:
+                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Firenze come default Italia")
+                return (43.7696, 11.2558)  # Firenze al centro geografico d'Italia
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
         """Rileva la città dalle coordinate con precisione migliorata"""
