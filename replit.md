@@ -91,6 +91,7 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 28, 2025**: **DEPLOYMENT ROUTING FISSATO** - Route principale / ora sempre redirect a /auth/login per comportamento consistente tra dev e deployment. Nella versione deployata ora si parte sempre dal login panel
 - **August 27, 2025**: **SESSION PERSISTENCE PERFEZIONATO** - Fix LoginManager login_view da 'auth.login' a '/auth/login'. Sistema cookies e Flask-Login ora completamente funzionante: login → session → profilo accessibile
 - **August 27, 2025**: **ERRORI USERPROFILE RISOLTI** - Eliminati tutti i riferimenti al modello UserProfile inesistente. Sistema profilo semplificato con User model diretto. LSP errors ridotti da 215 a 208, pagina /profile completamente funzionante
 - **August 27, 2025**: **HOMEPAGE INTELLIGENTE E LOGIN PERSISTENTE** - App ora parte sempre da /auth/login con riconoscimento automatico utenti loggati. Aggiunta checkbox "Ricordami per 7 giorni" con session.permanent e login_user(remember=True/False) per esperienza fluida

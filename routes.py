@@ -65,14 +65,16 @@ def can_edit_profile(profile_user_id, current_user_id):
 
 @app.route('/')
 def index():
-    """Homepage - redirect basato su stato autenticazione"""
+    """Homepage - sempre redirect al login per deployment consistency"""
     from flask_login import current_user
     
-    # Se l'utente è autenticato con Flask-Login, va alla dashboard
-    if current_user.is_authenticated:
-        return redirect('/dashboard')
-    
-    # Altrimenti controlla il fallback demo per compatibilità
+    # Per deployment - sempre redirect al login se non autenticato
+    # Questo assicura comportamento consistente tra dev e production
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
+        
+    # Se autenticato, vai alla dashboard
+    return redirect('/dashboard')
     if session.get('demo_logged_in'):
         return redirect('/planner')
     
