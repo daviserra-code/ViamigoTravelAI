@@ -574,17 +574,28 @@ class DynamicRouter:
             
             # ITINERARIO PARCHI DI NERVI - DESTINAZIONE SPECIFICA
             if 'nervi' in end_lower or 'parchi' in end_lower:
+                # Usa il punto di partenza reale dell'utente
+                start_coords = self.city_centers.get('genova', [44.4076, 8.9338])  # Piazza De Ferrari come default
+                
                 return [
                     {
                         'time': '09:00',
-                        'title': 'Stazione Genova Nervi',
-                        'description': 'Partenza dalla stazione ferroviaria di Nervi, borgo elegante della Riviera di Levante',
-                        'coordinates': [44.3814, 9.0402],
-                        'context': 'stazione_nervi',
+                        'title': start.title(),
+                        'description': f'Punto di partenza: {start}',
+                        'coordinates': start_coords,
+                        'context': f'{start.lower().replace(" ", "_")}_genova',
                         'transport': 'start'
                     },
                     {
-                        'time': '09:15',
+                        'time': '09:30',
+                        'title': 'Viaggio verso Nervi',
+                        'description': 'Treno regionale da Genova Brignole a Nervi (20 min, €2.20)',
+                        'coordinates': [44.3814, 9.0402],
+                        'context': 'stazione_nervi',
+                        'transport': 'train'
+                    },
+                    {
+                        'time': '10:00',
                         'title': 'Passeggiata Anita Garibaldi - Inizio',
                         'description': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
                         'coordinates': [44.3820, 9.0410],
@@ -592,7 +603,7 @@ class DynamicRouter:
                         'transport': 'walking'
                     },
                     {
-                        'time': '10:00',
+                        'time': '10:30',
                         'title': 'Parchi di Nervi',
                         'description': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
                         'coordinates': [44.3825, 9.0415],
@@ -600,7 +611,7 @@ class DynamicRouter:
                         'transport': 'walking'
                     },
                     {
-                        'time': '10:45',
+                        'time': '11:15',
                         'title': 'Villa Gropallo - Museo Frugone',
                         'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca nei Parchi di Nervi',
                         'coordinates': [44.3830, 9.0420],
@@ -608,7 +619,7 @@ class DynamicRouter:
                         'transport': 'walking'
                     },
                     {
-                        'time': '11:30',
+                        'time': '12:00',
                         'title': 'Passeggiata Anita Garibaldi - Capolungo',
                         'description': 'Punto panoramico finale della passeggiata con vista spettacolare sulla costa ligure',
                         'coordinates': [44.3835, 9.0425],
