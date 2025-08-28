@@ -566,9 +566,120 @@ class DynamicRouter:
                 }
             ]
         
-        # Waypoints per Genova - OTTIMIZZATO per vicinanza geografica
+        # Waypoints per Genova - OTTIMIZZATO per destinazione specifica
         elif 'genova' in city_lower:
-            return [
+            # Analizza la destinazione per generare itinerario pertinente
+            end_lower = end.lower().strip()
+            start_lower = start.lower().strip()
+            
+            # ITINERARIO PARCHI DI NERVI - DESTINAZIONE SPECIFICA
+            if 'nervi' in end_lower or 'parchi' in end_lower:
+                return [
+                    {
+                        'time': '09:00',
+                        'title': 'Stazione Genova Nervi',
+                        'description': 'Partenza dalla stazione ferroviaria di Nervi, borgo elegante della Riviera di Levante',
+                        'coordinates': [44.3878, 8.9515],
+                        'context': 'stazione_nervi',
+                        'transport': 'start'
+                    },
+                    {
+                        'time': '09:15',
+                        'title': 'Passeggiata Anita Garibaldi',
+                        'description': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
+                        'coordinates': [44.3885, 8.9525],
+                        'context': 'passeggiata_nervi',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '10:00',
+                        'title': 'Parchi di Nervi',
+                        'description': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
+                        'coordinates': [44.3895, 8.9535],
+                        'context': 'parchi_nervi',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '10:45',
+                        'title': 'Villa Gropallo - Museo Frugone',
+                        'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca',
+                        'coordinates': [44.3902, 8.9542],
+                        'context': 'villa_gropallo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '11:30',
+                        'title': 'Torre Gropallo',
+                        'description': 'Antica torre di avvistamento con vista spettacolare sulla costa ligure',
+                        'coordinates': [44.3910, 8.9550],
+                        'context': 'torre_gropallo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'type': 'tip',
+                        'title': '🚂 Come arrivare',
+                        'description': 'Treno regionale da Genova Brignole a Nervi (20 min, €2.20). Ogni 30 minuti.'
+                    },
+                    {
+                        'type': 'tip',
+                        'title': '🌸 Stagione ideale',
+                        'description': 'Primavera per la fioritura nei parchi, estate per il mare.'
+                    }
+                ]
+            
+            # ITINERARIO ACQUARIO - DESTINAZIONE SPECIFICA  
+            elif 'acquario' in end_lower or 'porto antico' in end_lower:
+                return [
+                    {
+                        'time': '09:00',
+                        'title': 'Piazza De Ferrari',
+                        'description': 'Il salotto di Genova con la grande fontana e palazzi storici',
+                        'coordinates': [44.4076, 8.9338],
+                        'context': 'piazza_de_ferrari',
+                        'transport': 'start'
+                    },
+                    {
+                        'time': '09:30',
+                        'title': 'Cattedrale di San Lorenzo',
+                        'description': 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941',
+                        'coordinates': [44.407, 8.9307],
+                        'context': 'cattedrale_san_lorenzo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '10:15',
+                        'title': 'Via del Campo',
+                        'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
+                        'coordinates': [44.4088, 8.9294],
+                        'context': 'via_del_campo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '11:30',
+                        'title': 'Porto Antico',
+                        'description': 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera',
+                        'coordinates': [44.4108, 8.9279],
+                        'context': 'porto_antico',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '12:30',
+                        'title': 'Acquario di Genova',
+                        'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari',
+                        'coordinates': [44.4108, 8.9279],
+                        'context': 'acquario_genova',
+                        'transport': 'walking'
+                    },
+                    {
+                        'type': 'tip',
+                        'title': '💡 Genova',
+                        'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
+                    }
+                ]
+            
+            # ITINERARIO GENERICO CENTRO STORICO (fallback)
+            else:
+                return [
                 {
                     'time': '09:00',
                     'title': 'Piazza De Ferrari',
