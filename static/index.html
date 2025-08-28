@@ -294,14 +294,29 @@
                     } else {
                         console.log('✅ Dati validi, processing...');
                         
+                        // Reset completo per nuova ricerca
+                        console.log('🔄 Reset completo per nuovo itinerario');
+                        
+                        // Pulisci la timeline esistente
+                        const timelineContainer = document.querySelector('.timeline');
+                        if (timelineContainer) {
+                            timelineContainer.innerHTML = '';
+                        }
+                        
                         // Reset della mappa per nuova città
-                        if (mapInitialized) {
+                        if (mapInitialized && map) {
+                            console.log('🗺️ Rimuovo mappa esistente');
                             map.remove();
                             mapInitialized = false;
                             map = null;
                             routeLayer = null;
                         }
                         
+                        // Forza il garbage collection delle variabili
+                        currentItineraryData = null;
+                        window.currentCityName = null;
+                        
+                        // Aggiorna i dati e renderizza
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
                         console.log('🔄 Chiamata renderItinerary con:', data);
@@ -765,12 +780,23 @@
                 return;
             }
             
-            // AGGIORNA LA MAPPA CON I NUOVI DATI
-            console.log('🗺️ Aggiornamento mappa con itinerario...');
-            updateMapWithItinerary(data.itinerary);
+            // FORZA PULIZIA E RE-RENDER COMPLETO
+            console.log('🔄 Pulizia timeline per nuovo itinerario...');
             
+            // Forza pulizia completa timeline
             timelineContainer.innerHTML = '';
-            data.itinerary.forEach(item => {
+            timelineContainer.style.display = 'none';
+            
+            // Forza re-render dopo un tick
+            setTimeout(() => {
+                timelineContainer.style.display = 'block';
+                
+                // AGGIORNA LA MAPPA CON I NUOVI DATI
+                console.log('🗺️ Aggiornamento mappa con itinerario...');
+                updateMapWithItinerary(data.itinerary);
+                
+                // RENDERIZZA LA TIMELINE
+                data.itinerary.forEach(item => {
                 if (item.type === 'tip') {
                     timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
                 } else {
@@ -819,8 +845,9 @@
                             </div>
                         </div>`;
                 }
-            });
-            document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+                });
+                document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+            }, 10);
         }
 
         // --- FUNZIONE OPEN MODAL (MANCANTE) ---
