@@ -58,7 +58,14 @@
             <div id="page-home" class="page active">
                 <div id="home-header" class="flex justify-between items-center mb-6 px-2 h-12 flex-shrink-0 mt-6">
                     <h1 class="text-3xl font-bold self-end mb-1 viamigo-font">Viamigo</h1>
-                    <svg class="w-9 h-9 self-center" viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs><path d="M20 80 C 30 40, 70 40, 80 80 L 50 20 Z" fill="url(#g2)"/></svg>
+                    <div class="flex items-center space-x-3">
+                        <button id="dashboard-button" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors" title="Dashboard">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                        </button>
+                        <svg class="w-9 h-9 self-center" viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs><path d="M20 80 C 30 40, 70 40, 80 80 L 50 20 Z" fill="url(#g2)"/></svg>
+                    </div>
                 </div>
                 <div class="flex-grow overflow-y-auto px-2">
                     <div id="home-planner-view">
@@ -167,6 +174,7 @@
         const modal = document.getElementById('modal');
         const planButton = document.getElementById('plan-button');
         const itineraryTitle = document.getElementById('itinerary-title');
+        const dashboardButton = document.getElementById('dashboard-button');
 
         const interestsGrid = document.getElementById('interests-grid');
         const paceControl = document.getElementById('pace-control');
@@ -195,6 +203,13 @@
                 button.classList.add('active', 'text-white');
             });
         });
+
+        // --- GESTIONE DASHBOARD ---
+        if (dashboardButton) {
+            dashboardButton.addEventListener('click', () => {
+                window.location.href = '/dashboard';
+            });
+        }
 
         // --- GESTIONE PROFILO ---
         if(interestsGrid && paceControl && budgetControl && savePrefsButton) {
