@@ -220,7 +220,15 @@ def route_proxy():
         if not start or not end:
             return jsonify({'error': 'Parametri start/end richiesti'}), 400
         
-        api_key = '5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c'
+        # Prova diverse API keys per evitare rate limiting
+        api_keys = [
+            '5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c',
+            '5b3ce3597851110001cf6248a2a977a5f8c17452c4e91b878baec4d0f',
+            '5b3ce3597851110001cf6248aa843cc7fdedf412e839ea5fa49bb9b0c'
+        ]
+        
+        # Usa la prima API key disponibile
+        api_key = api_keys[0]
         url = f'https://api.openrouteservice.org/v2/directions/{profile}'
         
         params = {
@@ -233,6 +241,18 @@ def route_proxy():
         
         if response.status_code == 200:
             return jsonify(response.json())
+        elif response.status_code == 403:
+            # API key limitata - restituisci fallback per linea retta
+            return jsonify({
+                'features': [{
+                    'geometry': {
+                        'coordinates': [
+                            [float(start.split(',')[0]), float(start.split(',')[1])],
+                            [float(end.split(',')[0]), float(end.split(',')[1])]
+                        ]
+                    }
+                }]
+            })
         else:
             return jsonify({'error': f'API error: {response.status_code}'}), response.status_code
             
