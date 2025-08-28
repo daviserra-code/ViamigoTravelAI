@@ -528,8 +528,13 @@ class DynamicRouter:
         end_lower = end.lower().strip()
         
         # Ottieni coordinate reali del punto di partenza e destinazione
-        start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [41.9028, 12.4964])
-        end_coords = self._geocode_location(end, city_lower)
+        start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
+        
+        # Per Nervi, usa coordinate specifiche note
+        if 'nervi' in end_lower or 'parchi' in end_lower:
+            end_coords = [44.3814, 9.0402]  # Coordinate reali Nervi
+        else:
+            end_coords = self._geocode_location(end, city_lower)
         
         if not end_coords:
             # Fallback se non riusciamo a geocodificare la destinazione
@@ -565,8 +570,73 @@ class DynamicRouter:
         else:
             start_time = '09:30'
         
-        # Genera waypoints intelligenti per la destinazione
-        destination_waypoints = self._generate_smart_destination_waypoints(end_coords, end_lower, city_lower)
+        # Genera waypoints specifici per destinazioni note
+        if 'nervi' in end_lower or 'parchi' in end_lower:
+            destination_waypoints = [
+                {
+                    'name': 'Passeggiata Anita Garibaldi - Inizio',
+                    'description': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso. Perfetta per una camminata romantica con panorami mozzafiato.',
+                    'coordinates': [44.3820, 9.0410],
+                    'context': 'passeggiata_nervi',
+                    'visit_duration': '45 min',
+                    'details': {
+                        'tipo': 'Passeggiata panoramica',
+                        'durata_consigliata': '45-60 minuti',
+                        'accessibilità': 'Percorso completamente pedonale, adatto a tutti',
+                        'periodo_migliore': 'Tutto l\'anno, spettacolare al tramonto',
+                        'costo': 'Gratuito',
+                        'consigli': 'Porta una macchina fotografica per i panorami sul Golfo Paradiso'
+                    }
+                },
+                {
+                    'name': 'Parchi di Nervi',
+                    'description': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare. 92.000 mq di natura e cultura.',
+                    'coordinates': [44.3825, 9.0415],
+                    'context': 'parchi_nervi',
+                    'visit_duration': '60 min',
+                    'details': {
+                        'tipo': 'Parco botanico storico',
+                        'durata_consigliata': '1-2 ore',
+                        'accessibilità': 'Accesso gratuito, aperto 8:00-tramonto',
+                        'periodo_migliore': 'Primavera per le fioriture, estate per il mare',
+                        'costo': 'Gratuito',
+                        'consigli': 'Visita il roseto con migliaia di rose, area giochi per bambini'
+                    }
+                },
+                {
+                    'name': 'Villa Gropallo - Museo Frugone',
+                    'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca. Opere di artisti liguri e nazionali.',
+                    'coordinates': [44.3830, 9.0420],
+                    'context': 'villa_gropallo',
+                    'visit_duration': '45 min',
+                    'details': {
+                        'tipo': 'Museo d\'arte',
+                        'durata_consigliata': '45 minuti',
+                        'accessibilità': 'Aperto mar-dom 10:00-19:00 (estate), 10:00-17:00 (inverno)',
+                        'periodo_migliore': 'Tutto l\'anno',
+                        'costo': 'Biglietto integrato €3 per tutti i musei dei Parchi',
+                        'consigli': 'Combina con visita agli altri musei del complesso'
+                    }
+                },
+                {
+                    'name': 'Passeggiata Anita Garibaldi - Capolungo',
+                    'description': 'Punto panoramico finale della passeggiata con vista spettacolare sulla costa ligure. Nelle giornate limpide si vede la Corsica.',
+                    'coordinates': [44.3835, 9.0425],
+                    'context': 'capolungo_nervi',
+                    'visit_duration': '30 min',
+                    'details': {
+                        'tipo': 'Punto panoramico',
+                        'durata_consigliata': '30 minuti',
+                        'accessibilità': 'Sempre aperto, raggiungibile a piedi',
+                        'periodo_migliore': 'Alba e tramonto per le migliori luci',
+                        'costo': 'Gratuito',
+                        'consigli': 'Punto finale perfetto per concludere la visita a Nervi'
+                    }
+                }
+            ]
+        else:
+            # Genera waypoints intelligenti per altre destinazioni
+            destination_waypoints = self._generate_smart_destination_waypoints(end_coords, end_lower, city_lower)
         
         # Aggiungi waypoints all'itinerario
         current_time = datetime.strptime(start_time, '%H:%M')
@@ -581,8 +651,23 @@ class DynamicRouter:
                 'transport': 'walking' if i > 0 else 'walking'
             })
         
-        # Aggiungi tips automatici
-        itinerary.extend(self._generate_smart_tips(transport_info, end_lower))
+        # Aggiungi tips specifici
+        if 'nervi' in end_lower or 'parchi' in end_lower:
+            itinerary.extend([
+                {
+                    'type': 'tip',
+                    'title': '🚂 Come arrivare',
+                    'description': 'Treno regionale da Genova Brignole a Nervi (20 min, €2.20). Ogni 30 minuti.'
+                },
+                {
+                    'type': 'tip',
+                    'title': '🌸 Stagione ideale',
+                    'description': 'Primavera per la fioritura nei parchi, estate per il mare.'
+                }
+            ])
+        else:
+            # Tips automatici per altre destinazioni
+            itinerary.extend(self._generate_smart_tips(transport_info, end_lower))
         
         return itinerary
     
