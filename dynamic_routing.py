@@ -507,6 +507,234 @@ class DynamicRouter:
             pass
         return 45  # Default 45 minutes
     
+    def _is_specific_destination(self, end_lower: str, start_lower: str) -> bool:
+        """Rileva se la destinazione richiede un viaggio specifico fuori dal centro città"""
+        # Pattern di destinazioni specifiche che richiedono trasporto
+        specific_patterns = [
+            'nervi', 'parchi di nervi', 'capolungo',
+            'portofino', 'cinque terre', 'monterosso', 'vernazza', 'corniglia', 'manarola', 'riomaggiore',
+            'amalfi', 'positano', 'ravello', 'sorrento',
+            'murano', 'burano', 'lido', 'torcello',
+            'tivoli', 'villa adriana', 'villa d\'este',
+            'fiesole', 'san gimignano', 'siena',
+            'bellagio', 'varenna', 'menaggio',
+            'taormina', 'cefalù', 'monreale'
+        ]
+        
+        return any(pattern in end_lower for pattern in specific_patterns)
+    
+    def _generate_journey_itinerary(self, start: str, end: str, city_lower: str) -> List[Dict]:
+        """Genera itinerario intelligente per viaggi verso destinazioni specifiche"""
+        end_lower = end.lower().strip()
+        
+        # Ottieni coordinate reali del punto di partenza e destinazione
+        start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [41.9028, 12.4964])
+        end_coords = self._geocode_location(end, city_lower)
+        
+        if not end_coords:
+            # Fallback se non riusciamo a geocodificare la destinazione
+            return self._generate_fallback_city_tour(start, end, city_lower)
+        
+        # Calcola distanza per determinare tipo di trasporto
+        distance = self._calculate_distance(start_coords, end_coords)
+        transport_info = self._determine_transport(distance, start_coords, end_coords)
+        
+        # Genera itinerario dinamico
+        itinerary = [
+            {
+                'time': '09:00',
+                'title': start.title(),
+                'description': f'Punto di partenza: {start}',
+                'coordinates': list(start_coords),
+                'context': f'{start.lower().replace(" ", "_")}_{city_lower}',
+                'transport': 'start'
+            }
+        ]
+        
+        # Aggiungi tappa di viaggio se necessaria
+        if transport_info['needs_transport']:
+            itinerary.append({
+                'time': '09:30',
+                'title': f'Viaggio verso {end.title()}',
+                'description': transport_info['description'],
+                'coordinates': list(end_coords),
+                'context': f'viaggio_{end.lower().replace(" ", "_")}',
+                'transport': transport_info['type']
+            })
+            start_time = '10:00'
+        else:
+            start_time = '09:30'
+        
+        # Genera waypoints intelligenti per la destinazione
+        destination_waypoints = self._generate_smart_destination_waypoints(end_coords, end_lower, city_lower)
+        
+        # Aggiungi waypoints all'itinerario
+        current_time = datetime.strptime(start_time, '%H:%M')
+        for i, waypoint in enumerate(destination_waypoints):
+            current_time += timedelta(minutes=30)  # 30 min tra waypoints
+            itinerary.append({
+                'time': current_time.strftime('%H:%M'),
+                'title': waypoint['name'],
+                'description': waypoint['description'],
+                'coordinates': waypoint['coordinates'],
+                'context': waypoint['context'],
+                'transport': 'walking' if i > 0 else 'walking'
+            })
+        
+        # Aggiungi tips automatici
+        itinerary.extend(self._generate_smart_tips(transport_info, end_lower))
+        
+        return itinerary
+    
+    def _calculate_distance(self, coords1: Tuple[float, float], coords2: Tuple[float, float]) -> float:
+        """Calcola distanza approssimativa tra due coordinate (km)"""
+        from math import radians, cos, sin, asin, sqrt
+        
+        lat1, lon1 = radians(coords1[0]), radians(coords1[1])
+        lat2, lon2 = radians(coords2[0]), radians(coords2[1])
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        return 2 * asin(sqrt(a)) * 6371  # Radio Terra in km
+    
+    def _determine_transport(self, distance: float, start_coords: Tuple[float, float], end_coords: Tuple[float, float]) -> Dict:
+        """Determina il tipo di trasporto più appropriato"""
+        if distance > 15:  # Oltre 15km = treno/bus
+            return {
+                'needs_transport': True,
+                'type': 'train',
+                'description': f'Viaggio in treno/autobus (circa {int(distance * 2)} min)',
+                'duration_mins': int(distance * 2)
+            }
+        elif distance > 5:  # 5-15km = metro/tram/bus urbano  
+            return {
+                'needs_transport': True,
+                'type': 'metro',
+                'description': f'Metro/tram urbano (circa {int(distance * 3)} min)',
+                'duration_mins': int(distance * 3)
+            }
+        else:  # Entro 5km = walking
+            return {
+                'needs_transport': False,
+                'type': 'walking',
+                'description': f'A piedi (circa {int(distance * 12)} min)',
+                'duration_mins': int(distance * 12)
+            }
+    
+    def _generate_smart_destination_waypoints(self, coords: Tuple[float, float], destination: str, city: str) -> List[Dict]:
+        """Genera waypoints intelligenti per una destinazione specifica usando AI + geocoding"""
+        try:
+            from openai import OpenAI
+            import os
+            
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            
+            prompt = f"""
+            Genera 3-4 waypoints per visitare "{destination}" vicino a {city}, Italia.
+            
+            Coordinate base: {coords[0]}, {coords[1]}
+            
+            Fornisci un JSON con struttura:
+            {{
+                "waypoints": [
+                    {{
+                        "name": "Nome attrazione",
+                        "description": "Descrizione dettagliata (max 100 caratteri)",
+                        "coordinates": [lat, lon],
+                        "context": "chiave_identificativa",
+                        "visit_duration": "45 min"
+                    }}
+                ]
+            }}
+            
+            Usa coordinate realistiche vicine a quelle base, descrizioni autentiche e nomi reali.
+            """
+            
+            response = client.chat.completions.create(
+                model="gpt-5",  # the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"},
+                max_completion_tokens=400
+            )
+            
+            ai_result = json.loads(response.choices[0].message.content)
+            waypoints = ai_result.get('waypoints', [])
+            
+            # Valida e correggi coordinate se necessario
+            validated_waypoints = []
+            for waypoint in waypoints:
+                # Assicurati che le coordinate siano vicine alla destinazione (entro 2km)
+                wp_coords = waypoint.get('coordinates', coords)
+                if self._calculate_distance(coords, tuple(wp_coords)) > 2:
+                    # Correggi coordinate troppo lontane usando offset dalla base
+                    offset_lat = (len(validated_waypoints) * 0.002) - 0.002  # ±200m
+                    offset_lon = (len(validated_waypoints) * 0.002) - 0.002
+                    wp_coords = [coords[0] + offset_lat, coords[1] + offset_lon]
+                
+                validated_waypoints.append({
+                    'name': waypoint.get('name', f'Attrazione {len(validated_waypoints) + 1}'),
+                    'description': waypoint.get('description', f'Esplora questa zona di {destination}'),
+                    'coordinates': wp_coords,
+                    'context': waypoint.get('context', f'{destination.lower().replace(" ", "_")}_{len(validated_waypoints)}'),
+                    'visit_duration': waypoint.get('visit_duration', '45 min')
+                })
+            
+            return validated_waypoints
+            
+        except Exception as e:
+            print(f"Errore generazione AI waypoints per {destination}: {e}")
+            # Fallback: genera waypoints base intorno alla destinazione
+            return self._generate_basic_destination_waypoints(coords, destination)
+    
+    def _generate_basic_destination_waypoints(self, coords: Tuple[float, float], destination: str) -> List[Dict]:
+        """Genera waypoints base senza AI"""
+        waypoints = []
+        offsets = [(0.001, 0.001), (-0.001, 0.001), (0.001, -0.001), (-0.001, -0.001)]
+        
+        for i, (lat_offset, lon_offset) in enumerate(offsets[:3]):
+            waypoints.append({
+                'name': f'{destination.title()} - Punto {i+1}',
+                'description': f'Esplora questa area di {destination}',
+                'coordinates': [coords[0] + lat_offset, coords[1] + lon_offset],
+                'context': f'{destination.lower().replace(" ", "_")}_{i+1}',
+                'visit_duration': '45 min'
+            })
+        
+        return waypoints
+    
+    def _generate_smart_tips(self, transport_info: Dict, destination: str) -> List[Dict]:
+        """Genera tips intelligenti basati su trasporto e destinazione"""
+        tips = []
+        
+        if transport_info['needs_transport']:
+            tips.append({
+                'type': 'tip',
+                'title': f'🚗 Come arrivare',
+                'description': transport_info['description']
+            })
+        
+        # Tips stagionali/generici
+        if any(word in destination for word in ['parchi', 'giardini', 'natura']):
+            tips.append({
+                'type': 'tip', 
+                'title': '🌸 Stagione ideale',
+                'description': 'Primavera e estate per godere al meglio della natura'
+            })
+        elif any(word in destination for word in ['museo', 'arte', 'galleria']):
+            tips.append({
+                'type': 'tip',
+                'title': '🎨 Consigli visita', 
+                'description': 'Controlla orari di apertura e prenota in anticipo'
+            })
+        
+        return tips
+    
+    def _generate_fallback_city_tour(self, start: str, end: str, city_lower: str) -> List[Dict]:
+        """Genera tour generico della città quando non riusciamo a geocodificare la destinazione"""
+        base_coords = self.city_centers.get(city_lower, [41.9028, 12.4964])
+    
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
         """Itinerario di fallback con coordinate reali della città"""
         # Usa coordinate della città se disponibile
@@ -572,74 +800,12 @@ class DynamicRouter:
             end_lower = end.lower().strip()
             start_lower = start.lower().strip()
             
-            # ITINERARIO PARCHI DI NERVI - DESTINAZIONE SPECIFICA
-            if 'nervi' in end_lower or 'parchi' in end_lower:
-                # Usa il punto di partenza reale dell'utente
-                start_coords = self.city_centers.get('genova', [44.4076, 8.9338])  # Piazza De Ferrari come default
-                
-                return [
-                    {
-                        'time': '09:00',
-                        'title': start.title(),
-                        'description': f'Punto di partenza: {start}',
-                        'coordinates': start_coords,
-                        'context': f'{start.lower().replace(" ", "_")}_genova',
-                        'transport': 'start'
-                    },
-                    {
-                        'time': '09:30',
-                        'title': 'Viaggio verso Nervi',
-                        'description': 'Treno regionale da Genova Brignole a Nervi (20 min, €2.20)',
-                        'coordinates': [44.3814, 9.0402],
-                        'context': 'stazione_nervi',
-                        'transport': 'train'
-                    },
-                    {
-                        'time': '10:00',
-                        'title': 'Passeggiata Anita Garibaldi - Inizio',
-                        'description': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
-                        'coordinates': [44.3820, 9.0410],
-                        'context': 'passeggiata_nervi',
-                        'transport': 'walking'
-                    },
-                    {
-                        'time': '10:30',
-                        'title': 'Parchi di Nervi',
-                        'description': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
-                        'coordinates': [44.3825, 9.0415],
-                        'context': 'parchi_nervi',
-                        'transport': 'walking'
-                    },
-                    {
-                        'time': '11:15',
-                        'title': 'Villa Gropallo - Museo Frugone',
-                        'description': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca nei Parchi di Nervi',
-                        'coordinates': [44.3830, 9.0420],
-                        'context': 'villa_gropallo',
-                        'transport': 'walking'
-                    },
-                    {
-                        'time': '12:00',
-                        'title': 'Passeggiata Anita Garibaldi - Capolungo',
-                        'description': 'Punto panoramico finale della passeggiata con vista spettacolare sulla costa ligure',
-                        'coordinates': [44.3835, 9.0425],
-                        'context': 'capolungo_nervi',
-                        'transport': 'walking'
-                    },
-                    {
-                        'type': 'tip',
-                        'title': '🚂 Come arrivare',
-                        'description': 'Treno regionale da Genova Brignole a Nervi (20 min, €2.20). Ogni 30 minuti.'
-                    },
-                    {
-                        'type': 'tip',
-                        'title': '🌸 Stagione ideale',
-                        'description': 'Primavera per la fioritura nei parchi, estate per il mare.'
-                    }
-                ]
+            # SISTEMA DINAMICO UNIVERSALE - RILEVAMENTO DESTINAZIONI SPECIFICHE
+            if self._is_specific_destination(end_lower, start_lower):
+                return self._generate_journey_itinerary(start, end, city_lower)
             
-            # ITINERARIO ACQUARIO - DESTINAZIONE SPECIFICA  
-            elif 'acquario' in end_lower or 'porto antico' in end_lower:
+            # ITINERARIO GENERICO FALLBACK per centro città
+            else:
                 return [
                     {
                         'time': '09:00',
@@ -687,9 +853,6 @@ class DynamicRouter:
                         'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
                     }
                 ]
-            
-            # ITINERARIO GENERICO CENTRO STORICO (fallback)
-            else:
                 return [
                 {
                     'time': '09:00',
