@@ -871,7 +871,39 @@ class DynamicRouter:
             base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
         
         # Waypoints ottimizzati per città principali con coordinate precise
-        if 'trieste' in city_lower or 'miramare' in city_lower:
+        if 'verona' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': start,
+                    'description': f'Punto di partenza: {start.lower()}',
+                    'coordinates': [45.4384, 10.9916],  # Centro Verona
+                    'context': f'{start.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:00',
+                    'title': 'Centro di Verona',
+                    'description': 'Esplora il centro storico di Verona con i suoi monumenti principali',
+                    'coordinates': [45.4434, 10.9966],  # Centro storico
+                    'context': f'centro_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '11:30',
+                    'title': end,
+                    'description': f'Destinazione finale: {end.lower()}',
+                    'coordinates': [45.4384, 10.9916],  # Arena area
+                    'context': f'{end.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': f'💡 {city.title()}',
+                    'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
+                }
+            ]
+        elif 'trieste' in city_lower or 'miramare' in city_lower:
             return [
                 {
                     'time': '09:00',
