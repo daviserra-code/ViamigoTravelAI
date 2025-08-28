@@ -10,18 +10,31 @@ import sys
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import and run the main application
-from main import app
-import uvicorn
+# Import Flask app instead of FastAPI
+from flask_app import app, create_tables
+
+# Import all routes and blueprints
+import routes  # Main routes
+import advanced_routes  # Advanced features
+from auth_routes import auth_bp
+from dashboard_routes import dashboard_bp  
+from create_profile_routes import create_profile_bp
+
+# Register all blueprints
+app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(dashboard_bp)
+app.register_blueprint(create_profile_bp)
 
 if __name__ == "__main__":
+    # Create tables after all imports are complete
+    create_tables()
+    
     # Get port from environment or default to 5000
     port = int(os.environ.get("PORT", 5000))
     
-    # Start the server
-    uvicorn.run(
-        app, 
+    # Run Flask app (not uvicorn)
+    app.run(
         host="0.0.0.0", 
         port=port,
-        log_level="info"
+        debug=False  # Production mode
     )
