@@ -15,6 +15,9 @@ class DynamicRouter:
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.nominatim_base = "https://nominatim.openstreetmap.org"
         
+        # Cache dinamico per città scoperte via API
+        self.dynamic_city_cache = {}
+        
         # Database completo città italiane con coordinate precise
         self.city_centers = {
             # Grandi città
@@ -101,7 +104,25 @@ class DynamicRouter:
             'cagliari': [39.2238, 9.1217],
             'sassari': [40.7259, 8.5644],
             'nuoro': [40.3210, 9.3301],
-            'olbia': [40.9233, 9.5027]
+            'olbia': [40.9233, 9.5027],
+            
+            # Espansione città europee principali per scalabilità
+            'parigi': [48.8566, 2.3522],
+            'berlino': [52.5200, 13.4050],
+            'madrid': [40.4168, -3.7038],
+            'lisbona': [38.7223, -9.1393],
+            'amsterdam': [52.3676, 4.9041],
+            'vienna': [48.2082, 16.3738],
+            'praga': [50.0755, 14.4378],
+            'budapest': [47.4979, 19.0402],
+            'atene': [37.9838, 23.7275],
+            'barcellona': [41.3851, 2.1734],
+            'londra': [51.5074, -0.1278],
+            'zurigo': [47.3769, 8.5417],
+            'ginevra': [46.2044, 6.1432],
+            'monaco': [48.1351, 11.5820],
+            'cracovia': [50.0647, 19.9450],
+            'varsavia': [52.2297, 21.0122]
         }
     
     def generate_personalized_itinerary(self, start: str, end: str, city: str = "", 
@@ -124,13 +145,19 @@ class DynamicRouter:
             
             # 2. Usa subito il fallback ottimizzato per città conosciute (ANTI-ALLUCINAZIONE)
             city_lower = city.lower() if city else ""
-            if ('trieste' in city_lower or 'miramare' in city_lower or
-                'genova' in city_lower or 'milano' in city_lower or 
-                'roma' in city_lower or 'venezia' in city_lower or
-                'firenze' in city_lower or 'napoli' in city_lower or
-                'bologna' in city_lower or 'palermo' in city_lower or
-                'pisa' in city_lower or 'cagliari' in city_lower or 'perugia' in city_lower or
-                'verona' in city_lower or 'torino' in city_lower):
+            # Città con sistema ottimizzato (Italia + Europa principali)
+            optimized_cities = [
+                # Italia
+                'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia', 
+                'firenze', 'napoli', 'bologna', 'palermo', 'pisa', 'cagliari', 
+                'perugia', 'verona', 'torino',
+                # Europa
+                'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna', 
+                'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo', 
+                'ginevra', 'monaco', 'cracovia', 'varsavia'
+            ]
+            
+            if any(city in city_lower for city in optimized_cities):
                 print(f"🎯 Routing ottimizzato per {city} - coordinate verificate")
                 return self._fallback_itinerary(start, end, city)
             
@@ -225,12 +252,13 @@ class DynamicRouter:
                 results = response.json()
                 for result in results:
                     lat, lon = float(result['lat']), float(result['lon'])
-                    # Verifica coordinate italiane valide
-                    if 35.0 <= lat <= 47.0 and 6.0 <= lon <= 19.0:
+                    # Verifica coordinate europee valide (Italia + Europa)
+                    if 35.0 <= lat <= 70.0 and -10.0 <= lon <= 30.0:
                         
-                        # Salva nel cache per future richieste
+                        # Salva nel cache dinamico per future richieste (NON nel database statico)
                         if city_lower and city_lower not in self.city_centers:
-                            self.city_centers[city_lower] = [lat, lon]
+                            self.dynamic_city_cache[city_lower] = [lat, lon]
+                            print(f"📍 Cache aggiornato per {city}: [{lat}, {lon}]")
                         
                         return (lat, lon)
                 
@@ -240,6 +268,11 @@ class DynamicRouter:
         # 4. Fallback finale - usa coordinate della città se disponibile
         if city_lower in self.city_centers:
             return tuple(self.city_centers[city_lower])
+        
+        # 4.5. Cache dinamico - se abbiamo già scoperto questa città
+        if city_lower in self.dynamic_city_cache:
+            print(f"✅ Usando cache per {city}: {self.dynamic_city_cache[city_lower]}")
+            return tuple(self.dynamic_city_cache[city_lower])
         
         # 5. Fallback geografico intelligente per città richiesta
         if 'genova' in city_lower:
@@ -267,19 +300,8 @@ class DynamicRouter:
             print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Bologna")
             return (44.4949, 11.3426)  # Bologna centro
         else:
-            # Per città non riconosciute, determina regione e usa centro regionale appropriato
-            if any(keyword in city_lower for keyword in ['nord', 'lombardia', 'veneto', 'piemonte']):
-                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Milano come centro Nord")
-                return (45.4642, 9.1900)  # Milano per Nord Italia
-            elif any(keyword in city_lower for keyword in ['centro', 'toscana', 'lazio', 'umbria']):
-                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Firenze come centro Centro")
-                return (43.7696, 11.2558)  # Firenze per Centro Italia
-            elif any(keyword in city_lower for keyword in ['sud', 'campania', 'sicilia', 'calabria']):
-                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Napoli come centro Sud")
-                return (40.8518, 14.2681)  # Napoli per Sud Italia
-            else:
-                print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando Firenze come default Italia")
-                return (43.7696, 11.2558)  # Firenze al centro geografico d'Italia
+            # Sistema avanzato di rilevamento geografico intelligente
+            return self._smart_geographic_fallback(location, city_lower)
     
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
         """Rileva la città dalle coordinate con precisione migliorata"""
@@ -311,6 +333,83 @@ class DynamicRouter:
             return "Nord Italia"
         
         return "Italia"
+    
+    def _smart_geographic_fallback(self, location: str, city_lower: str) -> Tuple[float, float]:
+        """Sistema intelligente di fallback geografico per qualsiasi città europea"""
+        
+        # 1. ITALIA - Rilevamento regionale avanzato
+        italian_regions = {
+            'nord': {
+                'keywords': ['lombardia', 'veneto', 'piemonte', 'liguria', 'emilia', 'friuli', 'trentino', 'valle d\'aosta'],
+                'center': (45.4642, 9.1900),  # Milano
+                'name': 'Nord Italia'
+            },
+            'centro': {
+                'keywords': ['toscana', 'lazio', 'umbria', 'marche', 'abruzzo'],
+                'center': (43.7696, 11.2558),  # Firenze
+                'name': 'Centro Italia'
+            },
+            'sud': {
+                'keywords': ['campania', 'puglia', 'calabria', 'basilicata', 'sicilia', 'sardegna'],
+                'center': (40.8518, 14.2681),  # Napoli
+                'name': 'Sud Italia'
+            }
+        }
+        
+        # 2. EUROPA - Rilevamento per nazioni
+        european_countries = {
+            'francia': {
+                'keywords': ['france', 'francia', 'french'],
+                'center': (48.8566, 2.3522),  # Parigi
+            },
+            'germania': {
+                'keywords': ['germany', 'germania', 'german', 'deutsch'],
+                'center': (52.5200, 13.4050),  # Berlino
+            },
+            'spagna': {
+                'keywords': ['spain', 'spagna', 'spanish', 'español'],
+                'center': (40.4168, -3.7038),  # Madrid
+            },
+            'olanda': {
+                'keywords': ['netherlands', 'olanda', 'dutch', 'nederland'],
+                'center': (52.3676, 4.9041),  # Amsterdam
+            },
+            'austria': {
+                'keywords': ['austria', 'austrian', 'österreich'],
+                'center': (48.2082, 16.3738),  # Vienna
+            },
+            'svizzera': {
+                'keywords': ['switzerland', 'svizzera', 'swiss', 'schweiz'],
+                'center': (47.3769, 8.5417),  # Zurigo
+            },
+            'regno_unito': {
+                'keywords': ['uk', 'britain', 'england', 'london', 'british'],
+                'center': (51.5074, -0.1278),  # Londra
+            }
+        }
+        
+        # Controlla prima le regioni italiane
+        for region, data in italian_regions.items():
+            if any(keyword in city_lower for keyword in data['keywords']):
+                print(f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando {data['name']}")
+                return data['center']
+        
+        # Controlla poi le nazioni europee
+        for country, data in european_countries.items():
+            if any(keyword in city_lower for keyword in data['keywords']):
+                print(f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando capitale {country}")
+                return data['center']
+        
+        # Fallback finale intelligente basato su pattern geografici
+        if any(term in city_lower for term in ['mare', 'costa', 'porto', 'beach', 'sea']):
+            print(f"⚠️ Località costiera {city_lower} non trovata, usando Genova")
+            return (44.4056, 8.9463)  # Genova per località costiere
+        elif any(term in city_lower for term in ['monte', 'alpi', 'mountain', 'valle', 'ski']):
+            print(f"⚠️ Località montana {city_lower} non trovata, usando Torino")
+            return (45.0703, 7.6869)  # Torino per località montane
+        else:
+            print(f"⚠️ Città {city_lower} non riconosciuta, usando centro Europa")
+            return (43.7696, 11.2558)  # Firenze come centro geografico europeo
     
     def _generate_smart_waypoints(self, start_coords: Tuple[float, float], 
                                  end_coords: Tuple[float, float], 
