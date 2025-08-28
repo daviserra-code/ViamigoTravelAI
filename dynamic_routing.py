@@ -539,7 +539,7 @@ class DynamicRouter:
         if city_lower == 'genova':
             start_coords = [44.4056, 8.9463]  # Piazza De Ferrari Genova
         else:
-            start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [41.9028, 12.4964])
+            start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
         
         # Per Nervi, usa coordinate specifiche note
         if 'nervi' in end_lower or 'parchi' in end_lower:
@@ -829,7 +829,7 @@ class DynamicRouter:
     
     def _generate_fallback_city_tour(self, start: str, end: str, city_lower: str) -> List[Dict]:
         """Genera tour generico della città quando non riusciamo a geocodificare la destinazione"""
-        base_coords = self.city_centers.get(city_lower, [41.9028, 12.4964])
+        base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
     
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
         """Itinerario di fallback con coordinate reali della città"""
@@ -838,7 +838,7 @@ class DynamicRouter:
         if 'trieste' in city_lower or 'miramare' in city_lower:
             base_coords = [45.6495, 13.7768]  # Trieste preciso
         else:
-            base_coords = self.city_centers.get(city_lower, [41.9028, 12.4964])  # Default Roma
+            base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
         
         # Waypoints ottimizzati per città principali con coordinate precise
         if 'trieste' in city_lower or 'miramare' in city_lower:
