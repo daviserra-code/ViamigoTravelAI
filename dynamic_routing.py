@@ -1141,8 +1141,12 @@ class DynamicRouter:
                     # Prima attrazione con AI enhancement
                     if attractions:
                         attr = attractions[0]
-                        # SKIP AI enrichment for instant response
-                        ai_details = {}
+                        # 🤖 AI ENRICHMENT - Optimized with timeout
+                        try:
+                            ai_details = ai_generator.enrich_place_details(attr['name'], city, "attraction")
+                        except Exception as e:
+                            print(f"⚠️ AI timeout fallback per {attr['name']}: {e}")
+                            ai_details = {}
                         
                         waypoints.append({
                             'time': '10:00',
@@ -1168,8 +1172,12 @@ class DynamicRouter:
                                 print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
                                 rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
                         
-                        # SKIP AI enrichment for instant response  
-                        ai_details = {}
+                        # 🤖 AI ENRICHMENT - Optimized with timeout
+                        try:
+                            ai_details = ai_generator.enrich_place_details(rest['name'], city, "restaurant")
+                        except Exception as e:
+                            print(f"⚠️ AI timeout fallback per {rest['name']}: {e}")
+                            ai_details = {}
                         
                         waypoints.append({
                             'time': '12:30',
@@ -1186,21 +1194,78 @@ class DynamicRouter:
                             'emergency_alternatives': ai_details.get('emergency_alternatives', [])
                         })
                     
-                    # Seconda attrazione
+                    # Seconda attrazione con AI enrichment
                     if len(attractions) > 1:
                         attr2 = attractions[1]
+                        try:
+                            ai_details2 = ai_generator.enrich_place_details(attr2['name'], city, "attraction")
+                        except Exception as e:
+                            print(f"⚠️ AI timeout fallback per {attr2['name']}: {e}")
+                            ai_details2 = {}
+                            
                         waypoints.append({
                             'time': '14:30',
                             'title': attr2['name'],
-                            'description': attr2['description'],
+                            'description': ai_details2.get('description', attr2['description']),
                             'coordinates': [attr2['latitude'], attr2['longitude']],
                             'context': f'attraction2_{city_lower}',
-                            'transport': 'walking'
+                            'transport': 'walking',
+                            'opening_hours': ai_details2.get('opening_hours'),
+                            'price_range': ai_details2.get('price_range'),
+                            'highlights': ai_details2.get('highlights', []),
+                            'insider_tip': ai_details2.get('insider_tip'),
+                            'best_time': ai_details2.get('best_time')
+                        })
+                    
+                    # Terza attrazione se disponibile
+                    if len(attractions) > 2:
+                        attr3 = attractions[2]
+                        try:
+                            ai_details3 = ai_generator.enrich_place_details(attr3['name'], city, "attraction")
+                        except Exception as e:
+                            print(f"⚠️ AI timeout fallback per {attr3['name']}: {e}")
+                            ai_details3 = {}
+                            
+                        waypoints.append({
+                            'time': '15:30',
+                            'title': attr3['name'],
+                            'description': ai_details3.get('description', attr3['description']),
+                            'coordinates': [attr3['latitude'], attr3['longitude']],
+                            'context': f'attraction3_{city_lower}',
+                            'transport': 'walking',
+                            'opening_hours': ai_details3.get('opening_hours'),
+                            'price_range': ai_details3.get('price_range'),
+                            'highlights': ai_details3.get('highlights', []),
+                            'insider_tip': ai_details3.get('insider_tip'),
+                            'best_time': ai_details3.get('best_time')
+                        })
+                    
+                    # Secondo ristorante se disponibile
+                    if len(restaurants) > 1:
+                        rest2 = restaurants[1]
+                        try:
+                            ai_details_rest2 = ai_generator.enrich_place_details(rest2['name'], city, "restaurant")
+                        except Exception as e:
+                            print(f"⚠️ AI timeout fallback per {rest2['name']}: {e}")
+                            ai_details_rest2 = {}
+                            
+                        waypoints.append({
+                            'time': '17:00',
+                            'title': rest2['name'],
+                            'description': ai_details_rest2.get('description', f"Aperitivo/cena: {rest2['description']}"),
+                            'coordinates': [rest2['latitude'], rest2['longitude']],
+                            'context': f'restaurant2_{city_lower}',
+                            'transport': 'walking',
+                            'opening_hours': ai_details_rest2.get('opening_hours'),
+                            'price_range': ai_details_rest2.get('price_range'),
+                            'highlights': ai_details_rest2.get('highlights', []),
+                            'insider_tip': ai_details_rest2.get('insider_tip'),
+                            'emergency_alternatives': ai_details_rest2.get('emergency_alternatives', [])
                         })
                     
                     # End
                     waypoints.append({
-                        'time': '16:00',
+                        'time': '18:30',
                         'title': end.title(),
                         'description': f'Destinazione finale: {end}',
                         'coordinates': city_coords,
@@ -1208,9 +1273,14 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # 🧠 FAST PRE-BUILT DATA - No AI delays
-                    smart_discoveries = self._get_fast_discoveries(city)
-                    plan_b = self._get_fast_plan_b(city)
+                    # 🧠 AI-POWERED FEATURES - With timeout protection
+                    try:
+                        smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
+                        plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
+                    except Exception as e:
+                        print(f"⚠️ AI features fallback: {e}")
+                        smart_discoveries = self._get_fast_discoveries(city)
+                        plan_b = self._get_fast_plan_b(city)
                     
                     # Tip arricchito
                     waypoints.append({
