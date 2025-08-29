@@ -10,6 +10,24 @@ pure_instant_bp = Blueprint('pure_instant', __name__)
 
 # City-specific attractions and restaurants
 CITY_DATA = {
+    'genova': {
+        'coords': [44.4056, 8.9463],
+        'attractions': [
+            ('Palazzo Rosso', [44.4070, 8.9352]),
+            ('Spianata Castelletto', [44.4148, 8.9342]),
+            ('Via del Campo', [44.4081, 8.9312]),
+            ('Palazzo Bianco', [44.4072, 8.9355]),
+            ('Teatro Carlo Felice', [44.4089, 8.9339]),
+            ('Cattedrale di San Lorenzo', [44.4075, 8.9322])
+        ],
+        'restaurants': [
+            ('Il Genovese', [44.4065, 8.9345]),
+            ('Antica Osteria di Vico Palla', [44.4058, 8.9318]),
+            ('Trattoria del Borgo', [44.4072, 8.9330]),
+            ('Osteria della Foce', [44.4041, 8.9501]),
+            ('Il Giardino di Casana', [44.4099, 8.9364])
+        ]
+    },
     'new_york': {
         'coords': [40.7589, -73.9851],
         'attractions': [
@@ -85,14 +103,18 @@ def detect_city(location_string):
     """Detect city from location string"""
     location_lower = location_string.lower()
     
-    if any(term in location_lower for term in ['rome', 'roma', 'colosseum', 'vatican']):
+    if any(term in location_lower for term in ['genova', 'genoa', 'ferrari', 'acquario', 'spianata', 'palazzo rosso']):
+        return 'genova', 'Genova'
+    elif any(term in location_lower for term in ['rome', 'roma', 'colosseum', 'vatican', 'trevi']):
         return 'rome', 'Rome'
-    elif any(term in location_lower for term in ['paris', 'eiffel', 'louvre', 'champs']):
+    elif any(term in location_lower for term in ['paris', 'eiffel', 'louvre', 'champs', 'montmartre']):
         return 'paris', 'Paris'
-    elif any(term in location_lower for term in ['milan', 'milano', 'duomo', 'scala']):
+    elif any(term in location_lower for term in ['milan', 'milano', 'duomo', 'scala', 'navigli']):
         return 'milan', 'Milan'
-    elif any(term in location_lower for term in ['london', 'big ben', 'tower bridge']):
+    elif any(term in location_lower for term in ['london', 'big ben', 'tower bridge', 'westminster']):
         return 'london', 'London'
+    elif any(term in location_lower for term in ['new york', 'nyc', 'manhattan', 'brooklyn', 'times square', 'central park']):
+        return 'new_york', 'New York'
     else:
         return 'new_york', 'New York'  # Default
 
@@ -118,6 +140,26 @@ def generate_dynamic_details(place_name, place_type, city_name):
                 'insider_tip': 'Visit during weekdays for a more authentic, less crowded experience',
                 'best_time': 'Early morning (9-11am) or late afternoon (16-18pm)',
                 'emergency_alternatives': ['Nearby museums', 'Local parks and squares']
+            }
+        },
+        'genova': {
+            'restaurant': {
+                'description': f'{place_name} serves authentic Ligurian cuisine with fresh pesto, focaccia, and seafood specialties. Experience genuine Genovese culinary traditions.',
+                'opening_hours': '12:00-15:00, 19:30-23:00',
+                'price_range': '€€',
+                'highlights': ['Fresh pesto genovese', 'Local focaccia', 'Mediterranean seafood'],
+                'insider_tip': 'Ask for pesto made with Ligurian basilico DOP - the authentic regional variety',
+                'best_time': 'Lunch (13-14pm) or dinner (20-21pm) following Ligurian traditions',
+                'emergency_alternatives': ['Via del Campo eateries', 'Porto Antico restaurants']
+            },
+            'attraction': {
+                'description': f'{place_name} showcases Genova\'s rich maritime heritage and Renaissance architecture. A key part of understanding this historic port city.',
+                'opening_hours': '9:00-18:00 (varies by season)',
+                'price_range': '€€',
+                'highlights': ['Maritime history', 'Renaissance palaces', 'Panoramic views'],
+                'insider_tip': 'Visit early morning for best light and fewer crowds in the historic center',
+                'best_time': 'Morning (9-11am) or late afternoon (16-18pm)',
+                'emergency_alternatives': ['Palazzo Ducale', 'Musei di Strada Nuova']
             }
         },
         'rome': {

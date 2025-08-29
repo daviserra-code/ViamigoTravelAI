@@ -160,13 +160,13 @@ Sii specifico, intelligente e contextualmente rilevante.
         """Real AI travel diary with behavioral analysis"""
         try:
             prompt = f"""
-Sei un AI travel companion che analizza comportamenti di viaggio. Analizza:
+Sei un AI travel companion che analizza comportamenti di viaggio. Analizza i dati e genera insights in formato JSON:
 
 Azioni utente: {json.dumps(user_actions, indent=2)}
 Preferenze: {json.dumps(preferences, indent=2)}
 Cronologia: {json.dumps(location_history, indent=2)}
 
-Genera insights intelligenti del diario di viaggio:
+Genera insights intelligenti del diario di viaggio in JSON:
 {{
     "behavioral_analysis": "Analisi AI dei pattern comportamentali",
     "travel_personality": "Personalità di viaggio dedotta dall'AI",
