@@ -251,8 +251,26 @@ class ApifyTravelIntegration:
         restaurants = places_data.get('restaurant', [])
         
         if not attractions and not restaurants:
-            print(f"⚠️ ZERO luoghi autentici trovati per {search_city} - usando fallback")
-            return self._generate_minimal_fallback(start, end, search_city)
+            print(f"⚠️ ZERO luoghi autentici trovati per {search_city} - fallback semplice")
+            # Fallback semplice senza Apify
+            return [
+                {
+                    'time': '09:00',
+                    'title': start,
+                    'description': f'Punto di partenza: {start.lower()}',
+                    'coordinates': self._get_city_center_coords(search_city),
+                    'context': f'{start.lower().replace(" ", "_")}_{city.lower()}',
+                    'transport': 'start'
+                },
+                {
+                    'time': '15:30',
+                    'title': end,
+                    'description': f'Destinazione finale: {end.lower()}',
+                    'coordinates': self._get_city_center_coords(search_city),
+                    'context': f'{end.lower().replace(" ", "_")}_{city.lower()}',
+                    'transport': 'walking'
+                }
+            ]
         
         print(f"✅ Dati autentici: {len(attractions)} attrazioni, {len(restaurants)} ristoranti per {search_city}")
         
@@ -308,10 +326,27 @@ class ApifyTravelIntegration:
             'firenze': [43.7696, 11.2558],
         }
         
-        # 🌍 Default USA per destinazioni estere sconosciute
+        # 🌍 COORDINATE REALI per destinazioni estere
+        foreign_coords = {
+            'usa washington d': [38.9072, -77.0369],  # Washington D.C.
+            'washington dc': [38.9072, -77.0369],
+            'new york': [40.7128, -74.0060],          # New York
+            'tokyo': [35.6762, 139.6503],
+            'london': [51.5074, -0.1278],
+            'paris': [48.8566, 2.3522],
+            'berlin': [52.5200, 13.4050],
+            'madrid': [40.4168, -3.7038]
+        }
+        
+        # Controlla coordinate specifiche prima
+        if city.lower() in foreign_coords:
+            print(f"🌍 Coordinate specifiche per {city}: {foreign_coords[city.lower()]}")
+            return foreign_coords[city.lower()]
+        
+        # Fallback per altre destinazioni estere
         if any(foreign in city.lower() for foreign in ['usa', 'japan', 'germany', 'england', 'france', 'spain']):
-            print(f"🇺🇸 Destinazione estera {city} - usando coordinate Washington D.C.")
-            return [38.9072, -77.0369]  # Washington D.C. come default estero
+            print(f"🇺🇸 Destinazione estera generica {city} - usando coordinate Washington D.C.")
+            return [38.9072, -77.0369]
         
         return city_coords.get(city.lower(), [44.4056, 8.9463])  # Default Genova per Italia
 
