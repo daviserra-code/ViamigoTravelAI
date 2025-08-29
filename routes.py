@@ -362,6 +362,21 @@ def detect_city_from_locations(start, end):
     """Rileva la città dall'input utente usando Nominatim API per scalabilità mondiale"""
     text = f"{start} {end}".lower()
     
+    # 🌍 PRIORITÀ 0: Riconoscimento destinazioni ESTERE - DEVE usare Apify
+    foreign_destinations = {
+        'usa washington d': ['usa', 'america', 'washington', 'new york', 'nyc', 'brooklyn', 'manhattan', 'boston', 'chicago', 'los angeles', 'san francisco'],
+        'japan tokyo': ['tokyo', 'japan', 'osaka', 'kyoto', 'hiroshima', 'nagoya'],
+        'germany berlin': ['berlin', 'germany', 'munich', 'hamburg', 'cologne', 'frankfurt'],
+        'england london': ['london', 'england', 'manchester', 'liverpool', 'birmingham'],
+        'france paris': ['paris', 'france', 'marseille', 'lyon', 'nice', 'toulouse'],
+        'spain madrid': ['madrid', 'spain', 'barcelona', 'valencia', 'seville']
+    }
+    
+    for country_city, keywords in foreign_destinations.items():
+        if any(keyword in text for keyword in keywords):
+            print(f"🌍 DESTINAZIONE ESTERA RILEVATA: {country_city}")
+            return country_city  # Ritorna il paese_citta come identificativo speciale
+    
     # PRIORITÀ 1: Estrazione automatica nome città dai pattern comma-separated
     import re
     

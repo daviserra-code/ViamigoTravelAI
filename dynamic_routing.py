@@ -981,17 +981,33 @@ class DynamicRouter:
         """Itinerario di fallback con coordinate reali della città - ora con integrazione Apify!"""
         city_lower = city.lower()
         
-        # 🌍 PRIORITÀ 1: Apify per città non in database  
-        if city_lower not in ['olbia', 'costa_smeralda', 'porto_cervo', 'sardegna', 'portorotondo', 'santa_teresa', 'gallura', 'orgosolo', 'barbagia', 'trieste', 'miramare', 'verona', 'genova']:
+        # 🌍 PRIORITÀ 1: Apify per destinazioni ESTERE (rilevate da detect_city_from_locations)
+        is_foreign_destination = any(keyword in city_lower for keyword in ['usa washington', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid'])
+        
+        if is_foreign_destination:
             if apify_travel.is_available():
-                print(f"🌍 Città sconosciuta: {city} - usando Apify per dati autentici")
+                print(f"🌍 DESTINAZIONE ESTERA: {city} - FORZANDO Apify per dati autentici")
                 try:
                     apify_waypoints = apify_travel.generate_authentic_waypoints(start, end, city)
                     if apify_waypoints and len(apify_waypoints) >= 3:
                         print(f"✅ Apify ha generato {len(apify_waypoints)} waypoints autentici per {city}")
                         return apify_waypoints
+                    else:
+                        print(f"⚠️ Apify non ha generato waypoints sufficienti per {city}")
                 except Exception as e:
                     print(f"⚠️ Errore Apify per {city}: {e}")
+            else:
+                print(f"❌ Apify non disponibile per destinazione estera: {city}")
+                return [
+                    {
+                        'time': '09:00',
+                        'title': 'Errore di Sistema',
+                        'description': f'Destinazione {city} richiede dati internazionali non disponibili. Prova con una città italiana.',
+                        'coordinates': [44.4056, 8.9463],  # Genova default
+                        'context': 'error_international',
+                        'transport': 'error'
+                    }
+                ]
                     
         # Fallback itinerari pre-programmati per città principali
         if 'trieste' in city_lower or 'miramare' in city_lower:
