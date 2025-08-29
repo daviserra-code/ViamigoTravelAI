@@ -55,11 +55,22 @@ def plan_lightning():
         start = data.get('start', 'Fifth Avenue')
         end = data.get('end', 'Cornelia Street')
         
-        # Generate unique itinerary ID
-        itinerary_id = f"{int(time.time() * 1000)}"
+        # Generate unique itinerary ID based on route
+        itinerary_id = f"{start.replace(' ', '_')}_{end.replace(' ', '_')}_{int(time.time() * 1000)}"
         
-        # NYC coordinates
-        nyc_coords = [40.7589, -73.9851]
+        # Dynamic coordinates based on destination
+        if 'rome' in end.lower() or 'roma' in end.lower():
+            base_coords = [41.9028, 12.4964]
+            city = 'Rome'
+        elif 'milan' in end.lower() or 'milano' in end.lower():
+            base_coords = [45.4642, 9.1900]
+            city = 'Milan'
+        elif 'paris' in end.lower():
+            base_coords = [48.8566, 2.3522]
+            city = 'Paris'
+        else:
+            base_coords = [40.7589, -73.9851]  # NYC default
+            city = 'New York'
         
         # Build instant itinerary with cached AI details
         itinerary = [
@@ -73,14 +84,34 @@ def plan_lightning():
             }
         ]
         
-        # Add places with cached AI details
-        places_data = [
-            ('SoHo', [40.7230, -73.9987], 'attraction'),
-            ('The Brass Rail', [40.7260, -73.9965], 'restaurant'),
-            ('South Street Seaport', [40.7057, -74.0029], 'attraction'),
-            ('Washington Square Park', [40.7308, -73.9973], 'attraction'),
-            ("Joe's Pizza", [40.7290, -73.9974], 'restaurant')
-        ]
+        # Dynamic places based on start/end locations
+        from dynamic_routing import DynamicRoutingEngine
+        routing_engine = DynamicRoutingEngine()
+        
+        # Get actual dynamic waypoints for this specific route
+        try:
+            dynamic_result = routing_engine.generate_route(start, end)
+            if dynamic_result and 'itinerary' in dynamic_result:
+                # Extract actual places from dynamic routing
+                places_data = []
+                for item in dynamic_result['itinerary']:
+                    if 'title' in item and item.get('type') != 'tip' and 'coordinates' in item:
+                        place_type = 'restaurant' if 'restaurant' in item.get('context', '') else 'attraction'
+                        places_data.append((item['title'], item['coordinates'], place_type))
+                        if len(places_data) >= 5:  # Limit to 5 places
+                            break
+            else:
+                raise Exception("Dynamic routing failed")
+        except Exception as e:
+            print(f"⚠️ Dynamic routing failed, using NYC fallback: {e}")
+            # Fallback NYC places
+            places_data = [
+                ('SoHo', [40.7230, -73.9987], 'attraction'),
+                ('The Brass Rail', [40.7260, -73.9965], 'restaurant'),
+                ('South Street Seaport', [40.7057, -74.0029], 'attraction'),
+                ('Washington Square Park', [40.7308, -73.9973], 'attraction'),
+                ("Joe's Pizza", [40.7290, -73.9974], 'restaurant')
+            ]
         
         times = ['10:00', '12:30', '14:30', '15:30', '17:00']
         
