@@ -24,34 +24,40 @@ class ApifyTravelIntegration:
         
     def get_cached_places(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
         """Recupera luoghi dal cache locale"""
-        cached = PlaceCache.query.filter_by(
-            city=city.lower(),
-            category=category
-        ).filter(
-            PlaceCache.updated_at > datetime.now() - self.cache_duration
-        ).all()
-        
-        if cached:
-            print(f"✅ Cache hit per {city} - {len(cached)} luoghi trovati")
-            return [json.loads(place.data) for place in cached]
-        return []
+        try:
+            # Usa cache_key invece di city + category separati
+            cache_key = f"{city.lower()}_{category}"
+            cached = PlaceCache.query.filter_by(cache_key=cache_key).first()
+            
+            if cached and cached.created_at > datetime.now() - self.cache_duration:
+                print(f"✅ Cache hit per {city} - dati trovati")
+                return [json.loads(cached.place_data)]
+            return []
+        except Exception as e:
+            print(f"⚠️ Errore cache lookup: {e}")
+            return []
         
     def cache_places(self, city: str, category: str, places: List[Dict]) -> None:
         """Salva luoghi nel cache locale"""
         try:
-            # Rimuovi cache vecchio per questa città/categoria
-            PlaceCache.query.filter_by(city=city.lower(), category=category).delete()
+            # Usa cache_key unico invece di fields separati
+            cache_key = f"{city.lower()}_{category}"
             
-            # Aggiungi nuovi dati
-            for place in places:
+            # Rimuovi cache vecchio
+            PlaceCache.query.filter_by(cache_key=cache_key).delete()
+            
+            # Salva come singolo entry JSON
+            if places:
                 cache_entry = PlaceCache(
+                    cache_key=cache_key,
+                    place_name=f"{city}_{category}",
                     city=city.lower(),
-                    place_name=place.get('name', 'Unknown'),
-                    category=category,
-                    data=json.dumps(place),
-                    coordinates_lat=place.get('latitude'),
-                    coordinates_lng=place.get('longitude'),
-                    updated_at=datetime.now()
+                    country='IT',
+                    place_data=json.dumps(places),
+                    priority_level=1,
+                    access_count=1,
+                    last_accessed=datetime.now(),
+                    created_at=datetime.now()
                 )
                 db.session.add(cache_entry)
             
