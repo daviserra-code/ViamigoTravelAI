@@ -1030,14 +1030,16 @@ class DynamicRouter:
         city_coords = self._get_real_city_coordinates(city)
         print(f"📍 Coordinate dinamiche per {city}: {city_coords}")
         
-        # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO per destinazioni mondiali
+        # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO + AI per destinazioni mondiali
         from cost_effective_scraping import CostEffectiveDataProvider
+        from intelligent_content_generator import IntelligentContentGenerator
         
         is_foreign_destination = any(keyword in city_lower for keyword in ['usa', 'new york', 'japan', 'tokyo', 'germany', 'berlin', 'england', 'london', 'france', 'paris', 'spain', 'madrid'])
         
         if is_foreign_destination:
-            print(f"🌍 DESTINAZIONE MONDIALE: {city} - Usando sistema economico")
+            print(f"🌍 DESTINAZIONE MONDIALE: {city} - Usando sistema economico + AI")
             cost_provider = CostEffectiveDataProvider()
+            ai_generator = IntelligentContentGenerator()
             
             try:
                 # Ottieni luoghi di interesse economicamente
@@ -1060,16 +1062,25 @@ class DynamicRouter:
                         'transport': 'start'
                     })
                     
-                    # Prima attrazione
+                    # Prima attrazione con AI enhancement
                     if attractions:
                         attr = attractions[0]
+                        # 🤖 ARRICCHIMENTO AI
+                        ai_details = ai_generator.enrich_place_details(attr['name'], city, "attraction")
+                        
                         waypoints.append({
                             'time': '10:00',
                             'title': attr['name'],
-                            'description': attr['description'],
+                            'description': ai_details.get('description', attr['description']),
                             'coordinates': [attr['latitude'], attr['longitude']],
                             'context': f'attraction_{city_lower}',
-                            'transport': 'walking'
+                            'transport': 'walking',
+                            # 🌟 DETTAGLI RICCHI
+                            'opening_hours': ai_details.get('opening_hours'),
+                            'price_range': ai_details.get('price_range'),
+                            'highlights': ai_details.get('highlights', []),
+                            'insider_tip': ai_details.get('insider_tip'),
+                            'best_time': ai_details.get('best_time')
                         })
                     
                     # Ristorante con controllo coordinate
@@ -1081,13 +1092,22 @@ class DynamicRouter:
                                 print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
                                 rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
                         
+                        # 🤖 ARRICCHIMENTO AI per ristorante
+                        ai_details = ai_generator.enrich_place_details(rest['name'], city, "restaurant")
+                        
                         waypoints.append({
                             'time': '12:30',
                             'title': rest['name'],
-                            'description': f"Pranzo: {rest['description']}",
+                            'description': ai_details.get('description', f"Pranzo: {rest['description']}"),
                             'coordinates': [rest['latitude'], rest['longitude']],
                             'context': f'restaurant_{city_lower}',
-                            'transport': 'walking'
+                            'transport': 'walking',
+                            # 🍽️ DETTAGLI RISTORANTE
+                            'opening_hours': ai_details.get('opening_hours'),
+                            'price_range': ai_details.get('price_range'),
+                            'highlights': ai_details.get('highlights', []),
+                            'insider_tip': ai_details.get('insider_tip'),
+                            'emergency_alternatives': ai_details.get('emergency_alternatives', [])
                         })
                     
                     # Seconda attrazione
@@ -1112,12 +1132,33 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # Tip
+                    # 🧠 SCOPERTE INTELLIGENTI + PIANO B
+                    smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
+                    plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
+                    
+                    # Tip arricchito
                     waypoints.append({
                         'type': 'tip',
                         'title': f'💡 {city.title()}',
-                        'description': f'Itinerario autentico con dati reali da OpenStreetMap e fonti gratuite'
+                        'description': f'Itinerario autentico con AI-powered dettagli, Piano B intelligente e scoperte local'
                     })
+                    
+                    # Piano B per imprevisti
+                    waypoints.append({
+                        'type': 'emergency_plan',
+                        'title': '🌧️ Piano B',
+                        'description': 'Alternative al coperto se piove',
+                        'plan_b_data': plan_b
+                    })
+                    
+                    # Scoperte intelligenti
+                    if smart_discoveries:
+                        waypoints.append({
+                            'type': 'smart_discovery',
+                            'title': '🔍 Scoperte Local',
+                            'description': 'Gemme nascoste nelle vicinanze',
+                            'discoveries': smart_discoveries[:2]  # Max 2
+                        })
                     
                     return waypoints
                     
