@@ -18,6 +18,10 @@ app.register_blueprint(create_profile_bp)
 from pure_instant_routes import pure_instant_bp
 app.register_blueprint(pure_instant_bp)
 
+# Registra blueprint AI companion routes (genuine AI features)
+from ai_companion_routes import ai_companion_bp
+app.register_blueprint(ai_companion_bp)
+
 # Replit OAuth già registrato in routes.py
 
 if __name__ == "__main__":
