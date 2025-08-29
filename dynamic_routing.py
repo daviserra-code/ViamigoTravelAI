@@ -364,6 +364,76 @@ class DynamicRouter:
         
         return "Italia"
     
+    def _get_fast_discoveries(self, city: str) -> List[Dict]:
+        """Fast pre-built discoveries without AI delays"""
+        if 'new york' in city.lower():
+            return [
+                {
+                    "title": "Paley Park Secret Waterfall",
+                    "description": "Hidden micro-park with waterfall that drowns out city noise",
+                    "distance": "3 minutes walk",
+                    "why_now": "Morning light creates perfect photo opportunity",
+                    "local_secret": "Free seating area behind the waterfall wall"
+                },
+                {
+                    "title": "High Line Access Point",
+                    "description": "Less crowded entrance to elevated park",
+                    "distance": "5 minutes walk", 
+                    "why_now": "Early morning has fewer tourists",
+                    "local_secret": "Best views at Gansevoort Street entrance"
+                }
+            ]
+        else:
+            return [
+                {
+                    "title": f"Hidden gems in {city}",
+                    "description": "Local favorites known to residents",
+                    "distance": "5 minutes walk",
+                    "why_now": "Perfect timing for exploration",
+                    "local_secret": "Ask locals for best spots"
+                }
+            ]
+    
+    def _get_fast_plan_b(self, city: str) -> Dict:
+        """Fast pre-built Plan B without AI delays"""
+        if 'new york' in city.lower():
+            return {
+                "emergency_type": "rain",
+                "alternative_plan": [
+                    {
+                        "time": "09:00",
+                        "title": "Grand Central Market",
+                        "description": "Indoor food hall with 30+ vendors",
+                        "why_better": "Completely covered, great food options",
+                        "indoor": True
+                    },
+                    {
+                        "time": "11:00", 
+                        "title": "Chelsea Market",
+                        "description": "Historic indoor market with shops and dining",
+                        "why_better": "Full day indoor activities",
+                        "indoor": True
+                    }
+                ],
+                "smart_tips": ["Subway stations provide covered connections", "Many buildings have connected underground passages"],
+                "cost_impact": "Similar to original plan"
+            }
+        else:
+            return {
+                "emergency_type": "rain",
+                "alternative_plan": [
+                    {
+                        "time": "09:00",
+                        "title": f"Shopping center {city}",
+                        "description": "Indoor shopping and dining",
+                        "why_better": "Covered from weather",
+                        "indoor": True
+                    }
+                ],
+                "smart_tips": ["Check weather apps", "Bring umbrella"],
+                "cost_impact": "Similar cost"
+            }
+    
     def _get_real_city_coordinates(self, city: str) -> List[float]:
         """Ottiene coordinate reali per qualsiasi città mondiale via geocoding"""
         try:
@@ -1138,9 +1208,9 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # 🧠 SCOPERTE INTELLIGENTI + PIANO B
-                    smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
-                    plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
+                    # 🧠 FAST PRE-BUILT DATA - No AI delays
+                    smart_discoveries = self._get_fast_discoveries(city)
+                    plan_b = self._get_fast_plan_b(city)
                     
                     # Tip arricchito
                     waypoints.append({
