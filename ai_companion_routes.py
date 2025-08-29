@@ -349,14 +349,78 @@ def plan_ai_powered():
         
         print(f"🧠 AI-powered planning: {start} → {end}")
         
-        # First get basic itinerary (fast)
-        from pure_instant_routes import pure_instant_bp
-        with pure_instant_bp.test_client() as client:
-            response = client.post('/plan_pure', json={'start': start, 'end': end})
-            base_result = response.get_json()
+        # First get basic itinerary (fast) by importing the function directly
+        from pure_instant_routes import detect_city, CITY_DATA, generate_dynamic_details
+        import random
         
-        if not base_result:
-            raise Exception("Base itinerary generation failed")
+        # Generate base itinerary like pure instant does
+        start_city_key, start_city_name = detect_city(start)
+        end_city_key, end_city_name = detect_city(end)
+        
+        city_key = end_city_key
+        city_name = end_city_name
+        city_info = CITY_DATA.get(city_key, CITY_DATA['new_york'])
+        base_coords = city_info['coords']
+        
+        # Build base itinerary
+        base_itinerary = [
+            {
+                'time': '09:00',
+                'title': f'{start.title()}',
+                'description': f'Starting point: {start}',
+                'coordinates': base_coords,
+                'context': f'{start.lower().replace(" ", "_")}_{city_key}',
+                'transport': 'start'
+            }
+        ]
+        
+        # Add sample places
+        attractions = random.sample(city_info['attractions'], min(2, len(city_info['attractions'])))
+        restaurants = random.sample(city_info['restaurants'], min(1, len(city_info['restaurants'])))
+        
+        times = ['10:00', '12:30', '15:30']
+        
+        for i, (place_name, coords) in enumerate(attractions):
+            details = generate_dynamic_details(place_name, 'attraction', city_name)
+            base_itinerary.append({
+                'time': times[i] if i < len(times) else f'{10 + i * 2}:00',
+                'title': place_name,
+                'description': details['description'],
+                'coordinates': coords,
+                'context': f'attraction{i+1}_{city_key}',
+                'transport': 'walking',
+                **details
+            })
+        
+        if restaurants:
+            place_name, coords = restaurants[0]
+            details = generate_dynamic_details(place_name, 'restaurant', city_name)
+            base_itinerary.append({
+                'time': '14:00',
+                'title': place_name,
+                'description': details['description'],
+                'coordinates': coords,
+                'context': f'restaurant_{city_key}',
+                'transport': 'walking',
+                **details
+            })
+        
+        # End destination
+        base_itinerary.append({
+            'time': '17:00',
+            'title': f'{end.title()}',
+            'description': f'Final destination: {end}',
+            'coordinates': base_coords,
+            'context': f'{end.lower().replace(" ", "_")}_{city_key}',
+            'transport': 'walking'
+        })
+        
+        base_result = {
+            'itinerary': base_itinerary,
+            'city': city_name,
+            'total_duration': '8 hours',
+            'transport_cost': f'{city_name} public transport recommended'
+        }
         
         base_itinerary = base_result.get('itinerary', [])
         city = base_result.get('city', 'New York')
