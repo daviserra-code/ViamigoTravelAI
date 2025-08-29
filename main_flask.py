@@ -14,9 +14,9 @@ app.register_blueprint(dashboard_bp)
 from create_profile_routes import create_profile_bp
 app.register_blueprint(create_profile_bp)
 
-# Registra blueprint instant routes (zero timeout)
-from instant_routes import instant_bp
-app.register_blueprint(instant_bp)
+# Registra blueprint lightning routes (instant response + background AI)
+from lightning_routes import lightning_bp
+app.register_blueprint(lightning_bp)
 
 # Replit OAuth già registrato in routes.py
 
