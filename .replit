@@ -5,7 +5,7 @@ integrations = ["javascript_object_storage==1.0.0", "python_database==1.0.0", "p
 
 [nix]
 channel = "stable-25_05"
-packages = ["libxcrypt"]
+packages = ["c-ares", "cacert", "cargo", "glibcLocales", "grpc", "libiconv", "libuv", "libxcrypt", "oneDNN", "openssl", "pkg-config", "re2", "rustc", "util-linux", "zlib"]
 
 [workflows]
 runButton = "Project"

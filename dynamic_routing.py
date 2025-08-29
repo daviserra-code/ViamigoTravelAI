@@ -9,6 +9,7 @@ import requests
 import json
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
+from apify_integration import apify_travel
 
 class DynamicRouter:
     def __init__(self):
@@ -973,9 +974,21 @@ class DynamicRouter:
         base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
     
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
-        """Itinerario di fallback con coordinate reali della città"""
-        # Usa coordinate della città se disponibile
+        """Itinerario di fallback con coordinate reali della città - ora con integrazione Apify!"""
         city_lower = city.lower()
+        
+        # 🌍 NUOVO: Prova prima con Apify per dati autentici
+        if apify_travel.is_available():
+            print(f"🌍 Tentativo Apify per città sconosciuta: {city}")
+            try:
+                apify_waypoints = apify_travel.generate_authentic_waypoints(start, end, city)
+                if apify_waypoints and len(apify_waypoints) >= 3:
+                    print(f"✅ Apify ha generato {len(apify_waypoints)} waypoints autentici per {city}")
+                    return apify_waypoints
+            except Exception as e:
+                print(f"⚠️ Errore Apify per {city}: {e}")
+        
+        # Fallback tradizionale se Apify non funziona
         if 'trieste' in city_lower or 'miramare' in city_lower:
             base_coords = [45.6495, 13.7768]  # Trieste preciso
         else:
