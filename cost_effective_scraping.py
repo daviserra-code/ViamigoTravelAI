@@ -15,7 +15,7 @@ class CostEffectiveDataProvider:
         self.opentripmap_key = None  # Free tourist attractions
         
         # Scraping economico solo se necessario  
-        self.scrapingdog_key = None  # $0.33/1K vs $4-12 Apify
+        self.scrapingdog_key = os.environ.get("SCRAPINGDOG_KEY")  # $0.33/1K vs $4-12 Apify
         
     def get_places_data(self, city: str, category: str = "restaurant") -> List[Dict]:
         """
@@ -34,14 +34,21 @@ class CostEffectiveDataProvider:
             print(f"✅ Dati base da OSM gratuito: {len(osm_data)} luoghi")
             return osm_data
         
-        # 3. ECONOMICO: Scrapingdog (solo se necessario)
+        # 3. ECONOMICO: ScrapingDog (10-30x più economico di Apify!)
         if self.scrapingdog_key and len(osm_data) < 3:
-            print(f"⚠️ Dati insufficienti ({len(osm_data)}), usando Scrapingdog economico")
-            return self._get_scrapingdog_places(city, category)
+            print(f"💰 Dati insufficienti ({len(osm_data)}), usando ScrapingDog economico")
+            scraping_data = self._get_scrapingdog_places(city, category)
+            if scraping_data and len(scraping_data) >= 2:
+                print(f"✅ Dati premium da ScrapingDog: {len(scraping_data)} luoghi ricchi")
+                return scraping_data
             
-        # 4. Fallback: Dati OSM anche se pochi
-        print(f"💰 Nessun scraping costoso - usando {len(osm_data)} luoghi OSM")
-        return osm_data
+        # 4. Fallback: Dati OSM anche se pochi (meglio di niente!)
+        combined_data = osm_data
+        if len(combined_data) == 0:
+            combined_data = [{'name': f'Centro {city}', 'latitude': 0, 'longitude': 0, 'description': f'Esplora il centro di {city}', 'source': 'fallback', 'category': category}]
+        
+        print(f"💰 Usando {len(combined_data)} luoghi disponibili")
+        return combined_data
     
     def _get_osm_places(self, city: str, category: str) -> List[Dict]:
         """OpenStreetMap Overpass API - Completamente GRATUITO"""
@@ -201,13 +208,13 @@ class CostEffectiveDataProvider:
             
         try:
             # Solo quando veramente necessario
-            print(f"💰 COSTO: Usando Scrapingdog per {city} - $0.0033 per 10 luoghi")
+            print(f"💰 COSTO: Usando ScrapingDog per {city} - $0.0033 per 10 luoghi")
             
-            url = "https://api.scrapingdog.com/google_maps"
+            url = "https://api.scrapingdog.com/scrape"
             params = {
                 'api_key': self.scrapingdog_key,
-                'query': f'{category} in {city}',
-                'max_results': 10
+                'url': f'https://www.google.com/maps/search/{category}+in+{city.replace(" ", "+")}',
+                'dynamic': 'false'
             }
             
             response = requests.get(url, params=params, timeout=15)
