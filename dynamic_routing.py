@@ -1141,8 +1141,8 @@ class DynamicRouter:
                     # Prima attrazione con AI enhancement
                     if attractions:
                         attr = attractions[0]
-                        # 🤖 ARRICCHIMENTO AI
-                        ai_details = ai_generator.enrich_place_details(attr['name'], city, "attraction")
+                        # SKIP AI enrichment for instant response
+                        ai_details = {}
                         
                         waypoints.append({
                             'time': '10:00',
@@ -1168,8 +1168,8 @@ class DynamicRouter:
                                 print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
                                 rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
                         
-                        # 🤖 ARRICCHIMENTO AI per ristorante
-                        ai_details = ai_generator.enrich_place_details(rest['name'], city, "restaurant")
+                        # SKIP AI enrichment for instant response  
+                        ai_details = {}
                         
                         waypoints.append({
                             'time': '12:30',

@@ -1029,7 +1029,7 @@
 
             // Determina categoria basata sul contesto
             let category = 'general';
-            const context = item.context.toLowerCase();
+            const context = (item.context || '').toLowerCase();
             
             if (context.includes('museo') || context.includes('galleria') || context.includes('palazzo')) category = 'museo';
             else if (context.includes('metro') || context.includes('bus') || context.includes('stazione')) category = 'trasporto';
