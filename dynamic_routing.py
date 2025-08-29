@@ -533,7 +533,8 @@ class DynamicRouter:
                 model="gpt-5",  # the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
-                max_completion_tokens=600
+                max_completion_tokens=600,
+                timeout=30
             )
             
             ai_result = json.loads(response.choices[0].message.content)

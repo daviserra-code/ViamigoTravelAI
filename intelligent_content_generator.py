@@ -45,7 +45,8 @@ class IntelligentContentGenerator:
                     {"role": "system", "content": "Sei un esperto di viaggi che conosce i dettagli autentici di luoghi in tutto il mondo. Rispondi sempre con JSON valido."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                timeout=30
             )
             
             content = response.choices[0].message.content
@@ -105,7 +106,8 @@ class IntelligentContentGenerator:
                     {"role": "system", "content": "Sei un travel planner esperto che crea piani B intelligenti per imprevisti. Conosci alternative coperte e al chiuso per ogni città."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                timeout=30  # 30 second timeout
             )
             
             content = response.choices[0].message.content
@@ -164,7 +166,8 @@ class IntelligentContentGenerator:
                     {"role": "system", "content": "Sei un local expert che conosce segreti e gemme nascoste di ogni quartiere. Suggerisci sempre posti autentici."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                timeout=30  # 30 second timeout
             )
             
             content = response.choices[0].message.content
