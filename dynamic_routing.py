@@ -113,6 +113,10 @@ class DynamicRouter:
             'baia sardinia': [41.1028, 9.4358],
             'cannigione': [41.1189, 9.4636],
             'arzachena': [41.0833, 9.4000],
+            # Sardegna centrale - Barbagia e entroterra
+            'orgosolo': [40.1374, 9.2237],
+            'oliena': [40.2481, 9.4136],
+            'dorgali': [40.2981, 9.6167],
             'la maddalena': [41.2236, 9.4044],
             'caprera': [41.2167, 9.4500],
             'porto rotondo': [40.9547, 9.5361],
@@ -1027,54 +1031,101 @@ class DynamicRouter:
                     'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
                 }
             ]
-        elif 'olbia' in city_lower or 'costa smeralda' in city_lower or 'porto cervo' in city_lower or 'sardegna' in city_lower or 'portorotondo' in city_lower or 'santa teresa' in city_lower or 'gallura' in city_lower:
-            return [
-                {
-                    'time': '09:00',
-                    'title': start,
-                    'description': f'Punto di partenza: {start.lower()}',
-                    'coordinates': [40.9233, 9.5027] if 'olbia' in city_lower else [41.1362, 9.5347],  # Olbia o Costa Smeralda
-                    'context': f'{start.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
-                    'transport': 'start'
-                },
-                {
-                    'time': '10:30',
-                    'title': 'Porto Cervo Marina',
-                    'description': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali',
-                    'coordinates': [41.1362, 9.5347],
-                    'context': f'porto_cervo_{city_lower}',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '12:00',
-                    'title': 'Cala di Volpe',
-                    'description': 'Spiaggia iconica della Costa Smeralda con acque cristalline e sabbia bianca',
-                    'coordinates': [41.1225, 9.5419],
-                    'context': f'cala_di_volpe_{city_lower}',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '14:00',
-                    'title': 'Baia Sardinia',
-                    'description': 'Elegante resort costiero con vista panoramica sul mare turchese',
-                    'coordinates': [41.1028, 9.4358],
-                    'context': f'baia_sardinia_{city_lower}',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '15:30',
-                    'title': end,
-                    'description': f'Destinazione finale: {end.lower()}',
-                    'coordinates': [40.9969, 9.5401] if 'portorotondo' in end.lower() else ([41.1362, 9.5347] if 'costa smeralda' in city_lower else [40.9233, 9.5027]),
-                    'context': f'{end.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
-                    'transport': 'walking'
-                },
-                {
-                    'type': 'tip',
-                    'title': f'💡 {city.title()}',
-                    'description': f'Itinerario esclusivo per la Sardegna settentrionale - dalle spiagge da sogno ai porti di lusso'
-                }
-            ]
+        elif 'olbia' in city_lower or 'costa smeralda' in city_lower or 'porto cervo' in city_lower or 'sardegna' in city_lower or 'portorotondo' in city_lower or 'santa teresa' in city_lower or 'gallura' in city_lower or 'orgosolo' in city_lower or 'barbagia' in city_lower:
+            # Itinerario INTELLIGENTE basato su start/end
+            if 'orgosolo' in end.lower() and 'portorotondo' in start.lower():
+                # Percorso specifico: costa est → entroterra montano
+                return [
+                    {
+                        'time': '09:00',
+                        'title': 'Portorotondo',
+                        'description': 'Partenza dall\'elegante borgo marinaro sulla costa orientale della Gallura',
+                        'coordinates': [40.9969, 9.5401],
+                        'context': f'portorotondo_{city_lower}',
+                        'transport': 'start'
+                    },
+                    {
+                        'time': '10:30',
+                        'title': 'Olbia Centro',
+                        'description': 'Tappa intermedia nella capitale della Gallura, porta di accesso alla Sardegna',
+                        'coordinates': [40.9233, 9.5027],
+                        'context': f'olbia_centro_{city_lower}',
+                        'transport': 'car'
+                    },
+                    {
+                        'time': '12:00',
+                        'title': 'Nuoro',
+                        'description': 'Capoluogo della Barbagia, città natale di Grazia Deledda premio Nobel',
+                        'coordinates': [40.3210, 9.3301],
+                        'context': f'nuoro_{city_lower}',
+                        'transport': 'car'
+                    },
+                    {
+                        'time': '14:00',
+                        'title': 'Oliena',
+                        'description': 'Borgo ai piedi del Supramonte, famoso per il vino Nepente e le tradizioni',
+                        'coordinates': [40.2481, 9.4136],
+                        'context': f'oliena_{city_lower}',
+                        'transport': 'car'
+                    },
+                    {
+                        'time': '15:30',
+                        'title': 'Orgosolo',
+                        'description': 'Il paese dei murales, cuore della Barbagia e simbolo della cultura pastorale sarda',
+                        'coordinates': [40.1374, 9.2237],
+                        'context': f'orgosolo_{city_lower}',
+                        'transport': 'car'
+                    },
+                ]
+            else:
+                # Itinerario Costa Smeralda tradizionale
+                return [
+                    {
+                        'time': '09:00',
+                        'title': start,
+                        'description': f'Punto di partenza: {start.lower()}',
+                        'coordinates': [40.9233, 9.5027] if 'olbia' in city_lower else [41.1362, 9.5347],  # Olbia o Costa Smeralda
+                        'context': f'{start.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                        'transport': 'start'
+                    },
+                    {
+                        'time': '10:30',
+                        'title': 'Porto Cervo Marina',
+                        'description': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali',
+                        'coordinates': [41.1362, 9.5347],
+                        'context': f'porto_cervo_{city_lower}',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '12:00',
+                        'title': 'Cala di Volpe',
+                        'description': 'Spiaggia iconica della Costa Smeralda con acque cristalline e sabbia bianca',
+                        'coordinates': [41.1225, 9.5419],
+                        'context': f'cala_di_volpe_{city_lower}',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '14:00',
+                        'title': 'Baia Sardinia',
+                        'description': 'Elegante resort costiero con vista panoramica sul mare turchese',
+                        'coordinates': [41.1028, 9.4358],
+                        'context': f'baia_sardinia_{city_lower}',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '15:30',
+                        'title': end,
+                        'description': f'Destinazione finale: {end.lower()}',
+                        'coordinates': [40.1374, 9.2237] if 'orgosolo' in end.lower() else ([40.9969, 9.5401] if 'portorotondo' in end.lower() else ([41.1362, 9.5347] if 'costa smeralda' in city_lower else [40.9233, 9.5027])),
+                        'context': f'{end.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                        'transport': 'walking'
+                    },
+                    {
+                        'type': 'tip',
+                        'title': f'💡 Sardegna',
+                        'description': f'Itinerario autentico attraverso la Sardegna - dalla costa ai tesori dell\'entroterra'
+                    }
+                ]
         elif 'trieste' in city_lower or 'miramare' in city_lower:
             return [
                 {
