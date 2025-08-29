@@ -441,9 +441,9 @@
             };
 
             // Usa la variabile globale currentCityName se è stata impostata
-            if (window.currentCityName) {
+            if (window.currentCityName && typeof window.currentCityName === 'string') {
                 for (const [city, coords] of Object.entries(cityCoordinates)) {
-                    if (window.currentCityName.includes(city)) {
+                    if (window.currentCityName.toLowerCase().includes(city)) {
                         console.log(`Mappa centrata su: ${city} (da currentCityName)`);
                         return coords;
                     }
