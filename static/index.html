@@ -287,8 +287,8 @@
                 }
                 
                 try {
-                    console.log('🚀 Invio richiesta a /plan con:', { start, end });
-                    const response = await fetch('/plan', {
+                    console.log('🚀 Invio richiesta a /plan_instant con:', { start, end });
+                    const response = await fetch('/plan_instant', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 

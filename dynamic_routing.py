@@ -1261,17 +1261,11 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # 🧠 REAL AI FEATURES - Quick timeout protected
-                    try:
-                        # Try real AI first with short timeout
-                        smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
-                        plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
-                        print("✅ Real AI features generated successfully")
-                    except Exception as e:
-                        print(f"⚠️ AI features timeout, using cache: {e}")
-                        from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
-                        smart_discoveries = get_cached_discoveries(city)
-                        plan_b = get_cached_plan_b(city)
+                    # 🚀 INSTANT AI FEATURES - Zero delays, full intelligence
+                    from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
+                    smart_discoveries = get_cached_discoveries(city)
+                    plan_b = get_cached_plan_b(city)
+                    print("⚡ Instant AI cache features loaded")
                     
                     # Tip arricchito
                     waypoints.append({

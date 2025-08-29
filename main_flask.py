@@ -14,6 +14,10 @@ app.register_blueprint(dashboard_bp)
 from create_profile_routes import create_profile_bp
 app.register_blueprint(create_profile_bp)
 
+# Registra blueprint instant routes (zero timeout)
+from instant_routes import instant_bp
+app.register_blueprint(instant_bp)
+
 # Replit OAuth già registrato in routes.py
 
 if __name__ == "__main__":

@@ -167,9 +167,10 @@ def get_cached_plan_b(city: str) -> dict:
         }
 
 def get_cached_discoveries(city: str) -> list:
-    """Scoperte intelligenti pre-computate"""
+    """Scoperte intelligenti pre-computate con varietà"""
     if 'new york' in city.lower():
-        return [
+        import random
+        discoveries_pool = [
             {
                 "title": "Paley Park Hidden Waterfall",
                 "description": "Micro-parco nascosto con cascata che copre i rumori della città",
@@ -185,13 +186,29 @@ def get_cached_discoveries(city: str) -> list:
                 "local_secret": "Le viste migliori sono dall'ingresso di Gansevoort Street"
             },
             {
-                "title": "Speakeasy Library Entrance",
-                "description": "Ingresso segreto di un bar nascosto dietro una libreria",
-                "distance": "2 minuti a piedi",
-                "why_now": "Orario perfetto per aperitivo pre-cena",
-                "local_secret": "Chiedi 'The Library' al bancone della libreria"
+                "title": "Elizabeth Street Garden",
+                "description": "Giardino segreto nascosto tra i palazzi di Nolita",
+                "distance": "4 minuti a piedi",
+                "why_now": "Perfetto per una pausa tranquilla dal caos urbano",
+                "local_secret": "Ingresso libero, ma pochi turisti lo conoscono"
+            },
+            {
+                "title": "Housing Works Bookstore Café",
+                "description": "Libreria-caffè in una ex-chiesa con volte gotiche",
+                "distance": "6 minuti a piedi",
+                "why_now": "Atmosfera unica per coffee break culturale",
+                "local_secret": "Cerca la scala a chiocciola nascosta per il secondo piano"
+            },
+            {
+                "title": "Freeman Alley Graffiti Gallery",
+                "description": "Vicolo autentico con street art legale e murales rotativi",
+                "distance": "7 minuti a piedi",
+                "why_now": "Nuovi murales compaiono ogni settimana",
+                "local_secret": "Gli artisti lavorano spesso nel tardo pomeriggio"
             }
         ]
+        # Restituisci 3 scoperte casuali per varietà
+        return random.sample(discoveries_pool, 3)
     else:
         return [
             {
