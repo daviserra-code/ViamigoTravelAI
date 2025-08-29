@@ -101,11 +101,22 @@ class ApifyTravelIntegration:
             
             places = []
             for item in dataset_items:
+                # 🔍 DEBUG: Vediamo che dati arrivano da Apify
+                lat = item.get('latitude') or item.get('lat')
+                lng = item.get('longitude') or item.get('lng') or item.get('lon')
+                
+                # Prova anche coordinate alternative nei dati Apify
+                if not lat or not lng:
+                    # Cerca location data nei metadata
+                    location = item.get('location', {})
+                    lat = lat or location.get('lat') or location.get('latitude')
+                    lng = lng or location.get('lng') or location.get('longitude')
+                
                 place = {
                     'name': item.get('title', 'Unknown'),
                     'description': item.get('reviewsCount', 0) and f"Rating {item.get('totalScore', 'N/A')} ({item.get('reviewsCount')} reviews)" or "Luogo di interesse",
-                    'latitude': item.get('latitude'),
-                    'longitude': item.get('longitude'),
+                    'latitude': lat,
+                    'longitude': lng,
                     'rating': item.get('totalScore'),
                     'address': item.get('address'),
                     'category': item.get('categoryName', category),
@@ -113,8 +124,12 @@ class ApifyTravelIntegration:
                     'phone': item.get('phone'),
                     'source': 'google_maps'
                 }
-                if place['latitude'] and place['longitude']:
+                
+                # ✅ FILTRO PIU' PERMISSIVO: accetta anche coordinate parziali
+                if lat is not None and lng is not None and lat != 0 and lng != 0:
                     places.append(place)
+                else:
+                    print(f"⚠️ Scartato {item.get('title', 'Unknown')} - coordinate mancanti: lat={lat}, lng={lng}")
             
             print(f"✅ Google Maps: {len(places)} luoghi trovati per {city}")
             return places
@@ -231,8 +246,17 @@ class ApifyTravelIntegration:
             'transport': 'start'
         })
         
-        # Aggiungi attrazioni autentiche
+        # Aggiungi attrazioni autentiche se disponibili
         attractions = places_data.get('tourist_attraction', [])
+        restaurants = places_data.get('restaurant', [])
+        
+        if not attractions and not restaurants:
+            print(f"⚠️ ZERO luoghi autentici trovati per {search_city} - usando fallback")
+            return self._generate_minimal_fallback(start, end, search_city)
+        
+        print(f"✅ Dati autentici: {len(attractions)} attrazioni, {len(restaurants)} ristoranti per {search_city}")
+        
+        # Aggiungi attrazioni autentiche  
         if attractions:
             for i, attraction in enumerate(attractions[:3]):  # Max 3 attrazioni
                 time_slot = f"{10 + i*2}:00"
@@ -284,7 +308,12 @@ class ApifyTravelIntegration:
             'firenze': [43.7696, 11.2558],
         }
         
-        return city_coords.get(city.lower(), [44.4056, 8.9463])  # Default Genova
+        # 🌍 Default USA per destinazioni estere sconosciute
+        if any(foreign in city.lower() for foreign in ['usa', 'japan', 'germany', 'england', 'france', 'spain']):
+            print(f"🇺🇸 Destinazione estera {city} - usando coordinate Washington D.C.")
+            return [38.9072, -77.0369]  # Washington D.C. come default estero
+        
+        return city_coords.get(city.lower(), [44.4056, 8.9463])  # Default Genova per Italia
 
 # Istanza globale
 apify_travel = ApifyTravelIntegration()
