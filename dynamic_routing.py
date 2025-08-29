@@ -1030,33 +1030,96 @@ class DynamicRouter:
         city_coords = self._get_real_city_coordinates(city)
         print(f"📍 Coordinate dinamiche per {city}: {city_coords}")
         
-        # 🌍 PRIORITÀ 1: Apify per destinazioni ESTERE (rilevate da detect_city_from_locations)
-        is_foreign_destination = any(keyword in city_lower for keyword in ['usa washington', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid'])
+        # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO per destinazioni mondiali
+        from cost_effective_scraping import CostEffectiveDataProvider
+        
+        is_foreign_destination = any(keyword in city_lower for keyword in ['usa', 'new york', 'japan', 'tokyo', 'germany', 'berlin', 'england', 'london', 'france', 'paris', 'spain', 'madrid'])
         
         if is_foreign_destination:
-            if apify_travel.is_available():
-                print(f"🌍 DESTINAZIONE ESTERA: {city} - FORZANDO Apify per dati autentici")
-                try:
-                    apify_waypoints = apify_travel.generate_authentic_waypoints(start, end, city)
-                    if apify_waypoints and len(apify_waypoints) >= 3:
-                        print(f"✅ Apify ha generato {len(apify_waypoints)} waypoints autentici per {city}")
-                        return apify_waypoints
-                    else:
-                        print(f"⚠️ Apify non ha generato waypoints sufficienti per {city}")
-                except Exception as e:
-                    print(f"⚠️ Errore Apify per {city}: {e}")
-            else:
-                print(f"❌ Apify non disponibile per destinazione estera: {city}")
-                return [
-                    {
+            print(f"🌍 DESTINAZIONE MONDIALE: {city} - Usando sistema economico")
+            cost_provider = CostEffectiveDataProvider()
+            
+            try:
+                # Ottieni luoghi di interesse economicamente
+                restaurants = cost_provider.get_places_data(city, "restaurant")
+                attractions = cost_provider.get_places_data(city, "tourist_attraction")
+                
+                if len(restaurants) >= 2 and len(attractions) >= 2:
+                    print(f"✅ Sistema economico: {len(restaurants)} ristoranti + {len(attractions)} attrazioni per {city}")
+                    
+                    # Crea itinerario ricco con dati reali
+                    waypoints = []
+                    
+                    # Start
+                    waypoints.append({
                         'time': '09:00',
-                        'title': 'Errore di Sistema',
-                        'description': f'Destinazione {city} richiede dati internazionali non disponibili. Prova con una città italiana.',
-                        'coordinates': [44.4056, 8.9463],  # Genova default
-                        'context': 'error_international',
-                        'transport': 'error'
-                    }
-                ]
+                        'title': start.title(),
+                        'description': f'Punto di partenza: {start}',
+                        'coordinates': city_coords,
+                        'context': f'{start.lower().replace(" ", "_")}_{city_lower}',
+                        'transport': 'start'
+                    })
+                    
+                    # Prima attrazione
+                    if attractions:
+                        attr = attractions[0]
+                        waypoints.append({
+                            'time': '10:00',
+                            'title': attr['name'],
+                            'description': attr['description'],
+                            'coordinates': [attr['latitude'], attr['longitude']],
+                            'context': f'attraction_{city_lower}',
+                            'transport': 'walking'
+                        })
+                    
+                    # Ristorante
+                    if restaurants:
+                        rest = restaurants[0] 
+                        waypoints.append({
+                            'time': '12:30',
+                            'title': rest['name'],
+                            'description': f"Pranzo: {rest['description']}",
+                            'coordinates': [rest['latitude'], rest['longitude']],
+                            'context': f'restaurant_{city_lower}',
+                            'transport': 'walking'
+                        })
+                    
+                    # Seconda attrazione
+                    if len(attractions) > 1:
+                        attr2 = attractions[1]
+                        waypoints.append({
+                            'time': '14:30',
+                            'title': attr2['name'],
+                            'description': attr2['description'],
+                            'coordinates': [attr2['latitude'], attr2['longitude']],
+                            'context': f'attraction2_{city_lower}',
+                            'transport': 'walking'
+                        })
+                    
+                    # End
+                    waypoints.append({
+                        'time': '16:00',
+                        'title': end.title(),
+                        'description': f'Destinazione finale: {end}',
+                        'coordinates': city_coords,
+                        'context': f'{end.lower().replace(" ", "_")}_{city_lower}',
+                        'transport': 'walking'
+                    })
+                    
+                    # Tip
+                    waypoints.append({
+                        'type': 'tip',
+                        'title': f'💡 {city.title()}',
+                        'description': f'Itinerario autentico con dati reali da OpenStreetMap e fonti gratuite'
+                    })
+                    
+                    return waypoints
+                    
+                else:
+                    print(f"⚠️ Dati insufficienti per {city}: {len(restaurants)} ristoranti, {len(attractions)} attrazioni")
+                    
+            except Exception as e:
+                print(f"⚠️ Errore sistema economico per {city}: {e}")
                     
         # Fallback itinerari pre-programmati per città principali
         if 'trieste' in city_lower or 'miramare' in city_lower:

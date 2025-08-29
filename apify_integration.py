@@ -7,6 +7,7 @@ import json
 import requests
 from typing import List, Dict, Optional, Tuple
 from apify_client import ApifyClient
+from cost_effective_scraping import CostEffectiveDataProvider
 from models import db, PlaceCache
 from datetime import datetime, timedelta
 
