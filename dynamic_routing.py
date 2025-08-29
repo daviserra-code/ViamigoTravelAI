@@ -161,7 +161,7 @@ class DynamicRouter:
             
             # 2. Usa subito il fallback ottimizzato per città conosciute (ANTI-ALLUCINAZIONE)
             city_lower = city.lower() if city else ""
-            # Città con sistema ottimizzato (Italia + Europa principali)
+            # Città con sistema ottimizzato (Italia + Europa + ESTERE VIA APIFY)
             optimized_cities = [
                 # Italia
                 'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia', 
@@ -171,7 +171,10 @@ class DynamicRouter:
                 # Europa
                 'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna', 
                 'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo', 
-                'ginevra', 'monaco', 'cracovia', 'varsavia'
+                'ginevra', 'monaco', 'cracovia', 'varsavia',
+                # 🌍 DESTINAZIONI ESTERE (identificate da detect_city_from_locations)
+                'usa washington d', 'japan tokyo', 'germany berlin', 'england london', 
+                'france paris', 'spain madrid'
             ]
             
             if any(city in city_lower for city in optimized_cities):
