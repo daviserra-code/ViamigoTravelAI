@@ -1148,20 +1148,22 @@ class DynamicRouter:
                         'description': f'Itinerario autentico con AI-powered dettagli, Piano B intelligente e scoperte local'
                     })
                     
-                    # Piano B per imprevisti
+                    # Piano B per imprevisti CON COORDINATE
                     waypoints.append({
                         'type': 'emergency_plan',
                         'title': '🌧️ Piano B',
                         'description': 'Alternative al coperto se piove',
+                        'coordinates': city_coords,  # 🗽 Coordinate della città!
                         'plan_b_data': plan_b
                     })
                     
-                    # Scoperte intelligenti
+                    # Scoperte intelligenti CON COORDINATE
                     if smart_discoveries:
                         waypoints.append({
                             'type': 'smart_discovery',
                             'title': '🔍 Scoperte Local',
                             'description': 'Gemme nascoste nelle vicinanze',
+                            'coordinates': city_coords,  # 🗽 Coordinate della città!
                             'discoveries': smart_discoveries[:2]  # Max 2
                         })
                     
