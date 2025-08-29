@@ -54,16 +54,28 @@ class CostEffectiveDataProvider:
             
             tag = osm_tags.get(category, 'amenity="restaurant"')
             
-            # Query Overpass per luoghi in città
-            query = f"""
-            [out:json][timeout:15];
-            area[name="{city}"][admin_level~"^(4|5|6|7|8)$"];
-            (
-              node[{tag}](area);
-              way[{tag}](area);
-            );
-            out center;
-            """
+            # Query Overpass CORRETTA per città mondiali
+            if "new york" in city.lower():
+                # Per New York specifico
+                query = f"""
+                [out:json][timeout:15];
+                (
+                  node[{tag}](bbox:40.6,-74.1,40.8,-73.9);
+                  way[{tag}](bbox:40.6,-74.1,40.8,-73.9);
+                );
+                out center;
+                """
+            else:
+                # Query generica con bounding box
+                query = f"""
+                [out:json][timeout:15];
+                area[name="{city}"][admin_level~"^(4|5|6|7|8)$"];
+                (
+                  node[{tag}](area);
+                  way[{tag}](area);
+                );
+                out center;
+                """
             
             response = requests.post(
                 self.openstreetmap_base,
