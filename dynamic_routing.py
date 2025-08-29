@@ -359,6 +359,43 @@ class DynamicRouter:
         
         return "Italia"
     
+    def _get_real_city_coordinates(self, city: str) -> List[float]:
+        """Ottiene coordinate reali per qualsiasi città mondiale via geocoding"""
+        try:
+            # Query diretta a Nominatim per geocoding mondiale
+            params = {
+                'q': city,
+                'format': 'json',
+                'limit': 1,
+                'addressdetails': 1
+            }
+            
+            response = requests.get(
+                "https://nominatim.openstreetmap.org/search", 
+                params=params, 
+                timeout=10,
+                headers={'User-Agent': 'Viamigo-Travel-App/1.0'}
+            )
+            
+            if response.ok and response.json():
+                result = response.json()[0]
+                lat = float(result['lat'])
+                lon = float(result['lon'])
+                print(f"🌍 Geocoding dinamico: {city} → [{lat}, {lon}]")
+                return [lat, lon]
+                
+        except Exception as e:
+            print(f"⚠️ Errore geocoding per {city}: {e}")
+        
+        # Fallback solo per città italiane conosciute
+        italian_cities = {
+            'genova': [44.4056, 8.9463],
+            'milano': [45.4642, 9.1900],
+            'roma': [41.9028, 12.4964]
+        }
+        
+        return italian_cities.get(city.lower(), [44.4056, 8.9463])
+    
     def _smart_geographic_fallback(self, location: str, city_lower: str) -> Tuple[float, float]:
         """Sistema intelligente di fallback geografico per qualsiasi città europea"""
         
@@ -986,8 +1023,12 @@ class DynamicRouter:
         base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
     
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
-        """Itinerario di fallback con coordinate reali della città - ora con integrazione Apify!"""
+        """Itinerario di fallback con geocoding dinamico mondiale"""
         city_lower = city.lower()
+        
+        # 🌍 GEOCODING DINAMICO: Ottieni coordinate reali per QUALSIASI città
+        city_coords = self._get_real_city_coordinates(city)
+        print(f"📍 Coordinate dinamiche per {city}: {city_coords}")
         
         # 🌍 PRIORITÀ 1: Apify per destinazioni ESTERE (rilevate da detect_city_from_locations)
         is_foreign_destination = any(keyword in city_lower for keyword in ['usa washington', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid'])
@@ -1021,7 +1062,8 @@ class DynamicRouter:
         if 'trieste' in city_lower or 'miramare' in city_lower:
             base_coords = [45.6495, 13.7768]  # Trieste preciso
         else:
-            base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
+            # 🌍 USA coordinate dinamiche invece del database locale
+            base_coords = city_coords
         
         # Waypoints ottimizzati per città principali con coordinate precise
         if 'verona' in city_lower:
