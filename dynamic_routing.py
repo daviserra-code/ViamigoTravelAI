@@ -1261,11 +1261,16 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # 🚀 INSTANT AI FEATURES - Zero delays, full intelligence
-                    from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
-                    smart_discoveries = get_cached_discoveries(city)
-                    plan_b = get_cached_plan_b(city)
-                    print("⚡ Instant AI cache features loaded")
+                    # 🧠 REAL AI WITH FAST TIMEOUT - Authentic but quick
+                    try:
+                        smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
+                        plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
+                        print("✅ Real AI features generated in time")
+                    except Exception as e:
+                        print(f"⚠️ AI timeout, using smart cache: {e}")
+                        from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
+                        smart_discoveries = get_cached_discoveries(city)
+                        plan_b = get_cached_plan_b(city)
                     
                     # Tip arricchito
                     waypoints.append({

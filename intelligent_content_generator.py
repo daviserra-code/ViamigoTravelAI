@@ -46,7 +46,7 @@ class IntelligentContentGenerator:
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=30
+                timeout=8  # Fast 8-second timeout
             )
             
             content = response.choices[0].message.content
@@ -107,7 +107,7 @@ class IntelligentContentGenerator:
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=30  # 30 second timeout
+                timeout=8  # Fast 8-second timeout
             )
             
             content = response.choices[0].message.content
@@ -167,7 +167,7 @@ class IntelligentContentGenerator:
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=30  # 30 second timeout
+                timeout=8  # Fast 8-second timeout
             )
             
             content = response.choices[0].message.content
