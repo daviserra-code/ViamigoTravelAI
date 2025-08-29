@@ -75,8 +75,19 @@ class ApifyTravelIntegration:
             return []
             
         try:
-            search_query = f"{category} in {city}"
-            print(f"🔍 Searching Google Maps: {search_query}")
+            # 🌍 TRADUZIONE: Assicura che i codici paese_città siano tradotti
+            city_translations = {
+                'usa washington d': 'Washington DC',
+                'japan tokyo': 'Tokyo',
+                'germany berlin': 'Berlin',
+                'england london': 'London', 
+                'france paris': 'Paris',
+                'spain madrid': 'Madrid'
+            }
+            
+            translated_city = city_translations.get(city.lower(), city)
+            search_query = f"{category} in {translated_city}"
+            print(f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
             
             run_input = {
                 "searchStringsArray": [search_query],
@@ -191,8 +202,22 @@ class ApifyTravelIntegration:
         """Genera waypoints autentici usando dati Apify"""
         print(f"🌍 Generazione waypoints autentici per {city} ({start} → {end})")
         
-        # Ottieni luoghi reali
-        places_data = self.get_authentic_places(city, ['tourist_attraction', 'restaurant'])
+        # 🌍 TRADUZIONE: Codici paese_città → Nomi città reali per Google Maps
+        city_translations = {
+            'usa washington d': 'Washington DC',
+            'japan tokyo': 'Tokyo',
+            'germany berlin': 'Berlin',
+            'england london': 'London', 
+            'france paris': 'Paris',
+            'spain madrid': 'Madrid'
+        }
+        
+        # Usa la traduzione se disponibile, altrimenti il nome originale
+        search_city = city_translations.get(city.lower(), city)
+        print(f"🔍 Traduzione query: '{city}' → '{search_city}' per Google Maps")
+        
+        # Ottieni luoghi reali usando il nome città tradotto
+        places_data = self.get_authentic_places(search_city, ['tourist_attraction', 'restaurant'])
         
         waypoints = []
         
