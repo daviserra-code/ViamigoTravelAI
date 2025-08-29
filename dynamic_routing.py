@@ -261,9 +261,9 @@ class DynamicRouter:
                 'format': 'json',
                 'limit': 5,
                 'addressdetails': 1,
-                'countrycodes': 'it',
-                'bounded': 1,
-                'viewbox': '6.0,35.0,19.0,47.0'  # Bounding box Italia
+                'countrycodes': 'it,us',  # Italia + USA
+                'bounded': 0,  # Allow worldwide search
+                'viewbox': '-180,-90,180,90'  # Worldwide bounding box
             }
             
             response = requests.get(
@@ -325,6 +325,11 @@ class DynamicRouter:
             print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Bologna")
             return (44.4949, 11.3426)  # Bologna centro
         else:
+            # 🗽 EMERGENCY FIX NYC fallback
+            if 'new york' in city_lower or 'manhattan' in city_lower:
+                print(f"🗽 NYC fallback per {location}")
+                return (40.7589, -73.9851)  # NYC center
+            
             # Sistema avanzato di rilevamento geografico intelligente
             return self._smart_geographic_fallback(location, city_lower)
     

@@ -349,7 +349,14 @@ class ApifyTravelIntegration:
             print(f"🇺🇸 Destinazione estera generica {city} - usando coordinate Washington D.C.")
             return [38.9072, -77.0369]
         
-        return city_coords.get(city.lower(), [44.4056, 8.9463])  # Default Genova per Italia
+        # 🗽 USA coordinates first
+        if 'new york' in city.lower() or 'manhattan' in city.lower():
+            return [40.7589, -73.9851]  # NYC center
+        elif 'washington' in city.lower():
+            return [38.9072, -77.0369]
+        
+        # Poi coordinate europee/italiane    
+        return city_coords.get(city.lower(), [45.4642, 9.1900])  # Default Milano invece Genova
 
 # Istanza globale
 apify_travel = ApifyTravelIntegration()

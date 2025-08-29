@@ -471,14 +471,26 @@
                 }
             }
 
-            // Default: Genova
-            console.log('Mappa centrata su: Genova (default)');
-            window.currentCityName = 'genova';
-            return cityCoordinates.genova;
+            // 🗽 EMERGENCY NYC Fix: Aggiungi NYC al database
+            const nyc_coords = { lat: 40.7589, lng: -73.9851 };
+            
+            // Controlla se è NYC dal testo input
+            const allText = `${startLocation} ${endLocation}`.toLowerCase();
+            if (allText.includes('fifth avenue') || allText.includes('cornelia') || 
+                allText.includes('manhattan') || allText.includes('new york')) {
+                console.log('🗽 Mappa centrata su: NYC (rilevato da input)');
+                window.currentCityName = 'new york';
+                return nyc_coords;
+            }
+            
+            // Default: NYC invece di Genova per supporto mondiale
+            console.log('🗽 Mappa centrata su: NYC (default mondiale)');
+            window.currentCityName = 'new york';
+            return nyc_coords;
         }
 
         // Database delle coordinate reali dei luoghi
-        function getRealCoordinates(locationName, cityName = 'genova') {
+        function getRealCoordinates(locationName, cityName = 'new york') {
             const locations = {
                 'genova': {
                     'piazza de ferrari': { lat: 44.4071, lng: 8.9348 },
@@ -557,7 +569,7 @@
                 if (item.type !== 'tip') {
                     console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
                     // Rileva la città dall'itinerario
-                    const currentCity = window.currentCityName || 'genova';
+                    const currentCity = window.currentCityName || 'new york';
                     
                     // Usa le coordinate dal backend (formato lat/lon) se disponibili
                     let lat, lng;
