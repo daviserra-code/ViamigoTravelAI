@@ -945,6 +945,72 @@ def get_local_place_details(context):
     # Database dinamico dettagli luoghi per città italiane
     place_details = {
             # === SARDEGNA - COSTA SMERALDA ===
+            # Context pattern dal log: cala_di_volpe_olbia portorotondo, baia_sardinia_olbia portorotondo
+            'cala_di_volpe_olbia portorotondo': {
+                'title': 'Cala di Volpe',
+                'summary': 'Spiaggia iconica della Costa Smeralda con acque cristalline color smeraldo e sabbia bianchissima. Una delle spiagge più fotografate al mondo.',
+                'details': [
+                    {'label': 'Mare', 'value': 'Acque cristalline turchesi'},
+                    {'label': 'Hotel', 'value': 'Hotel Cala di Volpe (iconico dal 1963)'},
+                    {'label': 'Attività', 'value': 'Snorkeling, nuoto, relax'},
+                    {'label': 'Accesso', 'value': 'Libero, parcheggio limitato estate'},
+                    {'label': 'Servizi', 'value': 'Bar sulla spiaggia, noleggio attrezzature'}
+                ],
+                'tip': '🏖️ Arriva presto al mattino per evitare le folle estive. Porta maschera per snorkeling.',
+                'image_url': None
+            },
+            'baia_sardinia_olbia portorotondo': {
+                'title': 'Baia Sardinia',
+                'summary': 'Elegante resort costiero della Costa Smeralda con vista panoramica sul mare turchese e macchia mediterranea incontaminata.',
+                'details': [
+                    {'label': 'Spiaggia', 'value': 'Baia dorata protetta dai venti'},
+                    {'label': 'Marina', 'value': 'Porto turistico moderno'},
+                    {'label': 'Vita notturna', 'value': 'Locali raffinati terrazza mare'},
+                    {'label': 'Natura', 'value': 'Macchia mediterranea profumata'},
+                    {'label': 'Resort', 'value': 'Hotel di alta classe vista mare'}
+                ],
+                'tip': '🌅 Perfetta per chi cerca eleganza discreta. Ottimi ristoranti con vista panoramica.',
+                'image_url': None
+            },
+            'porto_cervo_olbia portorotondo': {
+                'title': 'Porto Cervo Marina',
+                'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali. Uno dei porti turistici più prestigiosi del Mediterraneo.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'},
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'},
+                    {'label': 'Eventi', 'value': 'Regata della Sardegna estiva'},
+                    {'label': 'Stagione peak', 'value': 'Luglio-Agosto (alta società)'}
+                ],
+                'tip': '💡 Visita durante il tramonto per l\'atmosfera più magica. I locali aprono dal tardo pomeriggio.',
+                'image_url': None
+            },
+            'portorotondo_olbia portorotondo': {
+                'title': 'Portorotondo',
+                'summary': 'Esclusivo borgo turistico della Costa Smeralda con architettura tipica sarda e marina elegante. Destinazione finale del tour.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Borgo esclusivo vista mare'},
+                    {'label': 'Architettura', 'value': 'Case bianche stile mediterraneo'},
+                    {'label': 'Marina', 'value': 'Porto turistico di charme'},
+                    {'label': 'Shopping', 'value': 'Boutique esclusive e artigianato'},
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet terrazza panoramica'}
+                ],
+                'tip': '⛵ Perfetto per aperitivi al tramonto con vista mare. Centro pedonale elegante.',
+                'image_url': None
+            },
+            'porto_olbia_olbia portorotondo': {
+                'title': 'Porto di Olbia',
+                'summary': 'Porto commerciale e turistico, punto di partenza per la Costa Smeralda. Gateway per traghetti e collegamenti marittimi.',
+                'details': [
+                    {'label': 'Funzione', 'value': 'Porto commerciale e turistico'},
+                    {'label': 'Collegamenti', 'value': 'Traghetti per Civitavecchia, Genova'},
+                    {'label': 'Servizi', 'value': 'Terminal passeggeri, parcheggi'},
+                    {'label': 'Distanza Costa Smeralda', 'value': '30 minuti di auto'},
+                    {'label': 'Yacht club', 'value': 'Marina per imbarcazioni da diporto'}
+                ],
+                'tip': '🚢 Punto di partenza ideale per esplorare la Sardegna settentrionale.',
+                'image_url': None
+            },
             'porto_cervo_olbia': {
                 'title': 'Porto Cervo Marina',
                 'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali. Uno dei porti turistici più prestigiosi del Mediterraneo.',
