@@ -426,7 +426,8 @@ def detect_city_from_locations(start, end):
         'firenze': ['firenze', 'florence', 'uffizi', 'ponte vecchio'],
         'genova': ['genova', 'genoa', 'acquario', 'de ferrari'],
         'napoli': ['napoli', 'naples', 'vesuvio', 'spaccanapoli'],
-        'bologna': ['bologna', 'torri', 'piazza maggiore']
+        'bologna': ['bologna', 'torri', 'piazza maggiore'],
+        'sardegna': ['sardegna', 'sardinia', 'olbia', 'cagliari', 'portorotondo', 'porto cervo', 'costa smeralda', 'orgosolo', 'nuoro', 'sassari', 'santa teresa', 'gallura', 'baja sardinia', 'cala di volpe']
     }
     
     for city, keywords in major_cities.items():
