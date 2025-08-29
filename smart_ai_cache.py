@@ -33,6 +33,24 @@ NYC_AI_CACHE = {
         "best_time": "Tramonto (golden hour) per fotografia, weekend per eventi",
         "emergency_alternatives": ["Brooklyn Bridge Park se affollato", "One World Observatory per vista dall'alto"]
     },
+    "Joe's Pizza": {
+        "description": "Leggendaria pizzeria di NYC dal 1975, famosa per le sue fette sottili e croccanti servite da decenni agli abitanti del Greenwich Village. Joe's è diventata un'istituzione con la sua ricetta tradizionale napoletana, ingredienti freschi e servizio veloce. Frequentata da locals, studenti NYU e celebrità, mantiene l'autentico spirito della pizza newyorkese.",
+        "opening_hours": "Tutti i giorni 10:00-04:00",
+        "price_range": "€",
+        "highlights": ["Pizza slice autentica NYC", "Ricetta napoletana dal 1975", "Frequentata da celebrità"],
+        "insider_tip": "Ordina una slice semplice (cheese) e una Pepperoni - sono le migliori. Evita le ore di punta (12-14, 18-20)",
+        "best_time": "Mid-pomeriggio (15-17pm) per evitare code",
+        "emergency_alternatives": ["Prince Street Pizza per competitor storico", "Artichoke Pizza per stile diverso"]
+    },
+    "Artichoke Basille's Pizza": {
+        "description": "Storico quartiere portuale di Manhattan con vista mozzafiato sui ponti di Brooklyn e Manhattan. Il Seaport combina storia marittima, shopping e dining con una passeggiata sul lungomare. Ospita navi storiche, il Seaport Museum, Pier 17 con negozi e ristoranti, e eventi stagionali. La Stone Street adiacente offre bar e ristoranti in edifici del XVIII secolo.",
+        "opening_hours": "Pier 17: 10:00-21:00, Lungomare: sempre aperto",
+        "price_range": "€€",
+        "highlights": ["Vista sui ponti iconici", "Navi storiche al molo", "Stone Street per aperitivi"],
+        "insider_tip": "Vai al tramonto per le migliori foto dei ponti e cena da Jeremy's Ale House per l'esperienza più autentica",
+        "best_time": "Tramonto (golden hour) per fotografia, weekend per eventi",
+        "emergency_alternatives": ["Brooklyn Bridge Park se affollato", "One World Observatory per vista dall'alto"]
+    },
     "Washington Square Park": {
         "description": "Iconico parco nel cuore di Greenwich Village, famoso per l'arco di Washington Square (1892) e la sua vivace vita universitaria NYU. Il parco ospita artisti di strada, scacchisti, musicisti e studenti. La fontana centrale è un punto di ritrovo popolare, circondata da alberi secolari e panchine storiche. L'area circostante include caffè bohémien, librerie indipendenti e architettura del XIX secolo.",
         "opening_hours": "Tutti i giorni 06:00-01:00",
@@ -50,6 +68,15 @@ NYC_AI_CACHE = {
         "insider_tip": "Arriva all'alba nei giorni feriali: Bethesda Terrace e Bow Bridge sono quasi vuoti e la luce è perfetta. Per quiete scegli North Woods e Harlem Meer (estremo nord)",
         "best_time": "Alba o tramonto nei giorni feriali; primavera per i ciliegi (fine aprile–inizio maggio) e autunno per il foliage",
         "emergency_alternatives": ["The High Line (parco sopraelevato in Chelsea) se il parco è chiuso", "Prospect Park (Brooklyn), simile ma più tranquillo"]
+    },
+    "Artichoke Basille's Pizza": {
+        "description": "Pizzeria iconografica di NYC famosa per la sua pizza all'Artichoke - una slice bianca unica coperta con spinaci, carciofi, panna e parmigiano. Aperta nel 2008 da due cousin siciliani, è diventata cult per il suo stile non-tradizionale e le dimensioni generose. Perfetta per late-night food dopo i club del East Village.",
+        "opening_hours": "Dom-Mer 11:00-04:00, Gio-Sab 11:00-05:00",
+        "price_range": "€€",
+        "highlights": ["Pizza Artichoke signature", "Slice gigante e consistente", "Perfetta per late-night"],
+        "insider_tip": "La pizza Artichoke è la più famosa ma prova anche la Crab slice se disponibile. È molto consistente - una slice può essere un pasto completo",
+        "best_time": "Tardo pomeriggio o after-midnight per experience autentica",
+        "emergency_alternatives": ["Joe's Pizza per stile classico", "Di Fara per pizza gourmet"]
     }
 }
 
