@@ -2,6 +2,7 @@
 Sistema di scraping economico per Viamigo
 Combina API gratuite + Scrapingdog come fallback costoso
 """
+import os
 import requests
 import json
 from typing import List, Dict, Optional
@@ -10,7 +11,7 @@ class CostEffectiveDataProvider:
     def __init__(self):
         # API gratuite prima
         self.openstreetmap_base = "https://overpass-api.de/api/interpreter"
-        self.geoapify_key = None  # 3000 free credits/day
+        self.geoapify_key = os.environ.get("GEOAPIFY_KEY")  # 3000 free credits/day
         self.opentripmap_key = None  # Free tourist attractions
         
         # Scraping economico solo se necessario  
@@ -20,18 +21,18 @@ class CostEffectiveDataProvider:
         """
         Strategia a cascata: FREE APIs → Economico scraping solo se necessario
         """
-        # 1. GRATIS: OpenStreetMap + Overpass API
-        osm_data = self._get_osm_places(city, category)
-        if len(osm_data) >= 5:  # Abbastanza dati
-            print(f"✅ Dati sufficienti da OSM gratuito: {len(osm_data)} luoghi")
-            return osm_data
-            
-        # 2. GRATIS: Geoapify (3000 crediti/giorno)
+        # 1. PRIORITÀ: Geoapify (3000 crediti/giorno) - Dati più ricchi
         if self.geoapify_key:
             geo_data = self._get_geoapify_places(city, category)
-            if len(geo_data) >= 5:
-                print(f"✅ Dati sufficienti da Geoapify: {len(geo_data)} luoghi")
+            if geo_data and len(geo_data) >= 3:  # Soglia più bassa per Geoapify
+                print(f"✅ Dati ricchi da Geoapify: {len(geo_data)} luoghi con dettagli")
                 return geo_data
+        
+        # 2. FALLBACK: OpenStreetMap + Overpass API
+        osm_data = self._get_osm_places(city, category)
+        if len(osm_data) >= 3:  # Abbastanza dati
+            print(f"✅ Dati base da OSM gratuito: {len(osm_data)} luoghi")
+            return osm_data
         
         # 3. ECONOMICO: Scrapingdog (solo se necessario)
         if self.scrapingdog_key and len(osm_data) < 3:
@@ -163,20 +164,34 @@ class CostEffectiveDataProvider:
                     coords = feature.get('geometry', {}).get('coordinates', [])
                     
                     if len(coords) >= 2:
+                        # 🌟 DATI RICCHI da Geoapify
+                        datasource = props.get('datasource', {})
+                        
                         place = {
                             'name': props.get('name', 'Unknown'),
                             'latitude': coords[1],
                             'longitude': coords[0],
                             'description': props.get('formatted', f"Luogo a {city}"),
-                            'source': 'geoapify_free',
-                            'category': category
+                            'source': 'geoapify_premium',
+                            'category': category,
+                            # 🏆 DETTAGLI EXTRA da Geoapify
+                            'address': props.get('address_line2', ''),
+                            'district': props.get('district', ''),
+                            'postcode': props.get('postcode', ''),
+                            'website': props.get('website', ''),
+                            'phone': props.get('phone', ''),
+                            'opening_hours': datasource.get('raw', {}).get('opening_hours', ''),
+                            'cuisine': datasource.get('raw', {}).get('cuisine', ''),
+                            'rating': datasource.get('raw', {}).get('rating', ''),
+                            'price_level': datasource.get('raw', {}).get('price_level', ''),
+                            'place_rank': props.get('rank', {}).get('popularity', 0)
                         }
                         places.append(place)
                 
                 return places
                 
         except Exception as e:
-            print(f"❌ Errore Geoapify: {e}")
+            print(f"❌ Errore Geoapify per {city}: {e}")
             return []
     
     def _get_scrapingdog_places(self, city: str, category: str) -> List[Dict]:
