@@ -1052,7 +1052,7 @@ class DynamicRouter:
                     'time': '15:30',
                     'title': end,
                     'description': f'Destinazione finale: {end.lower()}',
-                    'coordinates': [40.9165, 9.5401] if 'portorotondo' in end.lower() else ([41.1362, 9.5347] if 'costa smeralda' in city_lower else [40.9233, 9.5027]),
+                    'coordinates': [40.9969, 9.5401] if 'portorotondo' in end.lower() else ([41.1362, 9.5347] if 'costa smeralda' in city_lower else [40.9233, 9.5027]),
                     'context': f'{end.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
                     'transport': 'walking'
                 },
