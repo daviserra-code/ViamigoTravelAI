@@ -944,6 +944,117 @@ def get_local_place_details(context):
     """Ottiene dettagli dal database locale per città italiane principali"""
     # Database dinamico dettagli luoghi per città italiane
     place_details = {
+            # === SARDEGNA - COSTA SMERALDA ===
+            'porto_cervo_olbia': {
+                'title': 'Porto Cervo Marina',
+                'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali. Uno dei porti turistici più prestigiosi del Mediterraneo.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'},
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'},
+                    {'label': 'Eventi', 'value': 'Regata della Sardegna estiva'},
+                    {'label': 'Stagione peak', 'value': 'Luglio-Agosto (alta società)'}
+                ],
+                'tip': '💡 **Consiglio**: Visita durante il tramonto per l\'atmosfera più magica. I locali aprono dal tardo pomeriggio.',
+                'image_url': None
+            },
+            'cala_di_volpe_costa': {
+                'title': 'Cala di Volpe',
+                'summary': 'Spiaggia iconica della Costa Smeralda con acque cristalline color smeraldo e sabbia bianchissima. Una delle spiagge più fotografate al mondo.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Spiaggia paradisiaca sabbia bianca'},
+                    {'label': 'Mare', 'value': 'Acque cristalline turchesi'},
+                    {'label': 'Hotel', 'value': 'Hotel Cala di Volpe (iconico dal 1963)'},
+                    {'label': 'Attività', 'value': 'Snorkeling, nuoto, relax'},
+                    {'label': 'Accesso', 'value': 'Libero, parcheggio limitato estate'}
+                ],
+                'tip': '🏖️ **Consiglio**: Arriva presto al mattino per evitare le folle estive. Porta maschera per snorkeling.',
+                'image_url': None
+            },
+            'baia_sardinia_costa': {
+                'title': 'Baia Sardinia',
+                'summary': 'Elegante resort costiero della Costa Smeralda con vista panoramica sul mare turchese e macchia mediterranea incontaminata.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Resort elegante vista mare'},
+                    {'label': 'Spiaggia', 'value': 'Baia dorata protetta dai venti'},
+                    {'label': 'Natura', 'value': 'Macchia mediterranea profumata'},
+                    {'label': 'Marina', 'value': 'Porto turistico moderno'},
+                    {'label': 'Vita notturna', 'value': 'Locali raffinati terrazza mare'}
+                ],
+                'tip': '🌅 **Consiglio**: Perfetta per chi cerca eleganza discreta. Ottimi ristoranti con vista panoramica.',
+                'image_url': None
+            },
+            'aeroporto_olbia_costa': {
+                'title': 'Aeroporto Olbia Costa Smeralda',
+                'summary': 'Gateway principale per la Costa Smeralda e la Sardegna settentrionale. Hub turistico con collegamenti diretti per tutta Europa.',
+                'details': [
+                    {'label': 'Codice', 'value': 'OLB - Olbia Costa Smeralda'},
+                    {'label': 'Collegamenti', 'value': 'Voli diretti da tutta Europa'},
+                    {'label': 'Servizi', 'value': 'Autonoleggio, navette, taxi'},
+                    {'label': 'Distanza Costa Smeralda', 'value': '30 minuti in auto'},
+                    {'label': 'Periodo peak', 'value': 'Giugno-Settembre (più voli)'}
+                ],
+                'tip': '🚗 **Consiglio**: Prenota auto a noleggio in anticipo per l\'estate. Navette per Porto Cervo disponibili.',
+                'image_url': None
+            },
+            'porto_cervo': {
+                'title': 'Porto Cervo Marina', 
+                'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'}, 
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'}
+                ],
+                'tip': '💡 Visita durante il tramonto per l\'atmosfera più magica.',
+                'image_url': None
+            },
+            'cala_di_volpe': {
+                'title': 'Cala di Volpe',
+                'summary': 'Spiaggia iconica della Costa Smeralda con acque cristalline e sabbia bianchissima.',
+                'details': [
+                    {'label': 'Mare', 'value': 'Acque cristalline turchesi'},
+                    {'label': 'Hotel', 'value': 'Hotel Cala di Volpe (iconico dal 1963)'},
+                    {'label': 'Attività', 'value': 'Snorkeling, nuoto, relax'}
+                ],
+                'tip': '🏖️ Arriva presto al mattino per evitare le folle estive.',
+                'image_url': None
+            },
+            'baia_sardinia': {
+                'title': 'Baia Sardinia',
+                'summary': 'Elegante resort costiero con vista panoramica sul mare turchese.',
+                'details': [
+                    {'label': 'Spiaggia', 'value': 'Baia dorata protetta dai venti'},
+                    {'label': 'Marina', 'value': 'Porto turistico moderno'},
+                    {'label': 'Vita notturna', 'value': 'Locali raffinati terrazza mare'}
+                ],
+                'tip': '🌅 Perfetta per chi cerca eleganza discreta.',
+                'image_url': None
+            },
+            'aeroporto_olbia': {
+                'title': 'Aeroporto Olbia Costa Smeralda',
+                'summary': 'Gateway principale per la Costa Smeralda e la Sardegna settentrionale.',
+                'details': [
+                    {'label': 'Codice', 'value': 'OLB - Olbia Costa Smeralda'},
+                    {'label': 'Servizi', 'value': 'Autonoleggio, navette, taxi'},
+                    {'label': 'Distanza Costa Smeralda', 'value': '30 minuti in auto'}
+                ],
+                'tip': '🚗 Prenota auto a noleggio in anticipo per l\'estate.',
+                'image_url': None
+            },
+            'portorotondo': {
+                'title': 'Portorotondo',
+                'summary': 'Esclusivo borgo turistico della Costa Smeralda con architettura tipica sarda e marina elegante.',
+                'details': [
+                    {'label': 'Caratteristica', 'value': 'Borgo esclusivo vista mare'},
+                    {'label': 'Architettura', 'value': 'Case bianche stile mediterraneo'},
+                    {'label': 'Marina', 'value': 'Porto turistico di charme'},
+                    {'label': 'Shopping', 'value': 'Boutique esclusive e artigianato'},
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet terrazza panoramica'}
+                ],
+                'tip': '⛵ Perfetto per aperitivi al tramonto con vista mare. Centro pedonale elegante.',
+                'image_url': None
+            },
+            
             # === MILANO ===
             'duomo_milano': {
                 'title': 'Duomo di Milano',

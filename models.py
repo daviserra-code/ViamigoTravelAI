@@ -210,3 +210,26 @@ class AIInsight(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     expires_at = db.Column(db.DateTime, nullable=True)
+
+
+class PlaceCache(db.Model):
+    """Cache per dettagli località per migliorare performance"""
+    __tablename__ = 'place_cache'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cache_key = db.Column(db.String(200), unique=True, nullable=False, index=True)
+    place_name = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(100), default='Italia')
+    
+    # Dati del posto in JSON
+    place_data = db.Column(JSON, nullable=True)
+    
+    # Metadati cache
+    priority_level = db.Column(db.Integer, default=1)
+    access_count = db.Column(db.Integer, default=0)
+    last_accessed = db.Column(db.DateTime, default=datetime.now)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
