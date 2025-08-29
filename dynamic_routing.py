@@ -1014,7 +1014,7 @@ class DynamicRouter:
                     'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
                 }
             ]
-        elif 'olbia' in city_lower or 'costa smeralda' in city_lower or 'porto cervo' in city_lower or 'sardegna' in city_lower:
+        elif 'olbia' in city_lower or 'costa smeralda' in city_lower or 'porto cervo' in city_lower or 'sardegna' in city_lower or 'portorotondo' in city_lower or 'santa teresa' in city_lower or 'gallura' in city_lower:
             return [
                 {
                     'time': '09:00',
