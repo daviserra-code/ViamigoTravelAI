@@ -105,6 +105,17 @@ class DynamicRouter:
             'sassari': [40.7259, 8.5644],
             'nuoro': [40.3210, 9.3301],
             'olbia': [40.9233, 9.5027],
+            # Sardegna nord - Costa Smeralda e zone turistiche
+            'porto cervo': [41.1362, 9.5347],
+            'costa smeralda': [41.1362, 9.5347],
+            'cala di volpe': [41.1225, 9.5419],
+            'baia sardinia': [41.1028, 9.4358],
+            'cannigione': [41.1189, 9.4636],
+            'arzachena': [41.0833, 9.4000],
+            'la maddalena': [41.2236, 9.4044],
+            'caprera': [41.2167, 9.4500],
+            'porto rotondo': [40.9547, 9.5361],
+            'golfo aranci': [40.9789, 9.6256],
             
             # Espansione città europee principali per scalabilità
             'parigi': [48.8566, 2.3522],
@@ -150,7 +161,8 @@ class DynamicRouter:
                 # Italia
                 'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia', 
                 'firenze', 'napoli', 'bologna', 'palermo', 'pisa', 'cagliari', 
-                'perugia', 'verona', 'torino',
+                'perugia', 'verona', 'torino', 'olbia', 'costa smeralda', 'porto cervo',
+                'sardegna', 'arzachena', 'la maddalena', 'baia sardinia',
                 # Europa
                 'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna', 
                 'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo', 
@@ -1000,6 +1012,54 @@ class DynamicRouter:
                     'type': 'tip',
                     'title': f'💡 {city.title()}',
                     'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
+                }
+            ]
+        elif 'olbia' in city_lower or 'costa smeralda' in city_lower or 'porto cervo' in city_lower or 'sardegna' in city_lower:
+            return [
+                {
+                    'time': '09:00',
+                    'title': start,
+                    'description': f'Punto di partenza: {start.lower()}',
+                    'coordinates': [40.9233, 9.5027] if 'olbia' in city_lower else [41.1362, 9.5347],  # Olbia o Costa Smeralda
+                    'context': f'{start.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                    'transport': 'start'
+                },
+                {
+                    'time': '10:30',
+                    'title': 'Porto Cervo Marina',
+                    'description': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali',
+                    'coordinates': [41.1362, 9.5347],
+                    'context': f'porto_cervo_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '12:00',
+                    'title': 'Cala di Volpe',
+                    'description': 'Spiaggia iconica della Costa Smeralda con acque cristalline e sabbia bianca',
+                    'coordinates': [41.1225, 9.5419],
+                    'context': f'cala_di_volpe_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '14:00',
+                    'title': 'Baia Sardinia',
+                    'description': 'Elegante resort costiero con vista panoramica sul mare turchese',
+                    'coordinates': [41.1028, 9.4358],
+                    'context': f'baia_sardinia_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'time': '15:30',
+                    'title': end,
+                    'description': f'Destinazione finale: {end.lower()}',
+                    'coordinates': [41.1362, 9.5347] if 'costa smeralda' in city_lower else [40.9233, 9.5027],
+                    'context': f'{end.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
+                    'transport': 'walking'
+                },
+                {
+                    'type': 'tip',
+                    'title': f'💡 {city.title()}',
+                    'description': f'Itinerario esclusivo per la Sardegna settentrionale - dalle spiagge da sogno ai porti di lusso'
                 }
             ]
         elif 'trieste' in city_lower or 'miramare' in city_lower:
