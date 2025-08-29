@@ -1141,12 +1141,9 @@ class DynamicRouter:
                     # Prima attrazione con AI enhancement
                     if attractions:
                         attr = attractions[0]
-                        # 🤖 AI ENRICHMENT - Optimized with timeout
-                        try:
-                            ai_details = ai_generator.enrich_place_details(attr['name'], city, "attraction")
-                        except Exception as e:
-                            print(f"⚠️ AI timeout fallback per {attr['name']}: {e}")
-                            ai_details = {}
+                        # 🚀 INSTANT AI DETAILS - No delays
+                        from smart_ai_cache import get_cached_ai_details
+                        ai_details = get_cached_ai_details(attr['name'], "attraction")
                         
                         waypoints.append({
                             'time': '10:00',
@@ -1172,12 +1169,9 @@ class DynamicRouter:
                                 print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
                                 rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
                         
-                        # 🤖 AI ENRICHMENT - Optimized with timeout
-                        try:
-                            ai_details = ai_generator.enrich_place_details(rest['name'], city, "restaurant")
-                        except Exception as e:
-                            print(f"⚠️ AI timeout fallback per {rest['name']}: {e}")
-                            ai_details = {}
+                        # 🚀 INSTANT AI DETAILS - No delays
+                        from smart_ai_cache import get_cached_ai_details
+                        ai_details = get_cached_ai_details(rest['name'], "restaurant")
                         
                         waypoints.append({
                             'time': '12:30',
@@ -1197,11 +1191,9 @@ class DynamicRouter:
                     # Seconda attrazione con AI enrichment
                     if len(attractions) > 1:
                         attr2 = attractions[1]
-                        try:
-                            ai_details2 = ai_generator.enrich_place_details(attr2['name'], city, "attraction")
-                        except Exception as e:
-                            print(f"⚠️ AI timeout fallback per {attr2['name']}: {e}")
-                            ai_details2 = {}
+                        # 🚀 INSTANT AI DETAILS - No delays
+                        from smart_ai_cache import get_cached_ai_details
+                        ai_details2 = get_cached_ai_details(attr2['name'], "attraction")
                             
                         waypoints.append({
                             'time': '14:30',
@@ -1220,11 +1212,9 @@ class DynamicRouter:
                     # Terza attrazione se disponibile
                     if len(attractions) > 2:
                         attr3 = attractions[2]
-                        try:
-                            ai_details3 = ai_generator.enrich_place_details(attr3['name'], city, "attraction")
-                        except Exception as e:
-                            print(f"⚠️ AI timeout fallback per {attr3['name']}: {e}")
-                            ai_details3 = {}
+                        # 🚀 INSTANT AI DETAILS - No delays
+                        from smart_ai_cache import get_cached_ai_details
+                        ai_details3 = get_cached_ai_details(attr3['name'], "attraction")
                             
                         waypoints.append({
                             'time': '15:30',
@@ -1243,11 +1233,9 @@ class DynamicRouter:
                     # Secondo ristorante se disponibile
                     if len(restaurants) > 1:
                         rest2 = restaurants[1]
-                        try:
-                            ai_details_rest2 = ai_generator.enrich_place_details(rest2['name'], city, "restaurant")
-                        except Exception as e:
-                            print(f"⚠️ AI timeout fallback per {rest2['name']}: {e}")
-                            ai_details_rest2 = {}
+                        # 🚀 INSTANT AI DETAILS - No delays
+                        from smart_ai_cache import get_cached_ai_details
+                        ai_details_rest2 = get_cached_ai_details(rest2['name'], "restaurant")
                             
                         waypoints.append({
                             'time': '17:00',
@@ -1273,14 +1261,10 @@ class DynamicRouter:
                         'transport': 'walking'
                     })
                     
-                    # 🧠 AI-POWERED FEATURES - With timeout protection
-                    try:
-                        smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
-                        plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
-                    except Exception as e:
-                        print(f"⚠️ AI features fallback: {e}")
-                        smart_discoveries = self._get_fast_discoveries(city)
-                        plan_b = self._get_fast_plan_b(city)
+                    # 🚀 INSTANT AI FEATURES - Pre-computed intelligence
+                    from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
+                    smart_discoveries = get_cached_discoveries(city)
+                    plan_b = get_cached_plan_b(city)
                     
                     # Tip arricchito
                     waypoints.append({
