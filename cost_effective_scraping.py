@@ -88,13 +88,36 @@ class CostEffectiveDataProvider:
                 places = []
                 
                 for element in data.get('elements', [])[:10]:  # Max 10
+                    lat = element.get('lat') or element.get('center', {}).get('lat')
+                    lon = element.get('lon') or element.get('center', {}).get('lon')
+                    
+                    # 🚨 FILTRO GEOGRAFICO: Solo coordinate nell'area target
+                    if "new york" in city.lower():
+                        # Solo NYC area: lat 40.6-40.8, lon -74.1 a -73.9
+                        if not (40.6 <= lat <= 40.8 and -74.1 <= lon <= -73.9):
+                            continue
+                    
+                    tags = element.get('tags', {})
+                    name = tags.get('name', 'Unknown')
+                    
+                    # Descrizione più ricca
+                    description = f"Luogo di interesse a {city}"
+                    if tags.get('cuisine'):
+                        description = f"Cucina {tags['cuisine']} a {city}"
+                    elif tags.get('tourism'):
+                        description = f"Attrazione turistica: {tags['tourism']}"
+                    elif tags.get('amenity'):
+                        description = f"{tags['amenity'].title()} a {city}"
+                    
                     place = {
-                        'name': element.get('tags', {}).get('name', 'Unknown'),
-                        'latitude': element.get('lat') or element.get('center', {}).get('lat'),
-                        'longitude': element.get('lon') or element.get('center', {}).get('lon'),
-                        'description': f"Luogo di interesse a {city}",
+                        'name': name,
+                        'latitude': lat,
+                        'longitude': lon,
+                        'description': description,
                         'source': 'openstreetmap_free',
-                        'category': category
+                        'category': category,
+                        'address': tags.get('addr:street', ''),
+                        'rating': tags.get('stars', 'N/A')
                     }
                     
                     if place['latitude'] and place['longitude']:

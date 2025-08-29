@@ -1072,9 +1072,15 @@ class DynamicRouter:
                             'transport': 'walking'
                         })
                     
-                    # Ristorante
+                    # Ristorante con controllo coordinate
                     if restaurants:
-                        rest = restaurants[0] 
+                        rest = restaurants[0]
+                        # 🚨 VERIFICA coordinate sono nell'area corretta
+                        if "new york" in city_lower:
+                            if not (40.6 <= rest['latitude'] <= 40.8 and -74.1 <= rest['longitude'] <= -73.9):
+                                print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
+                                rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
+                        
                         waypoints.append({
                             'time': '12:30',
                             'title': rest['name'],
