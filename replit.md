@@ -91,6 +91,8 @@ Preferred communication style: Simple, everyday language.
 - **Resource Initialization**: Proper startup sequence ensuring all services are ready
 
 ### Recent Changes  
+- **August 29, 2025**: **AI COMPANION OPTIMIZATION ATTEMPTS CONCLUDED** - Multiple optimization approaches tested including smart cache, instant routes, lightning routes, pure instant routes, and AI companion routes. User feedback indicates satisfaction with current functionality despite performance constraints. System remains genuinely AI-powered with Piano B Dinamico, Scoperte Intelligenti, and Diario di Viaggio AI features.
+- **August 29, 2025**: **GENOVA CITY DETECTION IMPLEMENTED** - Added proper detection for Genova with authentic Ligurian attractions (Palazzo Rosso, Spianata Castelletto, Via del Campo) and local restaurants serving pesto genovese and focaccia.
 - **August 28, 2025**: **SISTEMA SCALABILE UNIVERSALE** - Implementato sistema sostenibile per qualsiasi città italiana/europea: (1) Database esteso con 100+ città italiane/europee, (2) Cache dinamico per città scoperte via API, (3) Fallback geografico intelligente per regioni/nazioni, (4) Coverage automatica per città medie/piccole
 - **August 28, 2025**: **VERONA COMPATIBILITY CRISIS RISOLTO** - Problema Verona completamente risolto: coordinate corrette (45.4xxx, 10.9xxx), mappa centrata su Verona, sistema ottimizzato completo
 - **August 28, 2025**: **DASHBOARD NAVIGATION ADDED** - Aggiunto pulsante dashboard nell'header dell'app mobile per accesso diretto alla dashboard completa
