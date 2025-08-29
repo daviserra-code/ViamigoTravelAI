@@ -159,9 +159,15 @@ class DynamicRouter:
                         city = city_candidate
                         break
             
-            # 2. Usa subito il fallback ottimizzato per città conosciute (ANTI-ALLUCINAZIONE)
+            # 2. 🛑 EMERGENCY FIX: FORZA New York per percorsi interni NY
+            combined = f"{start} {end}".lower()
+            if ("fifth avenue" in combined or "cornelia street" in combined or 
+                "manhattan" in combined or "brooklyn" in combined) and "washington" not in combined:
+                city = "new york"
+                print(f"🗽 FORZATO New York per percorso interno: {start} → {end}")
+            
             city_lower = city.lower() if city else ""
-            # Città con sistema ottimizzato (Italia + Europa + ESTERE VIA APIFY)
+            # Città con sistema ottimizzato (Italia + Europa + USA)
             optimized_cities = [
                 # Italia
                 'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia', 
@@ -172,9 +178,8 @@ class DynamicRouter:
                 'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna', 
                 'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo', 
                 'ginevra', 'monaco', 'cracovia', 'varsavia',
-                # 🌍 DESTINAZIONI ESTERE (identificate da detect_city_from_locations)
-                'usa washington d', 'japan tokyo', 'germany berlin', 'england london', 
-                'france paris', 'spain madrid'
+                # 🗽 USA
+                'new york', 'washington dc'
             ]
             
             if any(city in city_lower for city in optimized_cities):
