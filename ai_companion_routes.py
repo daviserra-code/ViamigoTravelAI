@@ -361,29 +361,47 @@ def plan_ai_powered():
         
         print(f"🧠 AI-powered planning: {start} → {end}")
         
-        # Detect city from input
+        # Detect city from input with proper geographical mapping
         def detect_city_from_input(location_text):
             city_mappings = {
-                'genova': 'genova',
-                'milano': 'milano', 
-                'roma': 'roma',
-                'firenze': 'firenze',
-                'venezia': 'venezia',
-                'new york': 'new_york',
-                'manhattan': 'new_york',
-                'brooklyn': 'new_york'
+                # Liguria
+                'genova': ('genova', 'Genova'),
+                'portofino': ('genova', 'Portofino'),
+                'cinque terre': ('genova', 'Cinque Terre'),
+                # Sardegna
+                'olbia': ('olbia', 'Olbia'),
+                'porto': ('olbia', 'Olbia'),
+                'portorotondo': ('olbia', 'Porto Rotondo'),
+                'costa smeralda': ('olbia', 'Costa Smeralda'),
+                'porto cervo': ('olbia', 'Porto Cervo'),
+                # Lombardia
+                'milano': ('milano', 'Milano'),
+                # Lazio
+                'roma': ('roma', 'Roma'),
+                # Toscana
+                'firenze': ('firenze', 'Firenze'),
+                # Veneto
+                'venezia': ('venezia', 'Venezia'),
+                # Internazionali
+                'new york': ('new_york', 'New York'),
+                'manhattan': ('new_york', 'New York'),
+                'brooklyn': ('new_york', 'New York')
             }
             
             location_lower = location_text.lower()
-            for city_name, city_key in city_mappings.items():
+            for city_name, (city_key, city_display) in city_mappings.items():
                 if city_name in location_lower:
-                    return city_key, city_name
+                    return city_key, city_display
             
-            return 'genova', 'genova'  # Default to Genova
+            # If no match found, try to extract a reasonable city name
+            if 'sardegna' in location_lower or 'sardinia' in location_lower:
+                return 'olbia', 'Sardegna'
+            
+            return 'genova', 'Genova'  # Default fallback
         
-        # 🌍 INTEGRATE COST-EFFECTIVE SCRAPING SYSTEM
+        # 🗄️ DATA SOURCE HIERARCHY: PostgreSQL → Cost-effective scraping → Static fallback
         from cost_effective_scraping import CostEffectiveDataProvider
-        scraping_provider = CostEffectiveDataProvider()
+        from models import PlaceCache
         
         # Get city information
         end_city_key, end_city_name = detect_city_from_input(end)
@@ -391,12 +409,53 @@ def plan_ai_powered():
         # Check if destination is specifically Nervi
         is_nervi_destination = 'nervi' in end.lower() or 'parchi' in end.lower()
         
-        # Get real data from cost-effective scraping system
-        print(f"🔍 Using cost-effective scraping for {end_city_name}")
-        real_attractions = scraping_provider.get_places_data(end_city_name, "tourist_attraction")
-        real_restaurants = scraping_provider.get_places_data(end_city_name, "restaurant")
+        print(f"🏛️ Checking PostgreSQL database for {end_city_name}")
         
-        # City coordinates and attractions
+        # 1. FIRST: Check PostgreSQL database for pre-populated data
+        postgres_attractions = []
+        postgres_restaurants = []
+        
+        try:
+            # Query attractions from PostgreSQL
+            attraction_cache = PlaceCache.query.filter(
+                PlaceCache.city.ilike(f'%{end_city_name}%')
+            ).filter(
+                PlaceCache.place_data.contains('tourist_attraction')
+            ).limit(4).all()
+            
+            for cache_entry in attraction_cache:
+                place_data = cache_entry.get_place_data()
+                if place_data:
+                    postgres_attractions.append({
+                        'name': place_data.get('name', cache_entry.place_name),
+                        'latitude': place_data.get('latitude', 44.4063),
+                        'longitude': place_data.get('longitude', 8.9314),
+                        'description': place_data.get('description', f'Historic attraction in {end_city_name}'),
+                        'source': 'PostgreSQL Database'
+                    })
+                    
+            print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
+            
+        except Exception as e:
+            print(f"⚠️ PostgreSQL query error: {e}")
+        
+        # 2. SECOND: If insufficient data, use cost-effective scraping
+        real_attractions = postgres_attractions
+        real_restaurants = postgres_restaurants
+        
+        if len(real_attractions) < 2:
+            print(f"🔍 PostgreSQL insufficient, using cost-effective scraping for {end_city_name}")
+            scraping_provider = CostEffectiveDataProvider()
+            scraped_attractions = scraping_provider.get_places_data(end_city_name, "tourist_attraction")
+            scraped_restaurants = scraping_provider.get_places_data(end_city_name, "restaurant")
+            
+            # Combine PostgreSQL + scraped data
+            real_attractions.extend(scraped_attractions)
+            real_restaurants.extend(scraped_restaurants)
+        else:
+            print(f"✅ Using PostgreSQL data for {end_city_name}")
+        
+        # City coordinates and attractions - Updated with proper geographical data
         city_data = {
             'genova': {
                 'coords': [44.4063, 8.9314],
@@ -406,6 +465,16 @@ def plan_ai_powered():
                     {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
                     {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.0},
                     {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5}
+                ]
+            },
+            'olbia': {
+                'coords': [40.9237, 9.4966],  # Olbia, Sardegna coordinates
+                'attractions': [
+                    {'name': 'Porto di Olbia', 'coords': [40.9237, 9.4966], 'duration': 1.0},
+                    {'name': 'Centro Storico Olbia', 'coords': [40.9226, 9.4958], 'duration': 1.5},
+                    {'name': 'Porto Rotondo', 'coords': [40.9503, 9.5422], 'duration': 2.0},
+                    {'name': 'Spiaggia Pittulongu', 'coords': [40.9588, 9.5315], 'duration': 1.5},
+                    {'name': 'Costa Smeralda', 'coords': [41.0275, 9.5364], 'duration': 3.0}
                 ]
             },
             'nervi': {
@@ -459,8 +528,10 @@ def plan_ai_powered():
         itinerary = []
         current_time = 9.0  # 9:00 AM
         
-        # Starting point
-        start_coords = [44.4063, 8.9314]  # Piazza De Ferrari coordinates
+        # Starting point - use proper coordinates based on detected city
+        start_city_key, start_city_name = detect_city_from_input(start)
+        start_coords = city_data.get(start_city_key, city_data['genova'])['coords']
+        
         if start.lower() != end.lower():
             # Add starting location
             itinerary.append({
