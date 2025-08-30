@@ -576,132 +576,193 @@ def plan_ai_powered():
             # Complete Genova experience with multiple attractions
             selected_attractions = dynamic_attractions[:4]  # Include 4 attractions for rich experience
         
+        # GEOGRAPHIC SEQUENCING: Sort attractions by proximity to create logical route
+        def calculate_distance(coord1, coord2):
+            """Calculate simple Euclidean distance between two coordinates"""
+            return ((coord1[0] - coord2[0])**2 + (coord1[1] - coord2[1])**2)**0.5
+        
+        def sort_attractions_by_proximity(attractions, start_coords):
+            """Sort attractions to create optimal geographical sequence"""
+            if not attractions:
+                return []
+            
+            sorted_attractions = []
+            remaining = attractions.copy()
+            current_location = start_coords
+            
+            while remaining:
+                # Find closest attraction to current location
+                closest_idx = min(range(len(remaining)), 
+                                key=lambda i: calculate_distance(current_location, remaining[i]['coords']))
+                
+                closest_attraction = remaining.pop(closest_idx)
+                sorted_attractions.append(closest_attraction)
+                current_location = closest_attraction['coords']
+            
+            return sorted_attractions
+        
+        # Apply geographical sorting
+        selected_attractions = sort_attractions_by_proximity(selected_attractions, start_coords)
+        
+        print(f"🗺️ Optimized route with {len(selected_attractions)} stops in geographical order")
+        
         for i, attraction in enumerate(selected_attractions):
-            # Add detailed walking time between locations with route descriptions
+            # Calculate real travel time and method based on distance
             if i > 0:
-                travel_duration = 0.25  # 15 minutes
+                prev_coords = selected_attractions[i-1]['coords']
+                current_coords = attraction['coords']
+                distance_km = calculate_distance(prev_coords, current_coords) * 111  # Rough km conversion
+                
+                # Determine transport method and time based on distance
+                if distance_km > 2:  # >2km = public transport
+                    if attraction['name'] == 'Spianata Castelletto':
+                        transport_method = "funicolare"
+                        travel_duration = 0.25  # 15 min
+                        transport_desc = f"Funicolare da Piazza Portello (€0.90) - {int(travel_duration*60)} minuti"
+                    else:
+                        transport_method = "metro/bus"
+                        travel_duration = 0.33  # 20 min
+                        transport_desc = f"Metro/bus urbano - {int(travel_duration*60)} minuti"
+                elif distance_km > 0.8:  # 0.8-2km = longer walk
+                    transport_method = "walking"
+                    travel_duration = distance_km * 0.2  # 12 min/km
+                    transport_desc = f"Passeggiata di {int(travel_duration*60)} minuti ({distance_km:.1f}km)"
+                else:  # <0.8km = short walk
+                    transport_method = "walking"
+                    travel_duration = 0.17  # 10 min
+                    transport_desc = f"Breve passeggiata di {int(travel_duration*60)} minuti"
+                
                 start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
                 current_time += travel_duration
                 end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
                 
-                # Generate specific route descriptions
-                route_descriptions = {
-                    'Via del Campo': 'Cammina attraverso i caratteristici caruggi del centro storico medievale',
-                    'Cattedrale di San Lorenzo': 'Prosegui verso il Duomo attraverso Via San Lorenzo, strada storica',
-                    'Porto Antico': 'Scendi verso il porto attraverso Via del Borgo Incrociati',
-                    'Acquario di Genova': 'Breve passeggiata lungo il Porto Antico verso l\'Acquario',
-                    'Palazzo Ducale': 'Risali verso Piazza Matteotti attraverso Via XXV Aprile',
-                    'Spianata Castelletto': 'Prendi la funicolare da Piazza Portello (€0.90) o sali a piedi per Via Spianata Castelletto'
-                }
-                
-                description = route_descriptions.get(attraction['name'], f"Passeggiata di 15 minuti verso {attraction['name']}")
-                
                 itinerary.append({
                     "time": f"{start_time} - {end_time}",
                     "title": f"Verso {attraction['name']}",
-                    "description": description,
+                    "description": transport_desc,
                     "type": "transport",
                     "context": f"walk_to_{attraction['name'].lower().replace(' ', '_')}",
                     "coordinates": attraction['coords'],
-                    "transport": "walking"
+                    "transport": transport_method,
+                    "distance_km": round(distance_km, 1),
+                    "duration_minutes": int(travel_duration * 60)
                 })
             
-            # Add main activity
+            # Add main activity with FULL DETAILS
             activity_duration = attraction.get('duration', 1.5)
             start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             current_time += activity_duration
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             
-            # Use scraped description or fallback
-            if 'description' in attraction:
-                description = f"{attraction['description']} (fonte: {attraction.get('source', 'web scraping')})"
-            elif is_nervi_destination:
-                nervi_descriptions = {
-                    'Stazione Genova Nervi': 'Arrivo alla stazione ferroviaria di Nervi, elegante borgo della Riviera di Levante',
-                    'Passeggiata Anita Garibaldi': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
-                    'Parchi di Nervi': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
-                    'Villa Gropallo - Museo Frugone': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca',
-                    'Torre Gropallo': 'Antica torre di avvistamento con vista spettacolare sulla costa ligure'
-                }
-                description = nervi_descriptions.get(attraction['name'], f"Visita {attraction['name']}")
-            else:
-                description = f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}"
-            
-            # Rich details for each attraction
+            # Rich details database for each attraction
             attraction_details = {
                 'Acquario di Genova': {
-                    'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-18:00 (inverno)',
-                    'price_range': '€29 adulti, €19 bambini 4-12 anni',
-                    'highlights': ['12.000 esemplari marini', 'Secondo acquario più grande d\'Europa', 'Delfini e squali', 'Biosfera di Renzo Piano'],
-                    'insider_tip': 'Arriva presto al mattino per evitare le code. Il biglietto include anche la Biosfera.',
-                    'best_time': 'Mattina presto (9:00-11:00) o tardo pomeriggio (16:00-18:00)'
+                    'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini in 70 vasche. Esperienza immersiva nel mondo marino.',
+                    'opening_hours': 'Lun-Ven 9:00-20:00, Sab-Dom 8:30-20:00 (estate) | Lun-Ven 10:00-18:00, Sab-Dom 9:30-18:00 (inverno)',
+                    'price_range': '€29 adulti, €19 bambini 4-12 anni, under 4 gratis',
+                    'highlights': ['70 vasche tematiche', 'Delfini e squali', 'Foresta pluviale', 'Biosfera Renzo Piano', 'Tunnel sottomarino'],
+                    'insider_tip': 'Arriva alle 9:00 per evitare code. Il biglietto include la Biosfera. Salta la coda comprando online.',
+                    'best_time': 'Mattina presto (9:00-11:00) o dopo le 16:00',
+                    'visit_duration': 2.5,
+                    'accessibility': 'Completamente accessibile, sedie a rotelle disponibili',
+                    'photo_spots': ['Tunnel degli squali', 'Vasca dei delfini', 'Biosfera esterna']
                 },
                 'Palazzo Ducale': {
+                    'description': 'Palazzo storico del XIV secolo, oggi principale centro culturale di Genova con mostre d\'arte internazionali.',
                     'opening_hours': 'Mar-Dom 9:00-19:00 (chiuso lunedì)',
-                    'price_range': '€12 adulti, €8 ridotto',
-                    'highlights': ['Centro culturale di Genova', 'Mostre temporanee', 'Architettura medievale', 'Cortile interno storico'],
-                    'insider_tip': 'Controlla le mostre temporanee sul sito ufficiale. Spesso eventi serali.',
-                    'best_time': 'Pomeriggio per le mostre, sera per eventi culturali'
+                    'price_range': '€12 adulti, €8 ridotto, €20 mostra + palazzo',
+                    'highlights': ['Cortile rinascimentale', 'Mostre temporanee', 'Salone del Maggior Consiglio', 'Cappella Dogale'],
+                    'insider_tip': 'Controlla le mostre sul sito. Giovedì sera apertura fino alle 22:00 con €5 di sconto.',
+                    'best_time': 'Pomeriggio per le mostre, sera per eventi',
+                    'visit_duration': 1.5,
+                    'accessibility': 'Ascensore per tutti i piani',
+                    'photo_spots': ['Cortile interno', 'Scalinata marmorea', 'Loggia panoramica']
                 },
                 'Cattedrale di San Lorenzo': {
-                    'opening_hours': 'Lun-Sab 8:00-12:00, 15:00-19:00, Dom 15:00-19:00',
-                    'price_range': 'Ingresso gratuito, Tesoro €6',
-                    'highlights': ['Bomba inesplosa del 1941', 'Tesoro con Santo Graal', 'Architettura romanico-gotica', 'Strisce bianche e nere'],
-                    'insider_tip': 'Visita il Museo del Tesoro per vedere la bomba che non esplose e il leggendario Santo Graal.',
-                    'best_time': 'Mattina per la luce migliore, pomeriggio per il museo'
+                    'description': 'Duomo di Genova in stile romanico-gotico con facciata a strisce bianche e nere. Contiene la bomba inesplosa del 1941.',
+                    'opening_hours': 'Lun-Sab 8:00-12:00, 15:00-19:00 | Dom 15:00-19:00 | Museo del Tesoro: 9:00-18:00',
+                    'price_range': 'Cattedrale gratuita | Museo del Tesoro €6, ridotto €4',
+                    'highlights': ['Bomba britannica inesplosa (1941)', 'Santo Graal leggendario', 'Affreschi medievali', 'Cripta romanica'],
+                    'insider_tip': 'Non perdere il Museo del Tesoro con il Santo Graal e la bomba. Ingresso separato a destra.',
+                    'best_time': 'Mattina per luce naturale, pomeriggio per museo',
+                    'visit_duration': 1.0,
+                    'accessibility': 'Cattedrale accessibile, museo con gradini',
+                    'photo_spots': ['Facciata a strisce', 'Interno navata centrale', 'Bomba inesplosa']
                 },
                 'Spianata Castelletto': {
-                    'opening_hours': 'Sempre accessibile, funicolare 6:00-24:00',
-                    'price_range': 'Funicolare €0.90',
-                    'highlights': ['Vista panoramica 360°', 'Funicolare storica', 'Tramonto spettacolare', 'Villetta Di Negro'],
-                    'insider_tip': 'Prendi la funicolare da Piazza Portello. Il tramonto è il momento più magico.',
-                    'best_time': 'Tramonto (18:30-19:30) per le foto più belle'
+                    'description': 'Terrazza panoramica a 80m sul livello del mare con vista a 360° su Genova, porto e Appennino ligure.',
+                    'opening_hours': 'Sempre accessibile | Funicolare: 6:00-24:00 (ogni 15 min)',
+                    'price_range': 'Funicolare €0.90 sola andata, €1.60 andata/ritorno',
+                    'highlights': ['Vista panoramica 360°', 'Funicolare storica (1891)', 'Villetta Di Negro', 'Belvedere tramonto'],
+                    'insider_tip': 'Tramonto migliore alle 18:30-19:30. Funicolare da Piazza Portello. Porta giacca per vento.',
+                    'best_time': 'Tramonto per foto spettacolari, giorno per visibilità',
+                    'visit_duration': 1.0,
+                    'accessibility': 'Funicolare accessibile, terrazza con gradini',
+                    'photo_spots': ['Belvedere centrale', 'Vista porto', 'Panorama Appennini']
                 },
                 'Porto Antico': {
-                    'opening_hours': 'Sempre accessibile, attrazioni 10:00-19:00',
-                    'price_range': 'Passeggiata gratuita, attrazioni varie',
-                    'highlights': ['Progetto Renzo Piano', 'Biosfera', 'Bigo ascensore panoramico', 'Galata Museo del Mare'],
-                    'insider_tip': 'Area completamente rinnovata per Expo 1992. Ideale per passeggiata serale.',
-                    'best_time': 'Sera per l\'atmosfera, giorno per i musei'
+                    'description': 'Area portuale storica rinnovata da Renzo Piano per Expo \'92. Hub culturale con musei, ristoranti e attrazioni.',
+                    'opening_hours': 'Sempre accessibile | Attrazioni: 10:00-19:00 variabili',
+                    'price_range': 'Passeggiata gratuita | Bigo €4 | Galata €12-15',
+                    'highlights': ['Bigo ascensore panoramico', 'Galata Museo del Mare', 'Nina replica nave Colombo', 'Biosfera'],
+                    'insider_tip': 'Area perfetta per aperitivo serale. Molti eventi gratuiti weekend. Parcheggio a pagamento.',
+                    'best_time': 'Sera per atmosfera, giorno per musei',
+                    'visit_duration': 1.5,
+                    'accessibility': 'Completamente accessibile',
+                    'photo_spots': ['Bigo al tramonto', 'Porto con barche', 'Biosfera riflessa']
                 },
                 'Via del Campo': {
-                    'opening_hours': 'Sempre accessibile, negozi 10:00-19:00',
-                    'price_range': 'Gratuito, consumazioni varie',
-                    'highlights': ['Canzone di De André', 'Caruggi medievali', 'Farinata tipica', 'Mercato del pesce'],
-                    'insider_tip': 'Prova la farinata calda da Il Soccorso. La via è immortalata nella canzone di Fabrizio De André.',
-                    'best_time': 'Mattina per il mercato, sera per l\'atmosfera autentica'
-                },
-                'Palazzo Rosso': {
-                    'opening_hours': 'Mar-Ven 9:00-19:00, Sab-Dom 10:00-18:30',
-                    'price_range': '€9 adulti, ridotto €7',
-                    'highlights': ['Palazzo barocco XVII secolo', 'Collezione Van Dyck', 'Affreschi originali', 'Via del Campo'],
-                    'insider_tip': 'Parte dei Musei di Strada Nuova UNESCO. Biglietto combinato conveniente.',
-                    'best_time': 'Pomeriggio per la luce naturale negli affreschi'
+                    'description': 'Via storica dei caruggi medievali, immortalata da Fabrizio De André. Cuore autentico della Genova popolare.',
+                    'opening_hours': 'Sempre accessibile | Negozi: 10:00-19:00 | Ristoranti: 12:00-24:00',
+                    'price_range': 'Passeggiata gratuita | Farinata €3-5 | Pranzo €15-25',
+                    'highlights': ['Caruggi medievali', 'Farinata genovese', 'Canzone De André', 'Mercato tradizionale'],
+                    'insider_tip': 'Prova farinata da "Il Soccorso" (€4). Mattina per mercato pesce, sera per vita notturna.',
+                    'best_time': 'Mattina per mercato, sera per atmosfera',
+                    'visit_duration': 0.75,
+                    'accessibility': 'Lastricato irregolare, attenzione gradini',
+                    'photo_spots': ['Palazzo medievali', 'Vicoli stretti', 'Bancarelle mercato']
                 }
             }
             
-            # Get details for this attraction
+            # Get comprehensive details for this attraction
             details = attraction_details.get(attraction['name'], {
+                'description': f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}",
                 'opening_hours': 'Consultare orari ufficiali',
-                'price_range': 'Varia',
-                'highlights': ['Attrazione principale di Genova'],
-                'insider_tip': 'Prenota in anticipo per evitare code.',
-                'best_time': 'Durante il giorno'
+                'price_range': 'Da verificare',
+                'highlights': [f'Attrazione storica di {end_city_name.title()}'],
+                'insider_tip': 'Informazioni dettagliate disponibili in loco.',
+                'best_time': 'Durante orari di apertura',
+                'visit_duration': 1.0,
+                'accessibility': 'Da verificare accessibilità',
+                'photo_spots': ['Punti panoramici disponibili']
             })
+            
+            # Use rich description from details
+            description = details['description']
             
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
                 "description": description,
                 "type": "activity",
-                "context": "nervi_attraction" if is_nervi_destination else "museum",
+                "context": "nervi_attraction" if is_nervi_destination else "attraction",
                 "coordinates": attraction['coords'],
                 "transport": "visit",
+                
+                # COMPREHENSIVE DETAILS for each stop
                 "opening_hours": details['opening_hours'],
                 "price_range": details['price_range'],
                 "highlights": details['highlights'],
                 "insider_tip": details['insider_tip'],
-                "best_time": details['best_time']
+                "best_time": details['best_time'],
+                "visit_duration_hours": details['visit_duration'],
+                "accessibility": details['accessibility'],
+                "photo_spots": details['photo_spots'],
+                
+                # PRACTICAL INFO
+                "recommended_duration": f"{details['visit_duration']} ore",
+                "crowd_level": "Medio-alto" if attraction['name'] == 'Acquario di Genova' else "Medio",
+                "weather_dependency": "Esterno" if "panoramic" in description.lower() or "vista" in description.lower() else "Interno/Esterno"
             })
             
             # Add contextual tips and photo opportunities

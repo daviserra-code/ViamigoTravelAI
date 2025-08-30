@@ -118,7 +118,7 @@ class ViamigoAPI {
         }
 
         const messageDiv = document.createElement('div');
-        messageDiv.className = isUser 
+        messageDiv.className = isUser
             ? 'bg-violet-500 text-white p-3 rounded-lg max-w-xs ml-auto'
             : 'bg-gray-800 p-3 rounded-lg max-w-xs';
 
@@ -384,7 +384,9 @@ function createSmartDiscoveryCard(title, description, discoveries) {
 function renderCustomItinerary(items, container) {
     container.innerHTML = '';
 
-    items.forEach(item => {
+    let timelineHTML = ''; // Initialize timelineHTML here
+
+    items.forEach((item, index) => {
         // Check if this is a tip, emergency plan, or discovery
         if (item.type === 'tip') {
             timelineHTML += createTipCard(item.title, item.description);
