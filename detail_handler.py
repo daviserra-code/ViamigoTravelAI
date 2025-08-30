@@ -29,8 +29,132 @@ def generate_dynamic_details(context, city):
     # Clean up the context to get the place name
     place_name = context.replace('_', ' ').replace(city, '').strip()
     
+    # Roma attractions
+    if city == 'roma' or city == 'rome':
+        roma_places = {
+            'colosseo': {
+                'title': 'Colosseo, Roma',
+                'summary': 'Il più grande anfiteatro del mondo romano, simbolo eterno di Roma.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '72-80 d.C. sotto Vespasiano'},
+                    {'label': 'Capacità', 'value': '50.000-80.000 spettatori'},
+                    {'label': 'Arena', 'value': 'Gladiatori e spettacoli'},
+                    {'label': 'Sotterranei', 'value': 'Labirinto ipogeo visitabile'},
+                    {'label': 'Metro', 'value': 'Colosseo (Linea B)'}
+                ],
+                'tip': 'Prenota online per evitare code. Biglietto combinato con Foro Romano',
+                'opening_hours': '8:30-19:00 (estate), 8:30-16:30 (inverno)',
+                'cost': '€16 adulti, €2 ridotto'
+            },
+            'fontana di trevi': {
+                'title': 'Fontana di Trevi, Roma',
+                'summary': 'La fontana barocca più famosa al mondo.',
+                'details': [
+                    {'label': 'Architetto', 'value': 'Nicola Salvi (1762)'},
+                    {'label': 'Tradizione', 'value': 'Lancia una moneta per tornare'},
+                    {'label': 'Raccolta', 'value': '€3000/giorno alla Caritas'},
+                    {'label': 'Film', 'value': 'La Dolce Vita di Fellini'}
+                ],
+                'tip': 'Visita presto la mattina o tardi la sera per meno folla',
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            }
+        }
+        for key, details in roma_places.items():
+            if key in place_name.lower() or key in context.lower():
+                return details
+    
+    # Venezia attractions
+    elif city == 'venezia' or city == 'venice':
+        venezia_places = {
+            'san marco': {
+                'title': 'Piazza San Marco, Venezia',
+                'summary': 'Il salotto più elegante d\'Europa con la basilica bizantina.',
+                'details': [
+                    {'label': 'Basilica', 'value': 'Mosaici dorati bizantini'},
+                    {'label': 'Campanile', 'value': '98.6m, vista panoramica'},
+                    {'label': 'Caffè Florian', 'value': 'Dal 1720, storico caffè'},
+                    {'label': 'Acqua alta', 'value': 'Passerelle in caso di marea'}
+                ],
+                'tip': 'Sali sul campanile per vista mozzafiato sulla laguna',
+                'opening_hours': 'Basilica 9:30-17:00, Piazza sempre aperta',
+                'cost': 'Basilica €3, Campanile €10'
+            },
+            'rialto': {
+                'title': 'Ponte di Rialto, Venezia',
+                'summary': 'Il ponte più antico e famoso sul Canal Grande.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1588-1591'},
+                    {'label': 'Architetto', 'value': 'Antonio da Ponte'},
+                    {'label': 'Mercato', 'value': 'Mercato del pesce vicino'},
+                    {'label': 'Negozi', 'value': 'Gioiellerie sul ponte'}
+                ],
+                'tip': 'Vista migliore dal fondamenta del Vin',
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            }
+        }
+        for key, details in venezia_places.items():
+            if key in place_name.lower() or key in context.lower():
+                return details
+    
+    # Napoli attractions
+    elif city == 'napoli' or city == 'naples':
+        napoli_places = {
+            'spaccanapoli': {
+                'title': 'Spaccanapoli, Napoli',
+                'summary': 'L\'antico decumano che taglia il centro storico.',
+                'details': [
+                    {'label': 'Lunghezza', 'value': '2 km di storia'},
+                    {'label': 'Chiese', 'value': 'Santa Chiara, Gesù Nuovo'},
+                    {'label': 'Pizza', 'value': 'Pizzerie storiche'},
+                    {'label': 'Artigianato', 'value': 'Presepi di San Gregorio Armeno'}
+                ],
+                'tip': 'Prova la pizza da Sorbillo o Di Matteo',
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            }
+        }
+        for key, details in napoli_places.items():
+            if key in place_name.lower() or key in context.lower():
+                return details
+    
+    # London attractions
+    elif city == 'london':
+        london_places = {
+            'big ben': {
+                'title': 'Big Ben, London',
+                'summary': 'Iconic clock tower at Westminster Palace.',
+                'details': [
+                    {'label': 'Height', 'value': '96 meters'},
+                    {'label': 'Built', 'value': '1859'},
+                    {'label': 'Bell', 'value': '13.76 tonnes'},
+                    {'label': 'Tube', 'value': 'Westminster station'}
+                ],
+                'tip': 'Best photos from Westminster Bridge',
+                'opening_hours': 'External viewing only',
+                'cost': 'Free to view'
+            },
+            'tower bridge': {
+                'title': 'Tower Bridge, London',
+                'summary': 'Victorian Gothic bridge with glass walkways.',
+                'details': [
+                    {'label': 'Built', 'value': '1886-1894'},
+                    {'label': 'Walkways', 'value': 'Glass floor 42m high'},
+                    {'label': 'Engine rooms', 'value': 'Victorian machinery'},
+                    {'label': 'Tube', 'value': 'Tower Hill station'}
+                ],
+                'tip': 'Visit engine rooms for history',
+                'opening_hours': '9:30-18:00',
+                'cost': '£11.40 adults'
+            }
+        }
+        for key, details in london_places.items():
+            if key in place_name.lower() or key in context.lower():
+                return details
+    
     # For Milano, create specific details
-    if city == 'milano':
+    elif city == 'milano':
         milano_places = {
             'piazza duomo': {
                 'title': 'Piazza del Duomo, Milano',

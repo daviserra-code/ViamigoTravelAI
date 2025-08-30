@@ -368,7 +368,11 @@ def get_dynamic_city_coordinates(city_name: str):
         'roma': [41.9028, 12.4964],
         'genova': [44.4056, 8.9463],
         'venezia': [45.4408, 12.3155],
-        'firenze': [43.7696, 11.2558]
+        'firenze': [43.7696, 11.2558],
+        'napoli': [40.8518, 14.2681],
+        'london': [51.5074, -0.1278],
+        'paris': [48.8566, 2.3522],
+        'new york': [40.7128, -74.0060]
     }
 
     return city_coords.get(city_name.lower(), [41.9028, 12.4964])
@@ -415,12 +419,25 @@ def plan_ai_powered():
                 # Lazio
                 'roma': ('roma', 'Roma'),
                 'rome': ('roma', 'Roma'),
+                'colosseo': ('roma', 'Roma'),
+                'trevi': ('roma', 'Roma'),
                 # Veneto
                 'venezia': ('venezia', 'Venezia'),
                 'venice': ('venezia', 'Venezia'),
+                'san marco': ('venezia', 'Venezia'),
+                'rialto': ('venezia', 'Venezia'),
                 # Toscana
                 'firenze': ('firenze', 'Firenze'),
-                'florence': ('firenze', 'Firenze')
+                'florence': ('firenze', 'Firenze'),
+                # Campania
+                'napoli': ('napoli', 'Napoli'),
+                'naples': ('napoli', 'Napoli'),
+                'spaccanapoli': ('napoli', 'Napoli'),
+                # UK
+                'london': ('london', 'London'),
+                'londra': ('london', 'London'),
+                'big ben': ('london', 'London'),
+                'tower bridge': ('london', 'London')
             }
 
             location_lower = location_text.lower()
@@ -451,43 +468,49 @@ def plan_ai_powered():
         postgres_attractions = []
         postgres_restaurants = []
 
-        # Add hardcoded Milano attractions if needed
-        if city_key == 'milano':
-            milano_attractions = [
-                {
-                    'name': 'Duomo di Milano',
-                    'latitude': 45.4642, 
-                    'longitude': 9.1900,
-                    'description': 'Magnifica cattedrale gotica nel cuore di Milano',
-                    'source': 'Local Knowledge'
-                },
-                {
-                    'name': 'Galleria Vittorio Emanuele II',
-                    'latitude': 45.4656,
-                    'longitude': 9.1901,
-                    'description': 'Storica galleria commerciale del 1865',
-                    'source': 'Local Knowledge'
-                },
-                {
-                    'name': 'Castello Sforzesco',
-                    'latitude': 45.4703,
-                    'longitude': 9.1794,
-                    'description': 'Fortezza storica con musei e giardini',
-                    'source': 'Local Knowledge'
-                },
-                {
-                    'name': 'Navigli',
-                    'latitude': 45.4502,
-                    'longitude': 9.1812,
-                    'description': 'Quartiere dei canali con ristoranti e vita notturna',
-                    'source': 'Local Knowledge'
-                }
+        # Add hardcoded attractions for major cities
+        city_attractions = {
+            'milano': [
+                {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900, 'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
+                {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656, 'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
+                {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794, 'description': 'Fortezza storica con musei e giardini'},
+                {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812, 'description': 'Quartiere dei canali con ristoranti e vita notturna'}
+            ],
+            'roma': [
+                {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922, 'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
+                {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833, 'description': 'Fontana barocca più famosa al mondo'},
+                {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769, 'description': 'Tempio romano meglio conservato'},
+                {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730, 'description': 'Piazza barocca con fontana del Bernini'}
+            ],
+            'venezia': [
+                {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387, 'description': 'Il salotto di Venezia con la Basilica'},
+                {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360, 'description': 'Ponte storico sul Canal Grande'},
+                {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406, 'description': 'Capolavoro gotico veneziano'},
+                {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327, 'description': 'Arteria principale di Venezia'}
+            ],
+            'napoli': [
+                {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581, 'description': 'Via storica che taglia il centro antico'},
+                {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478, 'description': 'Castello sul mare nel Borgo Marinari'},
+                {'name': 'Piazza del Plebiscito', 'latitude': 40.8359, 'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
+                {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490, 'description': 'Vicoli caratteristici napoletani'}
+            ],
+            'london': [
+                {'name': 'Big Ben', 'latitude': 51.5007, 'longitude': -0.1246, 'description': 'Iconic clock tower of Westminster'},
+                {'name': 'Tower Bridge', 'latitude': 51.5055, 'longitude': -0.0754, 'description': 'Victorian Gothic bridge over Thames'},
+                {'name': 'British Museum', 'latitude': 51.5194, 'longitude': -0.1270, 'description': 'World history and culture museum'},
+                {'name': 'Buckingham Palace', 'latitude': 51.5014, 'longitude': -0.1419, 'description': 'Royal residence with changing of guard'}
             ]
-            postgres_attractions = milano_attractions[:4]
+        }
+        
+        if city_key in city_attractions:
+            postgres_attractions = [
+                {**attr, 'source': 'Local Knowledge'} 
+                for attr in city_attractions[city_key]
+            ]
             
         try:
-            # Only query if not Milano (since we hardcoded it)
-            if city_key != 'milano':
+            # Only query if not in our hardcoded cities
+            if city_key not in city_attractions:
                 attraction_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
                 ).filter(
