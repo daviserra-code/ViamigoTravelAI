@@ -4,6 +4,24 @@ import json
 
 detail_bp = Blueprint('details', __name__)
 
+def normalize_context_key(context):
+    """Normalize context keys to match database entries"""
+    # Remove common suffixes and prefixes
+    normalized = context.lower()
+    
+    # Remove city suffixes like "_genova", ",_genova_genova"
+    normalized = normalized.replace(',_genova_genova', '')
+    normalized = normalized.replace('_genova_genova', '')
+    normalized = normalized.replace('_genova', '')
+    
+    # Replace double underscores with single
+    normalized = normalized.replace('__', '_')
+    
+    # Remove trailing underscores
+    normalized = normalized.strip('_')
+    
+    return normalized
+
 @detail_bp.route('/get_details', methods=['POST'])
 def get_details():
     """Enhanced details handler that accesses rich details from context"""
@@ -99,6 +117,34 @@ def get_details():
                 'opening_hours': '10:00-22:00',
                 'cost': '€3-5'
             },
+            'via_campo': {
+                'title': 'Via del Campo, Genova',
+                'summary': 'La strada più famosa di Genova, resa celebre dalla canzone di Fabrizio De André.',
+                'details': [
+                    {'label': 'Lunghezza', 'value': '500 metri di storia medievale'},
+                    {'label': 'Epoca', 'value': 'XII secolo (caruggi medievali)'},
+                    {'label': 'Fabrizio De André', 'value': 'Canzone "Via del Campo" (1967)'},
+                    {'label': 'Caratteristiche', 'value': 'Negozi storici, farinata, botteghe artigiane'},
+                    {'label': 'Mercato', 'value': 'Mercato del Pesce e prodotti locali'}
+                ],
+                'tip': 'Prova la farinata da "Il Soccorso" - autentica specialità genovese',
+                'opening_hours': 'Sempre accessibile (negozi: 10:00-19:00)',
+                'cost': 'Gratuito'
+            },
+            'cattedrale_san_lorenzo': {
+                'title': 'Cattedrale di San Lorenzo, Genova', 
+                'summary': 'Il Duomo di Genova, famoso per la bomba navale britannica inesplosa del 1941.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'IX-XIV secolo (romanico-gotico)'},
+                    {'label': 'Facciata', 'value': 'Marmo bianco e nero a strisce orizzontali'},
+                    {'label': 'Bomba 1941', 'value': 'Proiettile navale britannico inesploso (visibile)'},
+                    {'label': 'Tesoro', 'value': 'Santo Graal leggendario, reliquie preziose'},
+                    {'label': 'Portale', 'value': 'Leoni stilofori medievali'}
+                ],
+                'tip': 'Non perdere il Museo del Tesoro con il Santo Graal',
+                'opening_hours': 'Lun-Sab 9:00-18:00, Dom 15:00-18:00',
+                'cost': 'Ingresso gratuito, Tesoro €6'
+            },
             'acquario_genova': {
                 'title': 'Acquario di Genova',
                 'summary': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini in 70 vasche tematiche.',
@@ -179,8 +225,24 @@ def get_details():
             }
         }
         
-        # Try to find details for the context
-        detail_data = details_database.get(context)
+        # Normalize context key by removing suffixes and variations
+        normalized_context = normalize_context_key(context)
+        
+        # Try to find details for the context (try multiple variations)
+        detail_data = None
+        
+        # Try exact match first
+        if context in details_database:
+            detail_data = details_database[context]
+        # Try normalized context
+        elif normalized_context in details_database:
+            detail_data = details_database[normalized_context]
+        # Try partial matching for context variations
+        else:
+            for key in details_database.keys():
+                if key in context or context.startswith(key):
+                    detail_data = details_database[key]
+                    break
         
         if detail_data:
             print(f"✅ Found details for {context}")

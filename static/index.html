@@ -904,12 +904,38 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ context: context })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('Modal data received:', data);
                 // Gestisce la struttura ricca dei dati dal backend
                 let content = '';
+                
+                // Check if we have valid data
+                const hasValidData = data && (data.summary || data.details || data.title);
+                
+                if (!hasValidData) {
+                    console.log('No valid data received, showing fallback');
+                    showModalWithHTML('Dettagli luogo', `
+                        <p class="text-gray-300 mb-4">Questo è un luogo interessante del tuo itinerario.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between py-2 border-b border-gray-700">
+                                <span class="text-gray-400 text-sm">Tipo:</span>
+                                <span class="text-gray-200 text-sm">Attrazione turistica</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-gray-700">
+                                <span class="text-gray-400 text-sm">Consiglio:</span>
+                                <span class="text-gray-200 text-sm">Chiedi informazioni ai locals</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-xs">I dettagli specifici verranno aggiunti presto.</p>
+                    `);
+                    return;
+                }
 
-                // Aggiungi immagine se disponibile (ora tramite proxy)
+                // Aggiungi immagine se disponibile
                 if (data.imageUrl) {
                     console.log(`🖼️ URL immagine ricevuta: ${data.imageUrl}`);
                     content += `<div class="mb-4">
@@ -919,8 +945,6 @@
                                        onload="console.log('✅ Immagine caricata via proxy')" 
                                        onerror="console.log('❌ Errore caricamento tramite proxy: ${data.imageUrl}')">
                                 </div>`;
-                } else {
-                    console.log('⚠️ Nessun URL immagine ricevuto dal backend');
                 }
 
                 if (data.summary) {
@@ -935,6 +959,32 @@
                                       <span class="text-gray-200 text-sm">${detail.value}</span>
                                     </div>`;
                     });
+                    content += '</div>';
+                }
+
+                // Add tip if available
+                if (data.tip) {
+                    content += `<div class="mt-4 p-3 bg-violet-900/50 rounded-lg border-l-4 border-violet-500">
+                                  <h4 class="font-bold text-violet-300 text-sm mb-1">💡 Consiglio</h4>
+                                  <p class="text-gray-300 text-sm">${data.tip}</p>
+                                </div>`;
+                }
+
+                // Add opening hours and cost if available
+                if (data.opening_hours || data.cost) {
+                    content += '<div class="mt-4 space-y-2">';
+                    if (data.opening_hours) {
+                        content += `<div class="flex items-center space-x-2">
+                                      <span class="text-green-400">🕒</span>
+                                      <span class="text-gray-300 text-sm">${data.opening_hours}</span>
+                                    </div>`;
+                    }
+                    if (data.cost) {
+                        content += `<div class="flex items-center space-x-2">
+                                      <span class="text-yellow-400">💰</span>
+                                      <span class="text-gray-300 text-sm">${data.cost}</span>
+                                    </div>`;
+                    }
                     content += '</div>';
                 }
 
@@ -956,10 +1006,6 @@
                                     ${data.actionLink.text}
                                   </a>
                                 </div>`;
-                }
-
-                if (!content) {
-                    content = '<p class="text-gray-300">Informazioni non disponibili al momento.</p>';
                 }
 
                 showModalWithHTML(data.title || 'Dettagli', content);
