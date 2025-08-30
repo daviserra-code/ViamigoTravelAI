@@ -384,6 +384,9 @@ def plan_ai_powered():
         # Get city information
         end_city_key, end_city_name = detect_city_from_input(end)
         
+        # Check if destination is specifically Nervi
+        is_nervi_destination = 'nervi' in end.lower() or 'parchi' in end.lower()
+        
         # City coordinates and attractions
         city_data = {
             'genova': {
@@ -394,6 +397,16 @@ def plan_ai_powered():
                     {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
                     {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.0},
                     {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5}
+                ]
+            },
+            'nervi': {
+                'coords': [44.3878, 8.9515],
+                'attractions': [
+                    {'name': 'Stazione Genova Nervi', 'coords': [44.3878, 8.9515], 'duration': 0.25},
+                    {'name': 'Passeggiata Anita Garibaldi', 'coords': [44.3885, 8.9525], 'duration': 1.0},
+                    {'name': 'Parchi di Nervi', 'coords': [44.3895, 8.9535], 'duration': 1.5},
+                    {'name': 'Villa Gropallo - Museo Frugone', 'coords': [44.3902, 8.9542], 'duration': 1.0},
+                    {'name': 'Torre Gropallo', 'coords': [44.3910, 8.9550], 'duration': 0.75}
                 ]
             },
             'new_york': {
@@ -407,14 +420,20 @@ def plan_ai_powered():
             }
         }
         
-        city_info = city_data.get(end_city_key, city_data['genova'])
+        # Use Nervi-specific data if destination is Nervi
+        if is_nervi_destination:
+            city_info = city_data['nervi']
+            end_city_key = 'nervi'
+            end_city_name = 'Nervi, Genova'
+        else:
+            city_info = city_data.get(end_city_key, city_data['genova'])
         
         # Build itinerary
         itinerary = []
         current_time = 9.0  # 9:00 AM
         
         # Starting point
-        start_coords = city_info['coords']
+        start_coords = [44.4063, 8.9314]  # Piazza De Ferrari coordinates
         if start.lower() != end.lower():
             # Add starting location
             itinerary.append({
@@ -427,9 +446,27 @@ def plan_ai_powered():
                 'transport': 'start'
             })
         
+        # For Nervi destination, add train travel
+        if is_nervi_destination:
+            current_time += 0.5  # 30 minutes
+            itinerary.append({
+                'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                'title': 'Viaggio in treno verso Nervi',
+                'description': 'Treno regionale da Genova Brignole a Nervi (20 minuti, €2.20)',
+                'coordinates': [44.3878, 8.9515],
+                'context': 'train_to_nervi',
+                'type': 'transport',
+                'transport': 'train'
+            })
+            current_time += 0.33  # 20 minutes
+        
         # Add attractions from the city
         import random
-        selected_attractions = random.sample(city_info['attractions'], min(3, len(city_info['attractions'])))
+        # For Nervi, use all attractions in order. For others, sample randomly
+        if is_nervi_destination:
+            selected_attractions = city_info['attractions']
+        else:
+            selected_attractions = random.sample(city_info['attractions'], min(3, len(city_info['attractions'])))
         
         for i, attraction in enumerate(selected_attractions):
             # Add walking time between locations
@@ -455,23 +492,51 @@ def plan_ai_powered():
             current_time += activity_duration
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             
+            # Get specific description for Nervi attractions
+            if is_nervi_destination:
+                nervi_descriptions = {
+                    'Stazione Genova Nervi': 'Arrivo alla stazione ferroviaria di Nervi, elegante borgo della Riviera di Levante',
+                    'Passeggiata Anita Garibaldi': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
+                    'Parchi di Nervi': 'Parco storico con giardini botanici, ville liberty e vista panoramica sul mare',
+                    'Villa Gropallo - Museo Frugone': 'Collezione di arte moderna e contemporanea in elegante villa d\'epoca',
+                    'Torre Gropallo': 'Antica torre di avvistamento con vista spettacolare sulla costa ligure'
+                }
+                description = nervi_descriptions.get(attraction['name'], f"Visita {attraction['name']}")
+            else:
+                description = f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}"
+            
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
-                "description": f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}",
+                "description": description,
                 "type": "activity",
-                "context": "museum",
+                "context": "nervi_attraction" if is_nervi_destination else "museum",
                 "coordinates": attraction['coords'],
                 "transport": "visit"
             })
             
             # Add AI tip for first location
             if i == 0:
-                itinerary.append({
-                    "type": "tip",
-                    "title": "Consiglio dell'AI",
-                    "description": f"💡 Per un'esperienza ottimale a {attraction['name']}, ti consiglio di visitarlo durante le ore meno affollate."
-                })
+                if is_nervi_destination:
+                    itinerary.append({
+                        "type": "tip",
+                        "title": "🚂 Come arrivare",
+                        "description": "Treno regionale da Genova Brignole a Nervi (20 min, €2.20). Ogni 30 minuti."
+                    })
+                else:
+                    itinerary.append({
+                        "type": "tip",
+                        "title": "Consiglio dell'AI",
+                        "description": f"💡 Per un'esperienza ottimale a {attraction['name']}, ti consiglio di visitarlo durante le ore meno affollate."
+                    })
+        
+        # Add additional Nervi-specific tips
+        if is_nervi_destination:
+            itinerary.append({
+                "type": "tip",
+                "title": "🌸 Stagione ideale",
+                "description": "Primavera per la fioritura nei parchi, estate per il mare."
+            })
         
         print(f"✅ Generated itinerary with {len(itinerary)} items")
         
