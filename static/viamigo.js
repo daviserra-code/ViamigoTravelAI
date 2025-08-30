@@ -333,7 +333,8 @@ function generateItineraryFromRecommendations(recommendations) {
                 time: `${startTime} - ${endTime} (${Math.floor(travelTime)} min)`,
                 title: `Spostamento verso ${rec.destination}`,
                 desc: "Usa i mezzi pubblici o cammina seguendo le indicazioni.",
-                context: "walk"
+                context: "walk",
+                transport: "walking" // Explicitly set transport type
             });
         }
 
@@ -347,11 +348,13 @@ function generateItineraryFromRecommendations(recommendations) {
             time: `${startTime} - ${endTime} (${Math.floor(activityDuration)} min)`,
             title: rec.destination,
             description: rec.description, // Use description from recommendation
-            context: "museum",
+            context: "museum", // Default context, can be refined
             opening_hours: rec.opening_hours, // Add rich details
             price_range: rec.price_range,
             highlights: rec.highlights,
-            insider_tip: rec.insider_tip
+            insider_tip: rec.insider_tip,
+            lat: rec.lat, // Include coordinates if available
+            lon: rec.lon
         });
 
         // Add AI tip occasionally
@@ -365,7 +368,23 @@ function generateItineraryFromRecommendations(recommendations) {
     });
 
     renderCustomItinerary(itineraryItems, timelineContainer);
+    // Call the function to draw the route after itinerary is rendered
+    drawRouteOnMap(itineraryItems);
 }
+
+// Placeholder for getRealCoordinates - replace with actual implementation if available
+function getRealCoordinates(title, city) {
+    // This is a mock function. In a real app, you'd have a data source.
+    console.log(`Mock lookup for coordinates of "${title}" in ${city}`);
+    // Example fallback data for Genova
+    if (city === 'genova') {
+        if (title.toLowerCase().includes('acquario')) return { lat: 44.4071, lng: 8.9237 };
+        if (title.toLowerCase().includes('centro storico')) return { lat: 44.4094, lng: 8.9285 };
+        if (title.toLowerCase().includes('via balbi')) return { lat: 44.4088, lng: 8.9168 };
+    }
+    return null; // Return null if not found
+}
+
 
 // Placeholder functions for createTipCard, createEmergencyPlanCard, createSmartDiscoveryCard
 function createTipCard(title, description) {
@@ -384,44 +403,40 @@ function createSmartDiscoveryCard(title, description, discoveries) {
 function renderCustomItinerary(items, container) {
     container.innerHTML = '';
 
-    let timelineHTML = ''; // Initialize timelineHTML here
-
     items.forEach((item, index) => {
-        // Check if this is a tip, emergency plan, or discovery
+        let htmlContent;
         if (item.type === 'tip') {
-            timelineHTML += createTipCard(item.title, item.description);
+            htmlContent = createTipCard(item.title, item.description);
         } else if (item.type === 'emergency_plan') {
-            timelineHTML += createEmergencyPlanCard(item.title, item.description, item.plan_b_data);
+            htmlContent = createEmergencyPlanCard(item.title, item.description, item.plan_b_data);
         } else if (item.type === 'smart_discovery') {
-            timelineHTML += createSmartDiscoveryCard(item.title, item.description, item.discoveries);
+            htmlContent = createSmartDiscoveryCard(item.title, item.description, item.discoveries);
         } else {
-            // Regular itinerary item with rich details
-            timelineHTML += createTimelineItem(item, index);
+            htmlContent = createTimelineItem(item, index);
+        }
 
-            // Log rich details for debugging
-            if (item.opening_hours || item.price_range || item.highlights) {
-                console.log(`📋 Rich details for ${item.title}:`, {
-                    opening_hours: item.opening_hours,
-                    price_range: item.price_range,
-                    highlights: item.highlights,
-                    insider_tip: item.insider_tip
+        const itemDiv = document.createElement('div');
+        itemDiv.innerHTML = htmlContent.trim(); // Use trim to avoid issues with whitespace
+
+        // Add click listener for detail expansion (if it's a regular item)
+        if (!item.type) {
+            const detailButton = itemDiv.querySelector('.cursor-pointer'); // Assuming createTimelineItem returns an item with a click handler attribute
+            if (detailButton) {
+                 // Safely get context, title, description
+                const context = item.context || '';
+                const title = item.title || '';
+                const description = item.description || '';
+                detailButton.setAttribute('onclick', `openModal('${context}', '${title}', '${description}')`);
+            } else {
+                // Fallback if the button isn't found, add listener to the main item div
+                itemDiv.querySelector('.timeline-item').addEventListener('click', () => {
+                    openModal(item.context || '', item.title || '', item.description || '');
                 });
             }
         }
-    });
 
-    container.innerHTML = items.map((item, index) => {
-        if (item.type === 'tip') {
-            return createTipCard(item.title, item.description);
-        } else if (item.type === 'emergency_plan') {
-            return createEmergencyPlanCard(item.title, item.description, item.plan_b_data);
-        } else if (item.type === 'smart_discovery') {
-            return createSmartDiscoveryCard(item.title, item.description, item.discoveries);
-        } else {
-            // Regular itinerary item with rich details
-            return createTimelineItem(item, index);
-        }
-    }).join('');
+        container.appendChild(itemDiv.firstChild); // Append the actual content element
+    });
 }
 
 
@@ -433,11 +448,13 @@ function createTimelineItem(item, index) {
             'tram': '🚋',
             'train': '🚂',
             'funicular': '🚡',
-            'start': '📍',
+            'start': '📍', // Changed to a more general starting point icon
             'visit': '🏛️'
         };
 
-        const icon = iconMap[item.transport] || '📍';
+        // Use 'transport' property for icon, fallback to 'context' or default
+        const iconKey = item.transport || item.context || 'walking';
+        const icon = iconMap[iconKey] || '📍';
         const timeDisplay = item.time || `Step ${index + 1}`;
 
         // Build rich details HTML if available
@@ -466,7 +483,7 @@ function createTimelineItem(item, index) {
         }
 
         return `
-            <div class="timeline-item bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-violet-500 transition-all duration-200 cursor-pointer" onclick="showDetails('${item.context}', '${item.title}', '${item.description}')">
+            <div class="timeline-item bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-violet-500 transition-all duration-200 cursor-pointer" onclick="openModal('${item.context || ''}', '${item.title || ''}', '${item.description || ''}')">
                 <div class="flex items-start space-x-3">
                     <div class="timeline-icon w-10 h-10 bg-violet-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
                         ${index + 1}
@@ -485,8 +502,195 @@ function createTimelineItem(item, index) {
         `;
     }
 
-// Placeholder for showDetails function if it's used elsewhere
-function showDetails(context, title, description) {
-    console.log(`Details for ${title} (${context}): ${description}`);
-    // Implement actual detail display logic here
+// Placeholder for the modal opening function
+function openModal(context, title, description) {
+    console.log(`Opening modal for: ${title}`);
+    console.log(`Context: ${context}, Description: ${description}`);
+    // Implement modal display logic here. For now, just log.
+    alert(`Details for ${title}:\n${description}\n(Context: ${context})`);
 }
+
+// --- MAP RELATED FUNCTIONS ---
+
+let mapInstance = null;
+let routeLayer = null;
+let routeCoordinates = [];
+let bounds = null;
+let markerIndex = 1; // Initialize marker index
+
+// Function to initialize the map
+function initializeMap() {
+    if (!mapInstance) {
+        const mapContainer = document.getElementById('map'); // Assuming a map div with id 'map'
+        if (!mapContainer) {
+            console.error('Map container not found!');
+            return;
+        }
+        mapInstance = L.map('map').setView([44.4071, 8.9237], 13); // Centered on Genova
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(mapInstance);
+
+        // Initialize route layer and bounds
+        routeLayer = L.layerGroup().addTo(mapInstance);
+        bounds = L.latLngBounds();
+    }
+}
+
+// Function to draw the route on the map
+function drawRouteOnMap(itinerary) {
+    initializeMap(); // Ensure map is initialized
+
+    // Clear previous route and markers
+    if (routeLayer) {
+        routeLayer.clearLayers();
+    }
+    routeCoordinates = [];
+    markerIndex = 1; // Reset marker index for new route
+
+    itinerary.forEach((item, index) => {
+        console.log(`Analizzando item ${index}:`, item);
+        if (item.type !== 'tip') {
+            console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
+            // Rileva la città dall'itinerario
+            const currentCity = window.currentCityName || 'genova';
+
+            // Usa le coordinate dal backend (formato lat/lon) se disponibili
+            let lat, lng;
+            if (item.lat && item.lon) {
+                lat = item.lat;
+                lng = item.lon;
+                console.log(`✓ Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
+            } else if (item.coordinates && Array.isArray(item.coordinates) && item.coordinates.length === 2) {
+                // Formato array [lat, lng] dal backend
+                lat = item.coordinates[0];
+                lng = item.coordinates[1];
+                console.log(`✓ Coordinate backend array per ${item.title}: ${lat}, ${lng}`);
+            } else if (item.coordinates && item.coordinates.lat && item.coordinates.lng) {
+                lat = item.coordinates.lat;
+                lng = item.coordinates.lng;
+                console.log(`✓ Coordinate dal backend (formato coordinates) per ${item.title}: ${lat}, ${lng}`);
+            } else {
+                console.log(`❌ ERRORE: Nessuna coordinata valida per ${item.title}`);
+                console.log(`Dati ricevuti:`, item);
+
+                // Fallback: prova il database locale
+                const realCoords = getRealCoordinates(item.title, currentCity);
+                if (realCoords) {
+                    lat = realCoords.lat;
+                    lng = realCoords.lng;
+                    console.log(`⚠ Coordinate locali per ${item.title}: ${lat}, ${lng}`);
+                } else {
+                    // Fallback su Genova invece di NYC per mantenere coerenza
+                    console.log(`🚨 EMERGENCY: Nessuna coordinata per ${item.title} - usando Genova!`);
+                    lat = 44.4063 + (index * 0.002);  // Genova + offset
+                    lng = 8.9314 + (index * 0.002);
+                    console.log(`🏛️ Genova fallback per ${item.title}: ${lat}, ${lng}`);
+                }
+            }
+
+            // Aggiungi coordinate al percorso
+            routeCoordinates.push([lat, lng]);
+
+            // Determine marker color based on type
+            let markerColor = 'blue';
+            if (item.transport === 'start') markerColor = 'green';
+            else if (item.type === 'transport') markerColor = 'orange';
+
+            // Different icon for starting point
+            let markerIcon = markerIndex.toString();
+            if (item.transport === 'start') {
+                markerIcon = '🏁';
+                console.log(`🏁 Punto di partenza: ${item.title}`);
+            } else {
+                console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
+            }
+            markerIndex++; // Incrementa per OGNI waypoint visibile
+
+            // Marker personalizzato con numero sequenziale
+            const customIcon = L.divIcon({
+                className: 'custom-marker activity-marker',
+                html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+
+            const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
+
+            // Popup con informazioni della fermata e icona trasporto
+            const transportIcons = {
+                'walking': '🚶',
+                'metro': '🚇',
+                'bus': '🚌',
+                'tram': '🚋',
+                'funicular': '🚡',
+                'taxi': '🚕',
+                'start': '🏁'
+            };
+
+            const transportIcon = transportIcons[item.transport] || '🚶';
+
+            marker.bindPopup(`
+                <div class="text-gray-900 max-w-xs">
+                    <h3 class="font-bold text-sm mb-1">${item.title}</h3>
+                    <p class="text-xs text-gray-600 mb-1">${item.time || ''} ${transportIcon}</p>
+                    <p class="text-xs mb-2">${item.description}</p>
+                    ${item.context && !item.type ? `<button onclick="openModal('${item.context}')" class="mt-1 text-xs bg-violet-500 text-white px-2 py-1 rounded">Più info</button>` : ''}
+                </div>
+            `);
+
+            bounds.extend([lat, lng]);
+        }
+    });
+
+    // Draw the route after all markers are placed
+    if (routeCoordinates.length > 1) {
+        drawRealisticRoute(routeCoordinates, routeLayer);
+    }
+
+    // Fit map to bounds if they exist
+    if (bounds && !bounds.isInvalid()) {
+        mapInstance.fitBounds(bounds);
+    }
+}
+
+// --- ROUTING REALISTICO ---
+        async function drawRealisticRoute(coordinates, layer) {
+            console.log('🛣️ Disegno percorso semplificato per', coordinates.length, 'punti');
+
+            // Instead of calling unreliable APIs, draw logical walking paths
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                const start = coordinates[i];
+                const end = coordinates[i + 1];
+
+                // Calculate distance to determine route style
+                const distance = Math.sqrt(
+                    Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2)
+                ) * 111; // Rough km conversion
+
+                let routeStyle = {
+                    color: '#8b5cf6',
+                    weight: 4,
+                    opacity: 0.8,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                };
+
+                // Different styles for different distances
+                if (distance > 1) { // Long distance - dashed line
+                    routeStyle.dashArray = '15, 10';
+                    routeStyle.color = '#f97316'; // Orange for transport
+                } else if (distance < 0.3) { // Very short - thin line
+                    routeStyle.weight = 2;
+                    routeStyle.opacity = 0.6;
+                }
+
+                // Draw simple straight line (more reliable than API calls)
+                const routeLine = L.polyline([start, end], routeStyle).addTo(layer);
+
+                console.log(`✅ Percorso logico disegnato da punto ${i} a punto ${i+1} (${distance.toFixed(1)}km)`);
+            }
+        }

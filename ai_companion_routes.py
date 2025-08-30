@@ -745,24 +745,21 @@ def plan_ai_powered():
                 "title": attraction['name'],
                 "description": description,
                 "type": "activity",
-                "context": "nervi_attraction" if is_nervi_destination else "attraction",
+                "context": attraction['name'].lower().replace(' ', '_').replace('di', '').replace('del', '').strip('_'),
                 "coordinates": attraction['coords'],
                 "transport": "visit",
                 
-                # COMPREHENSIVE DETAILS for each stop
-                "opening_hours": details['opening_hours'],
-                "price_range": details['price_range'],
-                "highlights": details['highlights'],
-                "insider_tip": details['insider_tip'],
-                "best_time": details['best_time'],
-                "visit_duration_hours": details['visit_duration'],
-                "accessibility": details['accessibility'],
-                "photo_spots": details['photo_spots'],
-                
-                # PRACTICAL INFO
-                "recommended_duration": f"{details['visit_duration']} ore",
-                "crowd_level": "Medio-alto" if attraction['name'] == 'Acquario di Genova' else "Medio",
-                "weather_dependency": "Esterno" if "panoramic" in description.lower() or "vista" in description.lower() else "Interno/Esterno"
+                # Store rich details in context for modal display only
+                "_rich_details": {
+                    "opening_hours": details['opening_hours'],
+                    "price_range": details['price_range'], 
+                    "highlights": details['highlights'],
+                    "insider_tip": details['insider_tip'],
+                    "best_time": details['best_time'],
+                    "accessibility": details['accessibility'],
+                    "photo_spots": details['photo_spots'],
+                    "visit_duration_hours": details['visit_duration']
+                }
             })
             
             # Add contextual tips and photo opportunities
@@ -801,12 +798,14 @@ def plan_ai_powered():
                     "title": "Gelateria Il Doge",
                     "description": "Pausa gelato con vista sul porto prima dell'Acquario. Prova il gusto 'Pesto' tipico genovese!",
                     "coordinates": [44.4105, 8.9285],
-                    "context": "gelato_break_porto_antico",
+                    "context": "gelateria_il_doge",
                     "type": "activity",
                     "transport": "visit",
-                    "opening_hours": "10:00-22:00",
-                    "price_range": "€3-5",
-                    "highlights": ["Gelato artigianale", "Vista porto", "Gusti tipici liguri"]
+                    "_rich_details": {
+                        "opening_hours": "10:00-22:00",
+                        "price_range": "€3-5", 
+                        "highlights": ["Gelato artigianale", "Vista porto", "Gusti tipici liguri"]
+                    }
                 })
                 
                 itinerary.append({
@@ -822,13 +821,15 @@ def plan_ai_powered():
                 "title": "Pranzo tipico genovese",
                 "description": "Trattoria Antica Osteria del Borgo - Pesto fatto in casa, focaccia col formaggio e farinata",
                 "coordinates": [44.4065, 8.9295],
-                "context": "lunch_break_borgo",
+                "context": "antica_osteria_borgo",
                 "type": "activity",
                 "transport": "visit",
-                "opening_hours": "12:00-15:00, 19:00-23:00",
-                "price_range": "€25-35 a persona",
-                "highlights": ["Pesto al mortaio", "Focaccia col formaggio DOP", "Farinata calda", "Vino Vermentino"],
-                "insider_tip": "Ordina il 'menu degustazione ligure' - include pesto, focaccia e farinata"
+                "_rich_details": {
+                    "opening_hours": "12:00-15:00, 19:00-23:00",
+                    "price_range": "€25-35 a persona",
+                    "highlights": ["Pesto al mortaio", "Focaccia col formaggio DOP", "Farinata calda", "Vino Vermentino"],
+                    "insider_tip": "Ordina il 'menu degustazione ligure' - include pesto, focaccia e farinata"
+                }
             })
             current_time += 1.0  # 1 hour lunch
             
