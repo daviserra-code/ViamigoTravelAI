@@ -455,81 +455,36 @@ def plan_ai_powered():
         else:
             print(f"✅ Using PostgreSQL data for {end_city_name}")
 
-        # City coordinates and attractions - Updated with proper geographical data
-        city_data = {
-            'genova': {
-                'coords': [44.4063, 8.9314],
-                'attractions': [
-                    {'name': 'Acquario di Genova', 'coords': [44.4109, 8.9326], 'duration': 2.5},
-                    {'name': 'Palazzo Ducale', 'coords': [44.4071, 8.9348], 'duration': 1.5},
-                    {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
-                    {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.0},
-                    {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5},
-                    {'name': 'Via del Campo', 'coords': [44.4055, 8.9298], 'duration': 1.0},
-                    {'name': 'Palazzo Rosso', 'coords': [44.4063, 8.9342], 'duration': 1.0}
-                ]
-            },
-            'olbia': {
-                'coords': [40.9237, 9.4966],  # Olbia, Sardegna coordinates
-                'attractions': [
-                    {'name': 'Porto di Olbia', 'coords': [40.9237, 9.4966], 'duration': 1.0},
-                    {'name': 'Centro Storico Olbia', 'coords': [40.9226, 9.4958], 'duration': 1.5},
-                    {'name': 'Porto Rotondo', 'coords': [40.9503, 9.5422], 'duration': 2.0},
-                    {'name': 'Spiaggia Pittulongu', 'coords': [40.9588, 9.5315], 'duration': 1.5},
-                    {'name': 'Costa Smeralda', 'coords': [41.0275, 9.5364], 'duration': 3.0}
-                ]
-            },
-            'nervi': {
-                'coords': [44.3878, 8.9515],
-                'attractions': [
-                    {'name': 'Stazione Genova Nervi', 'coords': [44.3878, 8.9515], 'duration': 0.25},
-                    {'name': 'Passeggiata Anita Garibaldi', 'coords': [44.3885, 8.9525], 'duration': 1.0},
-                    {'name': 'Parchi di Nervi', 'coords': [44.3895, 8.9535], 'duration': 1.5},
-                    {'name': 'Villa Gropallo - Museo Frugone', 'coords': [44.3902, 8.9542], 'duration': 1.0},
-                    {'name': 'Torre Gropallo', 'coords': [44.3910, 8.9550], 'duration': 0.75}
-                ]
-            },
-            'new_york': {
-                'coords': [40.7589, -73.9851],
-                'attractions': [
-                    {'name': 'Central Park', 'coords': [40.7829, -73.9654], 'duration': 2.0},
-                    {'name': 'Times Square', 'coords': [40.7580, -73.9855], 'duration': 1.0},
-                    {'name': 'Brooklyn Bridge', 'coords': [40.7061, -73.9969], 'duration': 1.5},
-                    {'name': 'High Line', 'coords': [40.7480, -74.0048], 'duration': 1.5}
-                ]
-            }
-        }
-
-        # Always use verified static data to prevent hallucinated coordinates
-        # The scraping data is returning wrong coordinates, so use curated real data
-        if is_nervi_destination:
-            city_info = city_data['nervi']
-            end_city_key = 'nervi'
-            end_city_name = 'Nervi, Genova'
+        # 🌟 COMPLETELY DYNAMIC - Use scraped data for attractions
+        dynamic_attractions = []
+        
+        if real_attractions:
+            for attraction in real_attractions[:4]:  # Use top 4 scraped attractions
+                dynamic_attractions.append({
+                    'name': attraction['name'],
+                    'coords': [attraction['latitude'], attraction['longitude']],
+                    'duration': 1.5,  # Default duration
+                    'description': attraction.get('description', f'Attraction in {end_city_name}')
+                })
+            print(f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {end_city_name}")
         else:
-            city_info = city_data.get(end_city_key, city_data['genova'])
+            print(f"⚠️ No dynamic attractions found for {end_city_name}")
+            dynamic_attractions = [{
+                'name': f'Centro di {end_city_name}',
+                'coords': [0, 0],  # Will be set dynamically below
+                'duration': 1.0,
+                'description': f'Centro storico di {end_city_name}'
+            }]
 
-        dynamic_attractions = [
-            {'name': attr['name'], 'coords': attr['coords'], 'duration': attr['duration']}
-            for attr in city_info['attractions'][:4]
-        ]
-
-        print(f"✅ Using verified {len(dynamic_attractions)} real attractions for {end_city_name}")
-
-        # Get proper starting coordinates for the detected city
-        city_coordinates = {
-            'genova': [44.4063, 8.9314],
-            'milano': [45.4642, 9.1900],
-            'roma': [41.9028, 12.4964],
-            'firenze': [43.7696, 11.2558],
-            'venezia': [45.4408, 12.3155],
-            'napoli': [40.8518, 14.2681],
-            'torino': [45.0703, 7.6869],
-            'bologna': [44.4949, 11.3426],
-            'new_york': [40.7589, -73.9851]
-        }
-
-        starting_coords = city_coordinates.get(end_city_key, [44.4063, 8.9314])  # Default to Genova if not found
+        # 🗺️ DYNAMIC COORDINATES - Get from first attraction or geocoding
+        if dynamic_attractions and dynamic_attractions[0]['coords'][0] != 0:
+            starting_coords = dynamic_attractions[0]['coords']
+        else:
+            # Fallback: Use geocoding to get city center coordinates
+            starting_coords = self._get_dynamic_city_coordinates(end_city_name)
+            # Update the placeholder attraction with real coordinates
+            if dynamic_attractions:
+                dynamic_attractions[0]['coords'] = starting_coords
         print(f"🗺️ Using coordinates {starting_coords} for city: {end_city_key}")
 
         # Initialize current_time for itinerary building
@@ -667,88 +622,8 @@ def plan_ai_powered():
             current_time += activity_duration
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
 
-            # Rich details database for each attraction
-            attraction_details = {
-                'Acquario di Genova': {
-                    'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini in 70 vasche. Esperienza immersiva nel mondo marino.',
-                    'opening_hours': 'Lun-Ven 9:00-20:00, Sab-Dom 8:30-20:00 (estate) | Lun-Ven 10:00-18:00, Sab-Dom 9:30-18:00 (inverno)',
-                    'price_range': '€29 adulti, €19 bambini 4-12 anni, under 4 gratis',
-                    'highlights': ['70 vasche tematiche', 'Delfini e squali', 'Foresta pluviale', 'Biosfera Renzo Piano', 'Tunnel sottomarino'],
-                    'insider_tip': 'Arriva alle 9:00 per evitare code. Il biglietto include la Biosfera. Salta la coda comprando online.',
-                    'best_time': 'Mattina presto (9:00-11:00) o dopo le 16:00',
-                    'visit_duration': 2.5,
-                    'accessibility': 'Completamente accessibile, sedie a rotelle disponibili',
-                    'photo_spots': ['Tunnel degli squali', 'Vasca dei delfini', 'Biosfera esterna']
-                },
-                'Palazzo Ducale': {
-                    'description': 'Palazzo storico del XIV secolo, oggi principale centro culturale di Genova con mostre d\'arte internazionali.',
-                    'opening_hours': 'Mar-Dom 9:00-19:00 (chiuso lunedì)',
-                    'price_range': '€12 adulti, €8 ridotto, €20 mostra + palazzo',
-                    'highlights': ['Cortile rinascimentale', 'Mostre temporanee', 'Salone del Maggior Consiglio', 'Cappella Dogale'],
-                    'insider_tip': 'Controlla le mostre sul sito. Giovedì sera apertura fino alle 22:00 con €5 di sconto.',
-                    'best_time': 'Pomeriggio per le mostre, sera per eventi',
-                    'visit_duration': 1.5,
-                    'accessibility': 'Ascensore per tutti i piani',
-                    'photo_spots': ['Cortile interno', 'Scalinata marmorea', 'Loggia panoramica']
-                },
-                'Cattedrale di San Lorenzo': {
-                    'description': 'Duomo di Genova in stile romanico-gotico con facciata a strisce bianche e nere. Contiene la bomba inesplosa del 1941.',
-                    'opening_hours': 'Lun-Sab 8:00-12:00, 15:00-19:00 | Dom 15:00-19:00 | Museo del Tesoro: 9:00-18:00',
-                    'price_range': 'Cattedrale gratuita | Museo del Tesoro €6, ridotto €4',
-                    'highlights': ['Bomba britannica inesplosa (1941)', 'Santo Graal leggendario', 'Affreschi medievali', 'Cripta romanica'],
-                    'insider_tip': 'Non perdere il Museo del Tesoro con il Santo Graal e la bomba. Ingresso separato a destra.',
-                    'best_time': 'Mattina per luce naturale, pomeriggio per museo',
-                    'visit_duration': 1.0,
-                    'accessibility': 'Cattedrale accessibile, museo con gradini',
-                    'photo_spots': ['Facciata a strisce', 'Interno navata centrale', 'Bomba inesplosa']
-                },
-                'Spianata Castelletto': {
-                    'description': 'Terrazza panoramica a 80m sul livello del mare con vista a 360° su Genova, porto e Appennino ligure.',
-                    'opening_hours': 'Sempre accessibile | Funicolare: 6:00-24:00 (ogni 15 min)',
-                    'price_range': 'Funicolare €0.90 sola andata, €1.60 andata/ritorno',
-                    'highlights': ['Vista panoramica 360°', 'Funicolare storica (1891)', 'Villetta Di Negro', 'Belvedere tramonto'],
-                    'insider_tip': 'Tramonto migliore alle 18:30-19:30. Funicolare da Piazza Portello. Porta giacca per vento.',
-                    'best_time': 'Tramonto per foto spettacolari, giorno per visibilità',
-                    'visit_duration': 1.0,
-                    'accessibility': 'Funicolare accessibile, terrazza con gradini',
-                    'photo_spots': ['Belvedere centrale', 'Vista porto', 'Panorama Appennini']
-                },
-                'Porto Antico': {
-                    'description': 'Area portuale storica rinnovata da Renzo Piano per Expo \'92. Hub culturale con musei, ristoranti e attrazioni.',
-                    'opening_hours': 'Sempre accessibile | Attrazioni: 10:00-19:00 variabili',
-                    'price_range': 'Passeggiata gratuita | Bigo €4 | Galata €12-15',
-                    'highlights': ['Bigo ascensore panoramico', 'Galata Museo del Mare', 'Nina replica nave Colombo', 'Biosfera'],
-                    'insider_tip': 'Area perfetta per aperitivo serale. Molti eventi gratuiti weekend. Parcheggio a pagamento.',
-                    'best_time': 'Sera per atmosfera, giorno per musei',
-                    'visit_duration': 1.5,
-                    'accessibility': 'Completamente accessibile',
-                    'photo_spots': ['Bigo al tramonto', 'Porto con barche', 'Biosfera riflessa']
-                },
-                'Via del Campo': {
-                    'description': 'Via storica dei caruggi medievali, immortalata da Fabrizio De André. Cuore autentico della Genova popolare.',
-                    'opening_hours': 'Sempre accessibile | Negozi: 10:00-19:00 | Ristoranti: 12:00-24:00',
-                    'price_range': 'Passeggiata gratuita | Farinata €3-5 | Pranzo €15-25',
-                    'highlights': ['Caruggi medievali', 'Farinata genovese', 'Canzone De André', 'Mercato tradizionale'],
-                    'insider_tip': 'Prova farinata da "Il Soccorso" (€4). Mattina per mercato pesce, sera per vita notturna.',
-                    'best_time': 'Mattina per mercato, sera per atmosfera',
-                    'visit_duration': 0.75,
-                    'accessibility': 'Lastricato irregolare, attenzione gradini',
-                    'photo_spots': ['Palazzo medievali', 'Vicoli stretti', 'Bancarelle mercato']
-                }
-            }
-
-            # Get comprehensive details for this attraction
-            details = attraction_details.get(attraction['name'], {
-                'description': f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}",
-                'opening_hours': 'Consultare orari ufficiali',
-                'price_range': 'Da verificare',
-                'highlights': [f'Attrazione storica di {end_city_name.title()}'],
-                'insider_tip': 'Informazioni dettagliate disponibili in loco.',
-                'best_time': 'Durante orari di apertura',
-                'visit_duration': 1.0,
-                'accessibility': 'Da verificare accessibilità',
-                'photo_spots': ['Punti panoramici disponibili']
-            })
+            # 🚀 DYNAMIC DETAILS - Generate using attraction data
+            details = self._generate_dynamic_attraction_details(attraction, end_city_name)
 
             # Use rich description from details
             description = details['description']
@@ -927,3 +802,42 @@ def plan_ai_powered():
             "error": f"Planning failed: {str(e)}",
             "itinerary": []
         }), 500
+
+    def _get_dynamic_city_coordinates(self, city_name: str) -> List[float]:
+        """Get city coordinates dynamically using geocoding"""
+        try:
+            import requests
+            
+            # Use Nominatim for free geocoding
+            url = "https://nominatim.openstreetmap.org/search"
+            params = {
+                'q': city_name,
+                'format': 'json',
+                'limit': 1
+            }
+            
+            response = requests.get(url, params=params, timeout=5)
+            if response.ok and response.json():
+                data = response.json()[0]
+                coords = [float(data['lat']), float(data['lon'])]
+                print(f"🗺️ Dynamic coordinates for {city_name}: {coords}")
+                return coords
+        except Exception as e:
+            print(f"⚠️ Geocoding failed for {city_name}: {e}")
+        
+        # Ultimate fallback: Rome coordinates
+        return [41.9028, 12.4964]
+
+    def _generate_dynamic_attraction_details(self, attraction: Dict, city_name: str) -> Dict:
+        """Generate dynamic attraction details from scraped data"""
+        return {
+            'description': attraction.get('description', f"Visita {attraction['name']} - una delle principali attrazioni di {city_name.title()}"),
+            'opening_hours': 'Consultare orari ufficiali locali',
+            'price_range': 'Da verificare sul posto',
+            'highlights': [f'Attrazione di {city_name.title()}', 'Esperienza locale autentica'],
+            'insider_tip': f'Chiedi ai locals per consigli su {attraction["name"]}.',
+            'best_time': 'Durante orari di apertura',
+            'visit_duration': attraction.get('duration', 1.0),
+            'accessibility': 'Da verificare accessibilità',
+            'photo_spots': ['Punti panoramici locali']
+        }
