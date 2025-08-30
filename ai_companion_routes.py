@@ -464,7 +464,9 @@ def plan_ai_powered():
                     {'name': 'Palazzo Ducale', 'coords': [44.4071, 8.9348], 'duration': 1.5},
                     {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
                     {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.0},
-                    {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5}
+                    {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5},
+                    {'name': 'Via del Campo', 'coords': [44.4055, 8.9298], 'duration': 1.0},
+                    {'name': 'Palazzo Rosso', 'coords': [44.4063, 8.9342], 'duration': 1.0}
                 ]
             },
             'olbia': {
@@ -498,31 +500,21 @@ def plan_ai_powered():
             }
         }
         
-        # Use real scraped data if available, otherwise fallback to static data
-        if real_attractions and len(real_attractions) >= 2:
-            print(f"✅ Using {len(real_attractions)} real attractions from scraping")
-            dynamic_attractions = [
-                {
-                    'name': attr['name'],
-                    'coords': [attr['latitude'], attr['longitude']], 
-                    'duration': 1.5,
-                    'description': attr['description'],
-                    'source': attr['source']
-                }
-                for attr in real_attractions[:4]  # Max 4 attractions
-            ]
+        # Always use verified static data to prevent hallucinated coordinates
+        # The scraping data is returning wrong coordinates, so use curated real data
+        if is_nervi_destination:
+            city_info = city_data['nervi']
+            end_city_key = 'nervi'
+            end_city_name = 'Nervi, Genova'
         else:
-            # Fallback to static data
-            if is_nervi_destination:
-                city_info = city_data['nervi']
-                end_city_key = 'nervi'
-                end_city_name = 'Nervi, Genova'
-            else:
-                city_info = city_data.get(end_city_key, city_data['genova'])
-            dynamic_attractions = [
-                {'name': attr['name'], 'coords': attr['coords'], 'duration': attr['duration']}
-                for attr in city_info['attractions'][:4]
-            ]
+            city_info = city_data.get(end_city_key, city_data['genova'])
+        
+        dynamic_attractions = [
+            {'name': attr['name'], 'coords': attr['coords'], 'duration': attr['duration']}
+            for attr in city_info['attractions'][:4]
+        ]
+        
+        print(f"✅ Using verified {len(dynamic_attractions)} real attractions for {end_city_name}")
         
         # Build itinerary with real data
         itinerary = []
