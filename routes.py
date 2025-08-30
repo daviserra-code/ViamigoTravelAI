@@ -1512,6 +1512,19 @@ def get_local_place_details(context):
                     'url': 'https://www.acquariodigenova.it'
                 }
             },
+            'museum': {
+                'title': 'Musei di Genova',
+                'summary': 'Genova offre una ricca collezione di musei che spaziano dall\'arte alla storia marittima, dai palazzi nobiliari alle tradizioni locali.',
+                'details': [
+                    {'label': 'Palazzo Ducale', 'value': 'Centro culturale con mostre temporanee'},
+                    {'label': 'Musei di Strada Nuova', 'value': 'Palazzo Rosso, Palazzo Bianco, Palazzo Tursi'},
+                    {'label': 'Galata Museo del Mare', 'value': 'Il più grande museo marittimo del Mediterraneo'},
+                    {'label': 'Casa di Colombo', 'value': 'Casa natale del navigatore genovese'},
+                    {'label': 'Orari tipici', 'value': 'Mar-Dom 10:00-18:00 (variabili)'},
+                    {'label': 'Biglietti', 'value': '€6-15 a museo, card musei disponibile'}
+                ],
+                'tip': '🎨 La Card Musei di Genova (€12-20) permette l\'accesso a tutti i musei civici.'
+            },
             # FIRENZE
             'piazza_del_duomo_firenze': {
                 'title': 'Piazza del Duomo, Firenze',
