@@ -812,9 +812,9 @@ def plan_ai_powered():
         }), 500
 
     def get_dynamic_city_coordinates(city_name: str):
-        """Get city coordinates dynamically using geocoding"""
-        try:
-            import requests
+    """Get city coordinates dynamically using geocoding"""
+    try:
+        import requests
             
             # Use Nominatim for free geocoding
             url = "https://nominatim.openstreetmap.org/search"
@@ -836,16 +836,16 @@ def plan_ai_powered():
         # Ultimate fallback: Rome coordinates
         return [41.9028, 12.4964]
 
-    def generate_dynamic_attraction_details(attraction, city_name: str):
-        """Generate dynamic attraction details from scraped data"""
-        return {
-            'description': attraction.get('description', f"Visita {attraction['name']} - una delle principali attrazioni di {city_name.title()}"),
+def generate_dynamic_attraction_details(attraction, city_name: str):
+    """Generate dynamic attraction details from scraped data"""
+    return {
+        'description': attraction.get('description', f"Visita {attraction['name']} - una delle principali attrazioni di {city_name.title()}"),
             'opening_hours': 'Consultare orari ufficiali locali',
-            'price_range': 'Da verificare sul posto',
-            'highlights': [f'Attrazione di {city_name.title()}', 'Esperienza locale autentica'],
-            'insider_tip': f'Chiedi ai locals per consigli su {attraction["name"]}.',
-            'best_time': 'Durante orari di apertura',
-            'visit_duration': attraction.get('duration', 1.0),
-            'accessibility': 'Da verificare accessibilità',
-            'photo_spots': ['Punti panoramici locali']
-        }
+        'price_range': 'Da verificare sul posto',
+        'highlights': [f'Attrazione di {city_name.title()}', 'Esperienza locale autentica'],
+        'insider_tip': f'Chiedi ai locals per consigli su {attraction["name"]}.',
+        'best_time': 'Durante orari di apertura',
+        'visit_duration': attraction.get('duration', 1.0),
+        'accessibility': 'Da verificare accessibilità',
+        'photo_spots': ['Punti panoramici locali']
+    }
