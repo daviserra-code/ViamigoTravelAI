@@ -348,7 +348,7 @@ def generate_ai_diario():
     except Exception as e:
         return jsonify({'error': f'AI Diario error: {str(e)}'}), 500
 
-@ai_companio@ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
+@ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
 def plan_ai_powered():
     """Complete AI-powered planning with all companion features"""
     try:
