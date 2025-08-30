@@ -298,9 +298,9 @@
                     const response = await fetch('/plan_ai_powered', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            start, 
-                            end, 
+                        body: JSON.stringify({
+                            start,
+                            end,
                             interests: userPreferences.interests || [],
                             pace: userPreferences.pace || "",
                             budget: userPreferences.budget || ""
@@ -310,9 +310,9 @@
                     const data = await response.json();
                     console.log('💾 Dati JSON ricevuti:', data);
 
-                    if (data.error) { 
+                    if (data.error) {
                         console.log('❌ Errore nei dati:', data.error);
-                        renderItinerary(null); 
+                        renderItinerary(null);
                     } else {
                         console.log('✅ Dati validi, processing...');
 
@@ -351,10 +351,10 @@
 
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
-                } catch (error) { 
+                } catch (error) {
                     console.log('💥 ERRORE nel fetch:', error);
-                    renderItinerary(null); 
-                } 
+                    renderItinerary(null);
+                }
                 finally { planButton.textContent = "Pianifica il mio giorno"; planButton.disabled = false; }
             });
         }
@@ -486,7 +486,7 @@
 
             // Controlla se è NYC dal testo input
             const allText = `${startLocation} ${endLocation}`.toLowerCase();
-            if (allText.includes('fifth avenue') || allText.includes('cornelia') || 
+            if (allText.includes('fifth avenue') || allText.includes('cornelia') ||
                 allText.includes('manhattan') || allText.includes('new york')) {
                 console.log('🗽 Mappa centrata su: NYC (rilevato da input)');
                 window.currentCityName = 'new york';
@@ -572,12 +572,12 @@
             // Array per memorizzare le coordinate del percorso
             const routeCoordinates = [];
             const bounds = L.latLngBounds();
-            let markerIndex = 1; // Inizia da 1 e incrementa SOLO per waypoint numerati
+            let stopNumber = 1; // Separate counter for actual stops only
 
             itineraryData.forEach((item, index) => {
                 console.log(`Analizzando item ${index}:`, item);
                 if (item.type !== 'tip') {
-                    console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
+                    console.log(`📍 Processando waypoint: ${item.title}, stopNumber attuale: ${stopNumber}`);
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'new york';
 
@@ -621,10 +621,15 @@
                     // Colore marker (tutti blu per waypoint normali)
                     const markerColor = 'blue';
 
-                    // FIX FINALE: Ogni waypoint (start, walking) ottiene numero sequenziale
-                    let markerIcon = markerIndex.toString();
-                    console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
-                    markerIndex++; // Incrementa per OGNI waypoint visibile
+                    // Different icon for starting point
+                    let markerIcon = stopNumber.toString();
+                    if (item.transport === 'start') {
+                        markerIcon = '🏁';
+                        console.log(`🏁 Punto di partenza: ${item.title}`);
+                    } else {
+                        console.log(`🔢 Assegnando numero ${stopNumber} a ${item.title}`);
+                    }
+                    stopNumber++; // Increment only for actual stops, not tips
 
                     // Marker personalizzato con numero sequenziale
                     const customIcon = L.divIcon({
@@ -865,7 +870,7 @@
                                                 ${contextualTrigger.title}
                                             </div>
                                             <p class="text-red-200 text-xs">${contextualTrigger.message}</p>
-                                            <button onclick="triggerAICompanion('${item.context}', '${contextualTrigger.type}')" 
+                                            <button onclick="triggerAICompanion('${item.context}', '${contextualTrigger.type}')"
                                                     class="mt-1 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
                                                 🧠 Chiedi al Compagno AI
                                             </button>
@@ -878,8 +883,8 @@
                                             <path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5z"/>
                                         </svg>
                                     </button>
-                                    <button onclick="openAICompanionForLocation('${item.context}')" 
-                                            class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-2 rounded hover:from-emerald-600 hover:to-teal-600 transition-all" 
+                                    <button onclick="openAICompanionForLocation('${item.context}')"
+                                            class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-2 rounded hover:from-emerald-600 hover:to-teal-600 transition-all"
                                             title="Compagno AI per questa tappa">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -917,20 +922,20 @@
             })
             .then(data => {
                 console.log('Modal data received:', data);
-                
+
                 // Handle both direct data and nested structure
                 let modalData = data;
                 if (data && data.details && typeof data.details === 'object') {
                     modalData = data.details;
                 }
-                
+
                 // Check if we have valid data - fix validation logic
                 const hasValidData = modalData && (
-                    modalData.summary || 
-                    modalData.title || 
+                    modalData.summary ||
+                    modalData.title ||
                     (modalData.details && Array.isArray(modalData.details) && modalData.details.length > 0)
                 );
-                
+
                 if (!hasValidData) {
                     console.log('No valid data received, showing fallback', modalData);
                     showModalWithHTML('Dettagli luogo', `
@@ -949,7 +954,7 @@
                     `);
                     return;
                 }
-                
+
                 // Use modalData instead of data for the rest
                 let content = '';
 
@@ -957,10 +962,10 @@
                 if (modalData.imageUrl) {
                     console.log(`🖼️ URL immagine ricevuta: ${modalData.imageUrl}`);
                     content += `<div class="mb-4">
-                                  <img src="${modalData.imageUrl}" alt="${modalData.title || 'Immagine del luogo'}" 
-                                       class="w-full h-48 object-cover rounded-lg shadow-lg" 
+                                  <img src="${modalData.imageUrl}" alt="${modalData.title || 'Immagine del luogo'}"
+                                       class="w-full h-48 object-cover rounded-lg shadow-lg"
                                        style="max-height: 200px;"
-                                       onload="console.log('✅ Immagine caricata via proxy')" 
+                                       onload="console.log('✅ Immagine caricata via proxy')"
                                        onerror="console.log('❌ Errore caricamento tramite proxy: ${modalData.imageUrl}')">
                                 </div>`;
                 }
@@ -1019,7 +1024,7 @@
 
                 if (modalData.actionLink) {
                     content += `<div class="mt-4">
-                                  <a href="${modalData.actionLink.url}" target="_blank" 
+                                  <a href="${modalData.actionLink.url}" target="_blank"
                                      class="inline-block bg-violet-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-violet-600">
                                     ${modalData.actionLink.text}
                                   </a>
