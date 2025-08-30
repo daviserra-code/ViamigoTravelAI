@@ -622,7 +622,18 @@ function drawRouteOnMap(itinerary) {
         if (item.type !== 'tip' && item.type !== 'transport') {
             console.log(`📍 Processando waypoint: ${item.title}, activityMarkerIndex attuale: ${activityMarkerIndex}`);
             // Rileva la città dall'itinerario
-            const currentCity = window.currentCityName || 'genova';
+            // Detect city from item context or use global
+            let currentCity = 'milano';  // Default
+            if (item.context) {
+                const ctx = item.context.toLowerCase();
+                if (ctx.includes('milano') || ctx.includes('milan')) currentCity = 'milano';
+                else if (ctx.includes('roma') || ctx.includes('rome')) currentCity = 'roma';
+                else if (ctx.includes('venezia') || ctx.includes('venice')) currentCity = 'venezia';
+                else if (ctx.includes('firenze') || ctx.includes('florence')) currentCity = 'firenze';
+                else if (ctx.includes('genova') || ctx.includes('genoa')) currentCity = 'genova';
+                else if (ctx.includes('new_york') || ctx.includes('nyc')) currentCity = 'new_york';
+            }
+            window.currentCityName = currentCity;
 
             // Use coordinates from backend (lat/lon format) if available
             let lat, lng;
@@ -650,10 +661,11 @@ function drawRouteOnMap(itinerary) {
                     lng = realCoords.lng;
                     console.log(`⚠ Coordinate locali per ${item.title}: ${lat}, ${lng}`);
                 } else {
-                    // Fallback to Genova instead of NYC to maintain consistency
-                    console.log(`🚨 EMERGENCY: Nessuna coordinata per ${item.title} - usando Genova!`);
-                    lat = 44.4063 + (index * 0.002);  // Genova + offset
-                    lng = 8.9314 + (index * 0.002);
+                    // Fallback to detected city center instead of hardcoded Genova
+                    console.log(`🚨 EMERGENCY: Nessuna coordinata per ${item.title} - usando centro città!`);
+                    const cityCenter = detectCityCenter();
+                    lat = cityCenter[0] + (index * 0.002);  // City center + offset
+                    lng = cityCenter[1] + (index * 0.002);
                     console.log(`🏛️ Genova fallback per ${item.title}: ${lat}, ${lng}`);
                 }
             }
