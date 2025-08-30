@@ -12,6 +12,7 @@ import time
 import json
 from openai import OpenAI
 import os
+from typing import Dict, List
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
@@ -397,7 +398,14 @@ def plan_ai_powered():
             if 'sardegna' in location_lower or 'sardinia' in location_lower:
                 return 'olbia', 'Sardegna'
 
-            return 'genova', 'Genova'  # Default fallback
+            # Extract city name dynamically without hardcoded fallback
+            words = location_text.split()
+            for word in words:
+                clean_word = word.strip(',').strip()
+                if len(clean_word) > 2:
+                    return clean_word.lower(), clean_word.title()
+            
+            return 'unknown', 'Unknown Location'
 
         # 🗄️ DATA SOURCE HIERARCHY: PostgreSQL → Cost-effective scraping → Static fallback
         from cost_effective_scraping import CostEffectiveDataProvider
@@ -481,7 +489,7 @@ def plan_ai_powered():
             starting_coords = dynamic_attractions[0]['coords']
         else:
             # Fallback: Use geocoding to get city center coordinates
-            starting_coords = self._get_dynamic_city_coordinates(end_city_name)
+            starting_coords = get_dynamic_city_coordinates(end_city_name)
             # Update the placeholder attraction with real coordinates
             if dynamic_attractions:
                 dynamic_attractions[0]['coords'] = starting_coords
@@ -623,7 +631,7 @@ def plan_ai_powered():
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
 
             # 🚀 DYNAMIC DETAILS - Generate using attraction data
-            details = self._generate_dynamic_attraction_details(attraction, end_city_name)
+            details = generate_dynamic_attraction_details(attraction, end_city_name)
 
             # Use rich description from details
             description = details['description']
@@ -803,7 +811,7 @@ def plan_ai_powered():
             "itinerary": []
         }), 500
 
-    def _get_dynamic_city_coordinates(self, city_name: str) -> List[float]:
+    def get_dynamic_city_coordinates(city_name: str):
         """Get city coordinates dynamically using geocoding"""
         try:
             import requests
@@ -828,7 +836,7 @@ def plan_ai_powered():
         # Ultimate fallback: Rome coordinates
         return [41.9028, 12.4964]
 
-    def _generate_dynamic_attraction_details(self, attraction: Dict, city_name: str) -> Dict:
+    def generate_dynamic_attraction_details(attraction, city_name: str):
         """Generate dynamic attraction details from scraped data"""
         return {
             'description': attraction.get('description', f"Visita {attraction['name']} - una delle principali attrazioni di {city_name.title()}"),
