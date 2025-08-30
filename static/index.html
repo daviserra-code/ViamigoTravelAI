@@ -762,29 +762,36 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        const route = data.features[0].geometry.coordinates;
+                        if (data.features && data.features[0] && data.features[0].geometry) {
+                            const route = data.features[0].geometry.coordinates;
 
-                        // Converti coordinate da [lng, lat] a [lat, lng] per Leaflet
-                        const leafletCoords = route.map(coord => [coord[1], coord[0]]);
+                            // Converti coordinate da [lng, lat] a [lat, lng] per Leaflet
+                            const leafletCoords = route.map(coord => [coord[1], coord[0]]);
 
-                        // Stili diversi per diversi mezzi di trasporto
-                        let routeStyle = {
-                            color: '#8b5cf6',
-                            weight: 4,
-                            opacity: 0.8,
-                            lineCap: 'round',
-                            lineJoin: 'round'
-                        };
+                            // Stili diversi per diversi mezzi di trasporto
+                            let routeStyle = {
+                                color: '#8b5cf6',
+                                weight: 4,
+                                opacity: 0.8,
+                                lineCap: 'round',
+                                lineJoin: 'round'
+                            };
 
-                        // Personalizza stile basato su mezzo di trasporto (se disponibile nei dati)
-                        // Per ora usiamo lo stile standard
-
-                        const routeLine = L.polyline(leafletCoords, routeStyle).addTo(layer);
-
-                        console.log(`✅ Percorso reale disegnato da punto ${i} a punto ${i+1} (${routeProfile})`);
+                            const routeLine = L.polyline(leafletCoords, routeStyle).addTo(layer);
+                            console.log(`✅ Percorso reale disegnato da punto ${i} a punto ${i+1} (${routeProfile})`);
+                        } else {
+                            // Dati malformati - usa fallback
+                            console.log(`⚠️ Dati routing malformati, uso linea retta da punto ${i} a punto ${i+1}`);
+                            const fallbackLine = L.polyline([start, end], {
+                                color: '#8b5cf6',
+                                weight: 3,
+                                opacity: 0.6,
+                                dashArray: '10, 5'
+                            }).addTo(layer);
+                        }
                     } else {
                         // Fallback: linea retta se il servizio non funziona
-                        console.log(`⚠️ Routing API fallito, uso linea retta da punto ${i} a punto ${i+1}`);
+                        console.log(`⚠️ Routing API fallito (${response.status}), uso linea retta da punto ${i} a punto ${i+1}`);
                         const fallbackLine = L.polyline([start, end], {
                             color: '#8b5cf6',
                             weight: 3,
@@ -910,11 +917,15 @@
             })
             .then(data => {
                 console.log('Modal data received:', data);
-                // Gestisce la struttura ricca dei dati dal backend
-                let content = '';
+                
+                // Handle both direct data and nested structure
+                let modalData = data;
+                if (data && data.details && typeof data.details === 'object') {
+                    modalData = data.details;
+                }
                 
                 // Check if we have valid data
-                const hasValidData = data && (data.summary || data.details || data.title);
+                const hasValidData = modalData && (modalData.summary || modalData.details || modalData.title);
                 
                 if (!hasValidData) {
                     console.log('No valid data received, showing fallback');
@@ -934,26 +945,29 @@
                     `);
                     return;
                 }
+                
+                // Use modalData instead of data for the rest
+                let content = '';
 
                 // Aggiungi immagine se disponibile
-                if (data.imageUrl) {
-                    console.log(`🖼️ URL immagine ricevuta: ${data.imageUrl}`);
+                if (modalData.imageUrl) {
+                    console.log(`🖼️ URL immagine ricevuta: ${modalData.imageUrl}`);
                     content += `<div class="mb-4">
-                                  <img src="${data.imageUrl}" alt="${data.title || 'Immagine del luogo'}" 
+                                  <img src="${modalData.imageUrl}" alt="${modalData.title || 'Immagine del luogo'}" 
                                        class="w-full h-48 object-cover rounded-lg shadow-lg" 
                                        style="max-height: 200px;"
                                        onload="console.log('✅ Immagine caricata via proxy')" 
-                                       onerror="console.log('❌ Errore caricamento tramite proxy: ${data.imageUrl}')">
+                                       onerror="console.log('❌ Errore caricamento tramite proxy: ${modalData.imageUrl}')">
                                 </div>`;
                 }
 
-                if (data.summary) {
-                    content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;
+                if (modalData.summary) {
+                    content += `<p class="text-gray-300 mb-4">${modalData.summary}</p>`;
                 }
 
-                if (data.details && data.details.length > 0) {
+                if (modalData.details && modalData.details.length > 0) {
                     content += '<div class="mb-4">';
-                    data.details.forEach(detail => {
+                    modalData.details.forEach(detail => {
                         content += `<div class="flex justify-between py-2 border-b border-gray-700">
                                       <span class="text-gray-400 text-sm">${detail.label}:</span>
                                       <span class="text-gray-200 text-sm">${detail.value}</span>
@@ -963,34 +977,34 @@
                 }
 
                 // Add tip if available
-                if (data.tip) {
+                if (modalData.tip) {
                     content += `<div class="mt-4 p-3 bg-violet-900/50 rounded-lg border-l-4 border-violet-500">
                                   <h4 class="font-bold text-violet-300 text-sm mb-1">💡 Consiglio</h4>
-                                  <p class="text-gray-300 text-sm">${data.tip}</p>
+                                  <p class="text-gray-300 text-sm">${modalData.tip}</p>
                                 </div>`;
                 }
 
                 // Add opening hours and cost if available
-                if (data.opening_hours || data.cost) {
+                if (modalData.opening_hours || modalData.cost) {
                     content += '<div class="mt-4 space-y-2">';
-                    if (data.opening_hours) {
+                    if (modalData.opening_hours) {
                         content += `<div class="flex items-center space-x-2">
                                       <span class="text-green-400">🕒</span>
-                                      <span class="text-gray-300 text-sm">${data.opening_hours}</span>
+                                      <span class="text-gray-300 text-sm">${modalData.opening_hours}</span>
                                     </div>`;
                     }
-                    if (data.cost) {
+                    if (modalData.cost) {
                         content += `<div class="flex items-center space-x-2">
                                       <span class="text-yellow-400">💰</span>
-                                      <span class="text-gray-300 text-sm">${data.cost}</span>
+                                      <span class="text-gray-300 text-sm">${modalData.cost}</span>
                                     </div>`;
                     }
                     content += '</div>';
                 }
 
-                if (data.timetable && data.timetable.length > 0) {
+                if (modalData.timetable && modalData.timetable.length > 0) {
                     content += '<div class="mb-4"><h4 class="text-white font-semibold mb-2">Orari</h4>';
-                    data.timetable.forEach(schedule => {
+                    modalData.timetable.forEach(schedule => {
                         content += `<div class="flex justify-between py-1">
                                       <span class="text-gray-400 text-sm">${schedule.direction}:</span>
                                       <span class="text-gray-200 text-sm">${schedule.times}</span>
@@ -999,16 +1013,16 @@
                     content += '</div>';
                 }
 
-                if (data.actionLink) {
+                if (modalData.actionLink) {
                     content += `<div class="mt-4">
-                                  <a href="${data.actionLink.url}" target="_blank" 
+                                  <a href="${modalData.actionLink.url}" target="_blank" 
                                      class="inline-block bg-violet-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-violet-600">
-                                    ${data.actionLink.text}
+                                    ${modalData.actionLink.text}
                                   </a>
                                 </div>`;
                 }
 
-                showModalWithHTML(data.title || 'Dettagli', content);
+                showModalWithHTML(modalData.title || 'Dettagli', content);
             })
             .catch(error => {
                 console.error('Errore caricamento dettagli:', error);

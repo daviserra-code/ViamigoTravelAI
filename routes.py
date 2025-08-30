@@ -241,18 +241,33 @@ def route_proxy():
         
         if response.status_code == 200:
             return jsonify(response.json())
-        elif response.status_code == 403:
-            # API key limitata - restituisci fallback per linea retta
-            return jsonify({
-                'features': [{
-                    'geometry': {
-                        'coordinates': [
-                            [float(start.split(',')[0]), float(start.split(',')[1])],
-                            [float(end.split(',')[0]), float(end.split(',')[1])]
-                        ]
-                    }
-                }]
-            })
+        elif response.status_code == 403 or response.status_code >= 400:
+            # API key limitata o altri errori - restituisci fallback per linea retta
+            try:
+                start_coords = start.split(',')
+                end_coords = end.split(',')
+                return jsonify({
+                    'features': [{
+                        'geometry': {
+                            'coordinates': [
+                                [float(start_coords[0]), float(start_coords[1])],
+                                [float(end_coords[0]), float(end_coords[1])]
+                            ]
+                        }
+                    }]
+                })
+            except (IndexError, ValueError):
+                # Se anche il parsing delle coordinate fallisce
+                return jsonify({
+                    'features': [{
+                        'geometry': {
+                            'coordinates': [
+                                [8.9314, 44.4063],  # Genova default
+                                [8.9326, 44.4109]
+                            ]
+                        }
+                    }]
+                })
         else:
             return jsonify({'error': f'API error: {response.status_code}'}), response.status_code
             

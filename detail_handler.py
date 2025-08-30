@@ -246,19 +246,16 @@ def get_details():
         
         if detail_data:
             print(f"✅ Found details for {context}")
-            return jsonify({
-                'success': True,
-                'details': detail_data
-            })
+            # Return details directly, not nested under 'details' key
+            return jsonify(detail_data)
         else:
             print(f"❌ No details found for context: {context}")
             # Fallback for unknown contexts  
             return jsonify({
-                'success': False,
-                'error': 'Details not found',
                 'title': 'Informazioni non disponibili',
                 'summary': 'Dettagli non trovati per questa attrazione.',
-                'details': []
+                'details': [],
+                'tip': 'I dettagli specifici verranno aggiunti presto.'
             }), 404
             
     except Exception as e:
