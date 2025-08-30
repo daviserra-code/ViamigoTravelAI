@@ -22,6 +22,11 @@ app.register_blueprint(pure_instant_bp)
 from ai_companion_routes import ai_companion_bp
 app.register_blueprint(ai_companion_bp)
 
+# Registra blueprint advanced routes
+from advanced_routes import advanced_bp
+app.register_blueprint(advanced_bp)
+print("🚀 Advanced Routes caricato - Piano B, Scoperte Intelligenti, Diario AI attivi!")
+
 # Replit OAuth già registrato in routes.py
 
 if __name__ == "__main__":

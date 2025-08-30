@@ -1,10 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 import json
 import time
 import os
 from openai import OpenAI
 
 advanced_bp = Blueprint('advanced', __name__)
+
+@advanced_bp.route('/advanced-features')
+def advanced_features_page():
+    """Serve the advanced features HTML page"""
+    return send_from_directory('static', 'advanced_features.html')
 
 # Initialize OpenAI client
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
