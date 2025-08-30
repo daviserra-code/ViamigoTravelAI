@@ -223,6 +223,15 @@ Sii perspicace e intelligente nell'analisi comportamentale.
 # Global AI engine
 ai_engine = AICompanionEngine()
 
+# Import Flask essentials
+from flask import Blueprint, request, jsonify
+import json
+import random
+from datetime import datetime
+
+# Create blueprint
+ai_companion_bp = Blueprint('ai_companion', __name__)
+
 @ai_companion_bp.route('/ai_piano_b', methods=['POST'])
 def generate_ai_piano_b():
     """Generate real AI Piano B"""
@@ -339,44 +348,146 @@ def generate_ai_diario():
     except Exception as e:
         return jsonify({'error': f'AI Diario error: {str(e)}'}), 500
 
-@ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
+@ai_companio@ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
 def plan_ai_powered():
     """Complete AI-powered planning with all companion features"""
     try:
         data = request.get_json()
-        start = data.get('start', 'Fifth Avenue')
-        end = data.get('end', 'Cornelia Street')
+        start = data.get('start', 'Piazza De Ferrari, Genova')
+        end = data.get('end', 'Acquario di Genova')
+        interests = data.get('interests', [])
+        pace = data.get('pace', 'Moderato')
+        budget = data.get('budget', '€€')
         
         print(f"🧠 AI-powered planning: {start} → {end}")
         
-        # First get basic itinerary (fast) by importing the function directly
-        from pure_instant_routes import detect_city, CITY_DATA, generate_dynamic_details
-        import random
-        
-        # Generate base itinerary like pure instant does
-        start_city_key, start_city_name = detect_city(start)
-        end_city_key, end_city_name = detect_city(end)
-        
-        city_key = end_city_key
-        city_name = end_city_name
-        city_info = CITY_DATA.get(city_key, CITY_DATA['new_york'])
-        base_coords = city_info['coords']
-        
-        # Build base itinerary
-        base_itinerary = [
-            {
-                'time': '09:00',
-                'title': f'{start.title()}',
-                'description': f'Starting point: {start}',
-                'coordinates': base_coords,
-                'context': f'{start.lower().replace(" ", "_")}_{city_key}',
-                'transport': 'start'
+        # Detect city from input
+        def detect_city_from_input(location_text):
+            city_mappings = {
+                'genova': 'genova',
+                'milano': 'milano', 
+                'roma': 'roma',
+                'firenze': 'firenze',
+                'venezia': 'venezia',
+                'new york': 'new_york',
+                'manhattan': 'new_york',
+                'brooklyn': 'new_york'
             }
-        ]
+            
+            location_lower = location_text.lower()
+            for city_name, city_key in city_mappings.items():
+                if city_name in location_lower:
+                    return city_key, city_name
+            
+            return 'genova', 'genova'  # Default to Genova
         
-        # Add sample places
-        attractions = random.sample(city_info['attractions'], min(2, len(city_info['attractions'])))
-        restaurants = random.sample(city_info['restaurants'], min(1, len(city_info['restaurants'])))
+        # Get city information
+        end_city_key, end_city_name = detect_city_from_input(end)
+        
+        # City coordinates and attractions
+        city_data = {
+            'genova': {
+                'coords': [44.4063, 8.9314],
+                'attractions': [
+                    {'name': 'Acquario di Genova', 'coords': [44.4109, 8.9326], 'duration': 2.5},
+                    {'name': 'Palazzo Ducale', 'coords': [44.4071, 8.9348], 'duration': 1.5},
+                    {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
+                    {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.0},
+                    {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.5}
+                ]
+            },
+            'new_york': {
+                'coords': [40.7589, -73.9851],
+                'attractions': [
+                    {'name': 'Central Park', 'coords': [40.7829, -73.9654], 'duration': 2.0},
+                    {'name': 'Times Square', 'coords': [40.7580, -73.9855], 'duration': 1.0},
+                    {'name': 'Brooklyn Bridge', 'coords': [40.7061, -73.9969], 'duration': 1.5},
+                    {'name': 'High Line', 'coords': [40.7480, -74.0048], 'duration': 1.5}
+                ]
+            }
+        }
+        
+        city_info = city_data.get(end_city_key, city_data['genova'])
+        
+        # Build itinerary
+        itinerary = []
+        current_time = 9.0  # 9:00 AM
+        
+        # Starting point
+        start_coords = city_info['coords']
+        if start.lower() != end.lower():
+            # Add starting location
+            itinerary.append({
+                'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                'title': start,
+                'description': f'Punto di partenza: {start}',
+                'coordinates': start_coords,
+                'context': f'{start.lower().replace(" ", "_")}_{end_city_key}',
+                'type': 'activity',
+                'transport': 'start'
+            })
+        
+        # Add attractions from the city
+        import random
+        selected_attractions = random.sample(city_info['attractions'], min(3, len(city_info['attractions'])))
+        
+        for i, attraction in enumerate(selected_attractions):
+            # Add walking time between locations
+            if i > 0 or start.lower() != end.lower():
+                travel_duration = 0.5  # 30 minutes
+                start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+                current_time += travel_duration
+                end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+                
+                itinerary.append({
+                    "time": f"{start_time} - {end_time}",
+                    "title": f"Trasferimento verso {attraction['name']}",
+                    "description": "Spostamento con mezzi pubblici o a piedi",
+                    "type": "transport",
+                    "context": "walk",
+                    "coordinates": attraction['coords'],
+                    "transport": "walking"
+                })
+            
+            # Add main activity
+            activity_duration = attraction['duration']
+            start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+            current_time += activity_duration
+            end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+            
+            itinerary.append({
+                "time": f"{start_time} - {end_time}",
+                "title": attraction['name'],
+                "description": f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}",
+                "type": "activity",
+                "context": "museum",
+                "coordinates": attraction['coords'],
+                "transport": "visit"
+            })
+            
+            # Add AI tip for first location
+            if i == 0:
+                itinerary.append({
+                    "type": "tip",
+                    "title": "Consiglio dell'AI",
+                    "description": f"💡 Per un'esperienza ottimale a {attraction['name']}, ti consiglio di visitarlo durante le ore meno affollate."
+                })
+        
+        print(f"✅ Generated itinerary with {len(itinerary)} items")
+        
+        return jsonify({
+            "itinerary": itinerary,
+            "city": end_city_name,
+            "total_duration": f"{current_time - 9:.1f} hours",
+            "status": "success"
+        })
+        
+    except Exception as e:
+        print(f"❌ AI-powered planning error: {e}")
+        return jsonify({
+            "error": f"Planning failed: {str(e)}",
+            "itinerary": []
+        }), 500'restaurants'], min(1, len(city_info['restaurants'])))
         
         times = ['10:00', '12:30', '15:30']
         
