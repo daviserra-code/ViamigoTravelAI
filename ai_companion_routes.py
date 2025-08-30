@@ -818,7 +818,7 @@ def plan_ai_powered():
         
         # Use Nominatim for free geocoding
         url = "https://nominatim.openstreetmap.org/search"
-            params = {
+        params = {
             'q': city_name,
             'format': 'json',
             'limit': 1
