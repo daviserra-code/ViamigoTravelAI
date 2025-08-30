@@ -592,6 +592,68 @@ def plan_ai_powered():
             else:
                 description = f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}"
             
+            # Rich details for each attraction
+            attraction_details = {
+                'Acquario di Genova': {
+                    'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-18:00 (inverno)',
+                    'price_range': '€29 adulti, €19 bambini 4-12 anni',
+                    'highlights': ['12.000 esemplari marini', 'Secondo acquario più grande d\'Europa', 'Delfini e squali', 'Biosfera di Renzo Piano'],
+                    'insider_tip': 'Arriva presto al mattino per evitare le code. Il biglietto include anche la Biosfera.',
+                    'best_time': 'Mattina presto (9:00-11:00) o tardo pomeriggio (16:00-18:00)'
+                },
+                'Palazzo Ducale': {
+                    'opening_hours': 'Mar-Dom 9:00-19:00 (chiuso lunedì)',
+                    'price_range': '€12 adulti, €8 ridotto',
+                    'highlights': ['Centro culturale di Genova', 'Mostre temporanee', 'Architettura medievale', 'Cortile interno storico'],
+                    'insider_tip': 'Controlla le mostre temporanee sul sito ufficiale. Spesso eventi serali.',
+                    'best_time': 'Pomeriggio per le mostre, sera per eventi culturali'
+                },
+                'Cattedrale di San Lorenzo': {
+                    'opening_hours': 'Lun-Sab 8:00-12:00, 15:00-19:00, Dom 15:00-19:00',
+                    'price_range': 'Ingresso gratuito, Tesoro €6',
+                    'highlights': ['Bomba inesplosa del 1941', 'Tesoro con Santo Graal', 'Architettura romanico-gotica', 'Strisce bianche e nere'],
+                    'insider_tip': 'Visita il Museo del Tesoro per vedere la bomba che non esplose e il leggendario Santo Graal.',
+                    'best_time': 'Mattina per la luce migliore, pomeriggio per il museo'
+                },
+                'Spianata Castelletto': {
+                    'opening_hours': 'Sempre accessibile, funicolare 6:00-24:00',
+                    'price_range': 'Funicolare €0.90',
+                    'highlights': ['Vista panoramica 360°', 'Funicolare storica', 'Tramonto spettacolare', 'Villetta Di Negro'],
+                    'insider_tip': 'Prendi la funicolare da Piazza Portello. Il tramonto è il momento più magico.',
+                    'best_time': 'Tramonto (18:30-19:30) per le foto più belle'
+                },
+                'Porto Antico': {
+                    'opening_hours': 'Sempre accessibile, attrazioni 10:00-19:00',
+                    'price_range': 'Passeggiata gratuita, attrazioni varie',
+                    'highlights': ['Progetto Renzo Piano', 'Biosfera', 'Bigo ascensore panoramico', 'Galata Museo del Mare'],
+                    'insider_tip': 'Area completamente rinnovata per Expo 1992. Ideale per passeggiata serale.',
+                    'best_time': 'Sera per l\'atmosfera, giorno per i musei'
+                },
+                'Via del Campo': {
+                    'opening_hours': 'Sempre accessibile, negozi 10:00-19:00',
+                    'price_range': 'Gratuito, consumazioni varie',
+                    'highlights': ['Canzone di De André', 'Caruggi medievali', 'Farinata tipica', 'Mercato del pesce'],
+                    'insider_tip': 'Prova la farinata calda da Il Soccorso. La via è immortalata nella canzone di Fabrizio De André.',
+                    'best_time': 'Mattina per il mercato, sera per l\'atmosfera autentica'
+                },
+                'Palazzo Rosso': {
+                    'opening_hours': 'Mar-Ven 9:00-19:00, Sab-Dom 10:00-18:30',
+                    'price_range': '€9 adulti, ridotto €7',
+                    'highlights': ['Palazzo barocco XVII secolo', 'Collezione Van Dyck', 'Affreschi originali', 'Via del Campo'],
+                    'insider_tip': 'Parte dei Musei di Strada Nuova UNESCO. Biglietto combinato conveniente.',
+                    'best_time': 'Pomeriggio per la luce naturale negli affreschi'
+                }
+            }
+            
+            # Get details for this attraction
+            details = attraction_details.get(attraction['name'], {
+                'opening_hours': 'Consultare orari ufficiali',
+                'price_range': 'Varia',
+                'highlights': ['Attrazione principale di Genova'],
+                'insider_tip': 'Prenota in anticipo per evitare code.',
+                'best_time': 'Durante il giorno'
+            })
+            
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
@@ -599,7 +661,12 @@ def plan_ai_powered():
                 "type": "activity",
                 "context": "nervi_attraction" if is_nervi_destination else "museum",
                 "coordinates": attraction['coords'],
-                "transport": "visit"
+                "transport": "visit",
+                "opening_hours": details['opening_hours'],
+                "price_range": details['price_range'],
+                "highlights": details['highlights'],
+                "insider_tip": details['insider_tip'],
+                "best_time": details['best_time']
             })
             
             # Add AI tip for first location

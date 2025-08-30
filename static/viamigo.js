@@ -75,7 +75,7 @@ class ViamigoAPI {
     getUserBudget() {
         const selected = document.querySelector('.segmented-control button.selected');
         if (!selected) return 1000;
-        
+
         const budgetText = selected.textContent;
         if (budgetText === '€') return 500;
         if (budgetText === '€€') return 1500;
@@ -88,25 +88,25 @@ class ViamigoAPI {
             return 'Non ho trovato consigli per questa ricerca. Prova con una destinazione diversa!';
         }
 
-        let response = `Ho trovato ${data.recommendations.length} ottimi consigli per te:\\n\\n`;
-        
+        let response = `Ho trovato ${data.recommendations.length} ottimi consigli per te:\n\n`;
+
         data.recommendations.forEach((rec, index) => {
-            response += `**${index + 1}. ${rec.destination}**\\n`;
-            response += `${rec.description}\\n`;
-            
+            response += `**${index + 1}. ${rec.destination}**\n`;
+            response += `${rec.description}\n`;
+
             if (rec.estimated_cost) {
-                response += `💰 Costo stimato: €${rec.estimated_cost}\\n`;
+                response += `💰 Costo stimato: €${rec.estimated_cost}\n`;
             }
-            
+
             if (rec.best_time_to_visit) {
-                response += `📅 Miglior periodo: ${rec.best_time_to_visit}\\n`;
+                response += `📅 Miglior periodo: ${rec.best_time_to_visit}\n`;
             }
-            
+
             if (rec.activities && rec.activities.length > 0) {
-                response += `🎯 Attività: ${rec.activities.slice(0, 3).join(', ')}\\n`;
+                response += `🎯 Attività: ${rec.activities.slice(0, 3).join(', ')}\n`;
             }
-            
-            response += `\\n`;
+
+            response += `\n`;
         });
 
         return response;
@@ -139,7 +139,7 @@ class ViamigoAPI {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
         typingDiv.className = 'bg-gray-800 p-3 rounded-lg max-w-xs';
-        typingDiv.innerHTML = '<p class="text-sm text-gray-400">L\\'AI sta scrivendo...</p>';
+        typingDiv.innerHTML = '<p class="text-sm text-gray-400">L\'AI sta scrivendo...</p>';
 
         if (!this.chatContainer) {
             this.chatContainer = document.querySelector('#home-chat-view .flex-grow');
@@ -179,13 +179,13 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Get AI response
             const response = await api.sendChatMessage(message);
-            
+
             // Hide typing indicator and show response
             api.hideTypingIndicator();
             api.addMessageToChat(response);
         } catch (error) {
             api.hideTypingIndicator();
-            api.addMessageToChat('Mi dispiace, c\\'è stato un errore. Riprova tra un momento.');
+            api.addMessageToChat('Mi dispiace, c\'è stato un errore. Riprova tra un momento.');
         }
     }
 
@@ -207,10 +207,10 @@ document.addEventListener('DOMContentLoaded', function() {
         planButton.addEventListener('click', async function() {
             const departureInput = document.querySelector('input[placeholder="Partenza"]');
             const destinationInput = document.querySelector('input[placeholder="Destinazione"]');
-            
+
             const departure = departureInput.value.trim();
             const destination = destinationInput.value.trim();
-            
+
             if (!departure || !destination) {
                 alert('Per favore inserisci sia la partenza che la destinazione');
                 return;
@@ -222,22 +222,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 const tripData = await api.planTrip(departure, destination);
-                
+
                 if (tripData && tripData.recommendations) {
                     // Switch to itinerary page and populate data
                     const itineraryPage = document.getElementById('page-itinerary');
                     const homePage = document.getElementById('page-home');
-                    
+
                     homePage.classList.remove('active');
                     itineraryPage.classList.add('active');
-                    
+
                     // Update navigation
                     document.querySelectorAll('.nav-button').forEach(btn => {
                         btn.classList.remove('active', 'text-white');
                         btn.classList.add('text-gray-500');
                     });
                     document.querySelector('[data-page="itinerary"]').classList.add('active', 'text-white');
-                    
+
                     // Update header with trip info
                     const headerText = itineraryPage.querySelector('.header h2');
                     if (headerText) {
@@ -284,15 +284,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Here you could save to localStorage or send to backend
             const interests = api.getUserInterests();
             const budget = api.getUserBudget();
-            
+
             localStorage.setItem('viamigo-interests', JSON.stringify(interests));
             localStorage.setItem('viamigo-budget', budget.toString());
-            
+
             // Show feedback
             const originalText = this.textContent;
             this.textContent = 'Salvato!';
             this.style.backgroundColor = '#10b981';
-            
+
             setTimeout(() => {
                 this.textContent = originalText;
                 this.style.backgroundColor = '';
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load saved preferences
     const savedInterests = localStorage.getItem('viamigo-interests');
     const savedBudget = localStorage.getItem('viamigo-budget');
-    
+
     if (savedInterests) {
         const interests = JSON.parse(savedInterests);
         document.querySelectorAll('.interest-tag').forEach(tag => {
@@ -328,7 +328,7 @@ function generateItineraryFromRecommendations(recommendations) {
             const startTime = String(Math.floor(currentTime)).padStart(2, '0') + ':' + String(Math.floor((currentTime % 1) * 60)).padStart(2, '0');
             currentTime += travelTime / 60;
             const endTime = String(Math.floor(currentTime)).padStart(2, '0') + ':' + String(Math.floor((currentTime % 1) * 60)).padStart(2, '0');
-            
+
             itineraryItems.push({
                 time: `${startTime} - ${endTime} (${Math.floor(travelTime)} min)`,
                 title: `Spostamento verso ${rec.destination}`,
@@ -342,12 +342,16 @@ function generateItineraryFromRecommendations(recommendations) {
         const startTime = String(Math.floor(currentTime)).padStart(2, '0') + ':' + String(Math.floor((currentTime % 1) * 60)).padStart(2, '0');
         currentTime += activityDuration / 60;
         const endTime = String(Math.floor(currentTime)).padStart(2, '0') + ':' + String(Math.floor((currentTime % 1) * 60)).padStart(2, '0');
-        
+
         itineraryItems.push({
             time: `${startTime} - ${endTime} (${Math.floor(activityDuration)} min)`,
             title: rec.destination,
-            desc: rec.description,
-            context: "museum"
+            description: rec.description, // Use description from recommendation
+            context: "museum",
+            opening_hours: rec.opening_hours, // Add rich details
+            price_range: rec.price_range,
+            highlights: rec.highlights,
+            insider_tip: rec.insider_tip
         });
 
         // Add AI tip occasionally
@@ -355,7 +359,7 @@ function generateItineraryFromRecommendations(recommendations) {
             itineraryItems.push({
                 type: "tip",
                 title: "Consiglio dell'AI",
-                desc: rec.local_tips[0]
+                description: rec.local_tips[0]
             });
         }
     });
@@ -363,27 +367,124 @@ function generateItineraryFromRecommendations(recommendations) {
     renderCustomItinerary(itineraryItems, timelineContainer);
 }
 
+// Placeholder functions for createTipCard, createEmergencyPlanCard, createSmartDiscoveryCard
+function createTipCard(title, description) {
+    return `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 border-violet-500 bg-violet-900/50"><h4 class="font-bold text-white text-sm">${title}</h4><p class="text-sm text-gray-300">${description}</p></div>`;
+}
+
+function createEmergencyPlanCard(title, description, plan_b_data) {
+    return `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 border-red-500 bg-red-900/50"><h4 class="font-bold text-white text-sm">${title}</h4><p class="text-sm text-gray-300">${description}</p><p class="text-sm text-red-300 mt-1">Piano B: ${plan_b_data}</p></div>`;
+}
+
+function createSmartDiscoveryCard(title, description, discoveries) {
+    let discoveryList = discoveries.map(d => `<li class="text-gray-300 text-xs">${d}</li>`).join('');
+    return `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 border-blue-500 bg-blue-900/50"><h4 class="font-bold text-white text-sm">${title}</h4><p class="text-sm text-gray-300">${description}</p><ul class="list-disc pl-5 mt-2">${discoveryList}</ul></div>`;
+}
+
 function renderCustomItinerary(items, container) {
     container.innerHTML = '';
-    
+
     items.forEach(item => {
+        // Check if this is a tip, emergency plan, or discovery
         if (item.type === 'tip') {
-            container.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 border-violet-500 bg-violet-900/50"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.desc}</p></div>`;
+            timelineHTML += createTipCard(item.title, item.description);
+        } else if (item.type === 'emergency_plan') {
+            timelineHTML += createEmergencyPlanCard(item.title, item.description, item.plan_b_data);
+        } else if (item.type === 'smart_discovery') {
+            timelineHTML += createSmartDiscoveryCard(item.title, item.description, item.discoveries);
         } else {
-            container.innerHTML += `
-                <div class="timeline-item relative pb-8">
-                    <div class="dot bg-gray-500"></div>
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-400 mb-1">${item.time}</p>
-                            <h3 class="font-semibold text-white">${item.title}</h3>
-                            <p class="text-sm text-gray-300">${item.desc}</p>
-                        </div>
-                        <button class="ai-button p-2 text-violet-400" data-context="${item.context}">
-                            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V5a1.5 1.5 0 01-3 0V3.5zM10 8.5a1.5 1.5 0 013 0V10a1.5 1.5 0 01-3 0V8.5zM7 15l-1.5 1.5a1.5 1.5 0 01-3 0V15a1.5 1.5 0 013 0zm1.5-1.5a1.5 1.5 0 010-3H10a1.5 1.5 0 010 3h-1.5zm-1.5-2a1.5 1.5 0 013 0v1.5a1.5 1.5 0 01-3 0v-1.5zM10 13.5a1.5 1.5 0 013 0V15a1.5 1.5 0 01-3 0v-1.5z"/></svg>
-                        </button>
-                    </div>
-                </div>`;
+            // Regular itinerary item with rich details
+            timelineHTML += createTimelineItem(item, index);
+
+            // Log rich details for debugging
+            if (item.opening_hours || item.price_range || item.highlights) {
+                console.log(`📋 Rich details for ${item.title}:`, {
+                    opening_hours: item.opening_hours,
+                    price_range: item.price_range,
+                    highlights: item.highlights,
+                    insider_tip: item.insider_tip
+                });
+            }
         }
     });
+
+    container.innerHTML = items.map((item, index) => {
+        if (item.type === 'tip') {
+            return createTipCard(item.title, item.description);
+        } else if (item.type === 'emergency_plan') {
+            return createEmergencyPlanCard(item.title, item.description, item.plan_b_data);
+        } else if (item.type === 'smart_discovery') {
+            return createSmartDiscoveryCard(item.title, item.description, item.discoveries);
+        } else {
+            // Regular itinerary item with rich details
+            return createTimelineItem(item, index);
+        }
+    }).join('');
+}
+
+
+function createTimelineItem(item, index) {
+        const iconMap = {
+            'walking': '🚶',
+            'metro': '🚇',
+            'bus': '🚌',
+            'tram': '🚋',
+            'train': '🚂',
+            'funicular': '🚡',
+            'start': '📍',
+            'visit': '🏛️'
+        };
+
+        const icon = iconMap[item.transport] || '📍';
+        const timeDisplay = item.time || `Step ${index + 1}`;
+
+        // Build rich details HTML if available
+        let richDetailsHTML = '';
+        if (item.opening_hours || item.price_range || item.highlights || item.insider_tip) {
+            richDetailsHTML = `
+                <div class="mt-3 space-y-2">
+                    ${item.opening_hours ? `<div class="flex items-center space-x-2 text-xs">
+                        <span class="text-green-400">🕒</span>
+                        <span class="text-gray-300">${item.opening_hours}</span>
+                    </div>` : ''}
+                    ${item.price_range ? `<div class="flex items-center space-x-2 text-xs">
+                        <span class="text-yellow-400">💰</span>
+                        <span class="text-gray-300">${item.price_range}</span>
+                    </div>` : ''}
+                    ${item.highlights && item.highlights.length > 0 ? `<div class="flex items-start space-x-2 text-xs">
+                        <span class="text-purple-400">✨</span>
+                        <span class="text-gray-300">${item.highlights.slice(0, 2).join(', ')}</span>
+                    </div>` : ''}
+                    ${item.insider_tip ? `<div class="flex items-start space-x-2 text-xs">
+                        <span class="text-blue-400">💡</span>
+                        <span class="text-gray-300">${item.insider_tip}</span>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="timeline-item bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-violet-500 transition-all duration-200 cursor-pointer" onclick="showDetails('${item.context}', '${item.title}', '${item.description}')">
+                <div class="flex items-start space-x-3">
+                    <div class="timeline-icon w-10 h-10 bg-violet-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        ${index + 1}
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="text-lg">${icon}</span>
+                            <h3 class="font-semibold text-white text-sm leading-tight">${item.title}</h3>
+                            <span class="text-xs text-gray-400 ml-auto shrink-0">${timeDisplay}</span>
+                        </div>
+                        <p class="text-gray-300 text-xs leading-relaxed">${item.description}</p>
+                        ${richDetailsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+// Placeholder for showDetails function if it's used elsewhere
+function showDetails(context, title, description) {
+    console.log(`Details for ${title} (${context}): ${description}`);
+    // Implement actual detail display logic here
 }
