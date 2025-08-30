@@ -532,6 +532,9 @@ def plan_ai_powered():
         starting_coords = city_coordinates.get(end_city_key, [44.4063, 8.9314])  # Default to Genova if not found
         print(f"🗺️ Using coordinates {starting_coords} for city: {end_city_key}")
 
+        # Initialize current_time for itinerary building
+        current_time = 9.0  # Start at 9:00 AM
+
         # Build intelligent itinerary starting from user's specified location
         itinerary = [
             {
