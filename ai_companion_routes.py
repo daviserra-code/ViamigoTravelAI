@@ -246,9 +246,9 @@ def generate_ai_piano_b():
 
         # Use thread pool for fast AI generation
         future = ai_engine.executor.submit(
-            ai_engine.generate_piano_b, 
-            itinerary, 
-            context, 
+            ai_engine.generate_piano_b,
+            itinerary,
+            context,
             emergency_type
         )
 
@@ -404,7 +404,7 @@ def plan_ai_powered():
                 clean_word = word.strip(',').strip()
                 if len(clean_word) > 2:
                     return clean_word.lower(), clean_word.title()
-            
+
             return 'unknown', 'Unknown Location'
 
         # 🗄️ DATA SOURCE HIERARCHY: PostgreSQL → Cost-effective scraping → Static fallback
@@ -465,7 +465,7 @@ def plan_ai_powered():
 
         # 🌟 COMPLETELY DYNAMIC - Use scraped data for attractions
         dynamic_attractions = []
-        
+
         if real_attractions:
             for attraction in real_attractions[:4]:  # Use top 4 scraped attractions
                 dynamic_attractions.append({
@@ -525,7 +525,7 @@ def plan_ai_powered():
             })
             current_time += 0.33  # 20 minutes
 
-        # Generate comprehensive itinerary with multiple waypoints
+        # Build comprehensive itinerary with multiple waypoints
         end_lower = end.lower()
 
         # Always include multiple attractions for a rich experience
@@ -568,7 +568,7 @@ def plan_ai_powered():
 
             while remaining:
                 # Find closest attraction to current location
-                closest_idx = min(range(len(remaining)), 
+                closest_idx = min(range(len(remaining)),
                                 key=lambda i: calculate_distance(current_location, remaining[i]['coords']))
 
                 closest_attraction = remaining.pop(closest_idx)
@@ -648,7 +648,7 @@ def plan_ai_powered():
                 # Store rich details in context for modal display only
                 "_rich_details": {
                     "opening_hours": details['opening_hours'],
-                    "price_range": details['price_range'], 
+                    "price_range": details['price_range'],
                     "highlights": details['highlights'],
                     "insider_tip": details['insider_tip'],
                     "best_time": details['best_time'],
@@ -699,7 +699,7 @@ def plan_ai_powered():
                     "transport": "visit",
                     "_rich_details": {
                         "opening_hours": "10:00-22:00",
-                        "price_range": "€3-5", 
+                        "price_range": "€3-5",
                         "highlights": ["Gelato artigianale", "Vista porto", "Gusti tipici liguri"]
                     }
                 })
@@ -743,7 +743,7 @@ def plan_ai_powered():
                 "description": "Rooftop Bar Palazzo Grillo - Cocktail con vista panoramica sui tetti di Genova",
                 "coordinates": [44.4075, 8.9325],
                 "context": "aperitivo_palazzo_grillo",
-                "type": "activity", 
+                "type": "activity",
                 "transport": "visit",
                 "opening_hours": "17:00-02:00",
                 "price_range": "€8-12 per cocktail",
@@ -779,7 +779,7 @@ def plan_ai_powered():
                     "description": "I caruggi (vicoli) di Genova sono il centro storico medievale più grande d'Europa. Ogni vicolo ha una storia millenaria."
                 },
                 {
-                    "type": "tip", 
+                    "type": "tip",
                     "title": "🎭 Genova nascosta",
                     "description": "Cerca i 'madonnette' (edicole sacre) sui muri dei caruggi - sono oltre 3000 e proteggono la città da secoli."
                 },
@@ -790,7 +790,7 @@ def plan_ai_powered():
                 },
                 {
                     "type": "tip",
-                    "title": "🏴‍☠️ Curiosità marinara", 
+                    "title": "🏴‍☠️ Curiosità marinara",
                     "description": "Genova ha dato i natali a Cristoforo Colombo. La sua casa (presunta) è in Via del Mulcento, vicino a Porta Soprana."
                 }
             ])
@@ -811,11 +811,11 @@ def plan_ai_powered():
             "itinerary": []
         }), 500
 
-    def get_dynamic_city_coordinates(city_name: str):
+def get_dynamic_city_coordinates(city_name: str):
     """Get city coordinates dynamically using geocoding"""
     try:
         import requests
-        
+
         # Use Nominatim for free geocoding
         url = "https://nominatim.openstreetmap.org/search"
         params = {
@@ -823,7 +823,7 @@ def plan_ai_powered():
             'format': 'json',
             'limit': 1
         }
-        
+
         response = requests.get(url, params=params, timeout=5)
         if response.ok and response.json():
             data = response.json()[0]
@@ -832,7 +832,7 @@ def plan_ai_powered():
             return coords
     except Exception as e:
         print(f"⚠️ Geocoding failed for {city_name}: {e}")
-    
+
     # Ultimate fallback: Rome coordinates
     return [41.9028, 12.4964]
 
