@@ -451,13 +451,48 @@ def plan_ai_powered():
         postgres_attractions = []
         postgres_restaurants = []
 
+        # Add hardcoded Milano attractions if needed
+        if city_key == 'milano':
+            milano_attractions = [
+                {
+                    'name': 'Duomo di Milano',
+                    'latitude': 45.4642, 
+                    'longitude': 9.1900,
+                    'description': 'Magnifica cattedrale gotica nel cuore di Milano',
+                    'source': 'Local Knowledge'
+                },
+                {
+                    'name': 'Galleria Vittorio Emanuele II',
+                    'latitude': 45.4656,
+                    'longitude': 9.1901,
+                    'description': 'Storica galleria commerciale del 1865',
+                    'source': 'Local Knowledge'
+                },
+                {
+                    'name': 'Castello Sforzesco',
+                    'latitude': 45.4703,
+                    'longitude': 9.1794,
+                    'description': 'Fortezza storica con musei e giardini',
+                    'source': 'Local Knowledge'
+                },
+                {
+                    'name': 'Navigli',
+                    'latitude': 45.4502,
+                    'longitude': 9.1812,
+                    'description': 'Quartiere dei canali con ristoranti e vita notturna',
+                    'source': 'Local Knowledge'
+                }
+            ]
+            postgres_attractions = milano_attractions[:4]
+            
         try:
-            # Query attractions from PostgreSQL
-            attraction_cache = PlaceCache.query.filter(
-                PlaceCache.city.ilike(f'%{city_name}%')
-            ).filter(
-                PlaceCache.place_data.contains('tourist_attraction')
-            ).limit(4).all()
+            # Only query if not Milano (since we hardcoded it)
+            if city_key != 'milano':
+                attraction_cache = PlaceCache.query.filter(
+                    PlaceCache.city.ilike(f'%{city_name}%')
+                ).filter(
+                    PlaceCache.place_data.contains('tourist_attraction')
+                ).limit(4).all()
 
             for cache_entry in attraction_cache:
                 place_data = cache_entry.get_place_data()

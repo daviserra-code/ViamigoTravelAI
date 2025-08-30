@@ -79,6 +79,57 @@ def generate_dynamic_details(context, city):
         for key, details in milano_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
+        
+        # Add more Milano places dynamically
+        milano_generic = {
+            'navigli': {
+                'title': 'Navigli, Milano',
+                'summary': 'Quartiere dei canali storici con ristoranti e vita notturna.',
+                'details': [
+                    {'label': 'Canali', 'value': 'Naviglio Grande e Naviglio Pavese'},
+                    {'label': 'Storia', 'value': 'Sistema di canali del XII secolo'},
+                    {'label': 'Aperitivo', 'value': 'Famoso per aperitivo milanese'},
+                    {'label': 'Mercatino', 'value': 'Antiquariato ultima domenica del mese'}
+                ],
+                'tip': 'Perfetto per aperitivo serale lungo i canali',
+                'opening_hours': 'Sempre accessibile, locali 18:00-02:00',
+                'cost': 'Gratuito (consumazioni extra)'
+            },
+            'castello sforzesco': {
+                'title': 'Castello Sforzesco, Milano',
+                'summary': 'Fortezza del XV secolo con musei e parco Sempione.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1450 Francesco Sforza'},
+                    {'label': 'Musei', 'value': 'Arte antica, Pietà Rondanini di Michelangelo'},
+                    {'label': 'Parco', 'value': 'Parco Sempione adiacente'},
+                    {'label': 'Torre', 'value': 'Torre del Filarete'}
+                ],
+                'tip': 'Ingresso cortili gratuito, musei a pagamento',
+                'opening_hours': 'Castello 7:00-19:30, Musei 9:00-17:30',
+                'cost': 'Cortili gratis, Musei €5'
+            }
+        }
+        
+        # Try generic Milano places
+        for key, details in milano_generic.items():
+            if key in place_name.lower() or key in context.lower():
+                return details
+    
+    # Generic fallback for Milano attractions
+    if city == 'milano':
+        return {
+            'title': f'{place_name.title()}, Milano',
+            'summary': f'Attrazione di Milano da esplorare',
+            'details': [
+                {'label': 'Città', 'value': 'Milano'},
+                {'label': 'Zona', 'value': 'Centro storico'},
+                {'label': 'Trasporti', 'value': 'Metro linee M1/M2/M3'},
+                {'label': 'Consiglio', 'value': 'Parte del tour di Milano'}
+            ],
+            'tip': 'Scopri questa attrazione nel cuore di Milano',
+            'opening_hours': 'Consultare orari ufficiali',
+            'cost': 'Verificare tariffe aggiornate'
+        }
     
     # Generic fallback for any city
     return {

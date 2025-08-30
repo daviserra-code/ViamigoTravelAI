@@ -109,12 +109,18 @@ class CostEffectiveDataProvider:
                     tags = element.get('tags', {})
                     name = tags.get('name', 'Unknown')
                     
+                    # Filter out garbage data
+                    if 'F-84' in name or 'aircraft' in name.lower() or 'thunderstreak' in name.lower():
+                        continue
+                    if name == 'Unknown' or len(name) < 3:
+                        continue
+                        
                     # Descrizione più ricca
                     description = f"Luogo di interesse a {city}"
                     if tags.get('cuisine'):
                         description = f"Cucina {tags['cuisine']} a {city}"
                     elif tags.get('tourism'):
-                        description = f"Attrazione turistica: {tags['tourism']}"
+                        description = f"Attrazione turistica a {city}"
                     elif tags.get('amenity'):
                         description = f"{tags['amenity'].title()} a {city}"
                     
