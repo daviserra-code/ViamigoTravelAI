@@ -35,6 +35,13 @@
         .timeline { position: relative; padding-left: 24px; }
         .timeline::before { content: ''; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 2px; background-color: #374151; }
         .timeline-item .dot { position: absolute; left: -5px; top: 5px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #111827; }
+        .timeline-item:hover { border-color: #8b5cf6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+
+        /* Modal Styles */
+        #detail-modal { backdrop-filter: blur(4px); }
+        #detail-modal .bg-gray-800 { border: 1px solid #374151; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         #map { z-index: 0; }
         .leaflet-control-attribution { display: none; }
         .leaflet-bar a, .leaflet-bar a:hover { background-color: #1F2937 !important; color: #F9FAFB !important; border-bottom: 1px solid #374151 !important; width: 36px !important; height: 36px !important; line-height: 36px !important; display: flex; align-items: center; justify-content: center; }
@@ -183,12 +190,12 @@
 
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
-        
+
         console.log('🔧 VIAMIGO v2.0 - Inizializzazione script, elementi trovati:');
         console.log('- timelineContainer:', timelineContainer);
         console.log('- planButton:', planButton);
         console.log('- itineraryTitle:', itineraryTitle);
-        
+
         // OVERRIDE: Forza il caricamento del JavaScript corretto
         window.VIAMIGO_DEBUG = true;
         console.log('✅ VIAMIGO JavaScript caricato correttamente!');
@@ -271,7 +278,7 @@
                 const start = document.getElementById('start-location').value;
                 const end = document.getElementById('end-location').value;
                 planButton.textContent = "Pianificazione..."; planButton.disabled = true;
-                
+
                 // Recupera le preferenze dell'utente dal profilo
                 let userPreferences = { interests: [], pace: "", budget: "" };
                 try {
@@ -285,7 +292,7 @@
                 } catch (error) {
                     console.log('Preferenze non disponibili, uso quelle di default');
                 }
-                
+
                 try {
                     console.log('🧠 Invio richiesta a /plan_ai_powered con:', { start, end });
                     const response = await fetch('/plan_ai_powered', {
@@ -302,22 +309,22 @@
                     console.log('📡 Risposta ricevuta, status:', response.status);
                     const data = await response.json();
                     console.log('💾 Dati JSON ricevuti:', data);
-                    
+
                     if (data.error) { 
                         console.log('❌ Errore nei dati:', data.error);
                         renderItinerary(null); 
                     } else {
                         console.log('✅ Dati validi, processing...');
-                        
+
                         // Reset completo per nuova ricerca
                         console.log('🔄 Reset completo per nuovo itinerario');
-                        
+
                         // Pulisci la timeline esistente
                         const timelineContainer = document.querySelector('.timeline');
                         if (timelineContainer) {
                             timelineContainer.innerHTML = '';
                         }
-                        
+
                         // Reset della mappa per nuova città
                         if (mapInitialized && map) {
                             console.log('🗺️ Rimuovo mappa esistente');
@@ -326,22 +333,22 @@
                             map = null;
                             routeLayer = null;
                         }
-                        
+
                         // Forza il garbage collection delle variabili
                         currentItineraryData = null;
                         window.currentCityName = null;
-                        
+
                         // Aggiorna i dati e renderizza
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
                         console.log('🔄 Chiamata renderItinerary con:', data);
                         renderItinerary(data);
-                        
+
                         // Estrai e centra la mappa sulla nuova città
                         const cityFromInput = end.toLowerCase();
                         console.log(`🗺️ Mappa centrata su: ${cityFromInput}`);
                         window.currentCityName = cityFromInput;
-                        
+
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
                 } catch (error) { 
@@ -360,7 +367,7 @@
         itineraryToggleButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const view = button.dataset.view;
-                
+
                 // Aggiorna i pulsanti toggle
                 itineraryToggleButtons.forEach(btn => {
                     btn.classList.remove('bg-gray-600');
@@ -376,7 +383,7 @@
                 } else if (view === 'map') {
                     itineraryListView.classList.add('hidden');
                     itineraryMapView.classList.remove('hidden');
-                    
+
                     // Sempre reinizializza la mappa per aggiornare i dati
                     if (mapInitialized) {
                         map.remove();
@@ -395,7 +402,7 @@
                 // Rileva la città dall'itinerario e usa le coordinate appropriate
                 const cityCoords = detectCityFromItinerary(currentItineraryData);
                 map = L.map('map').setView([cityCoords.lat, cityCoords.lng], 14);
-                
+
                 // Tile layer con stile scuro
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors © CARTO',
@@ -453,7 +460,7 @@
             // Prova a rilevare la città dalle location di partenza/arrivo
             const startLocation = document.getElementById('start-location')?.value?.toLowerCase() || '';
             const endLocation = document.getElementById('end-location')?.value?.toLowerCase() || '';
-            
+
             for (const [city, coords] of Object.entries(cityCoordinates)) {
                 if (startLocation.includes(city) || endLocation.includes(city)) {
                     console.log(`Mappa centrata su: ${city}`);
@@ -476,7 +483,7 @@
 
             // 🗽 EMERGENCY NYC Fix: Aggiungi NYC al database
             const nyc_coords = { lat: 40.7589, lng: -73.9851 };
-            
+
             // Controlla se è NYC dal testo input
             const allText = `${startLocation} ${endLocation}`.toLowerCase();
             if (allText.includes('fifth avenue') || allText.includes('cornelia') || 
@@ -485,7 +492,7 @@
                 window.currentCityName = 'new york';
                 return nyc_coords;
             }
-            
+
             // Default: NYC invece di Genova per supporto mondiale
             console.log('🗽 Mappa centrata su: NYC (default mondiale)');
             window.currentCityName = 'new york';
@@ -531,22 +538,22 @@
                     'brera': { lat: 45.4722, lng: 9.1886 }
                 }
             };
-            
+
             const cityLocations = locations[cityName.toLowerCase()] || locations['genova'];
             const locationKey = locationName.toLowerCase();
-            
+
             // Cerca match esatto
             if (cityLocations[locationKey]) {
                 return cityLocations[locationKey];
             }
-            
+
             // Cerca match parziale
             for (const [key, coords] of Object.entries(cityLocations)) {
                 if (key.includes(locationKey) || locationKey.includes(key)) {
                     return coords;
                 }
             }
-            
+
             return null;
         }
 
@@ -573,7 +580,7 @@
                     console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'new york';
-                    
+
                     // Usa le coordinate dal backend (formato lat/lon) se disponibili
                     let lat, lng;
                     if (item.lat && item.lon) {
@@ -592,7 +599,7 @@
                     } else {
                         console.log(`❌ ERRORE: Nessuna coordinata valida per ${item.title}`);
                         console.log(`Dati ricevuti:`, item);
-                        
+
                         // Fallback: prova il database locale
                         const realCoords = getRealCoordinates(item.title, currentCity);
                         if (realCoords) {
@@ -613,7 +620,7 @@
 
                     // Colore marker (tutti blu per waypoint normali)
                     const markerColor = 'blue';
-                    
+
                     // FIX FINALE: Ogni waypoint (start, walking) ottiene numero sequenziale
                     let markerIcon = markerIndex.toString();
                     console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
@@ -629,7 +636,7 @@
                     });
 
                     const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
-                    
+
                     // Popup con informazioni della fermata e icona trasporto
                     const transportIcons = {
                         'walking': '🚶',
@@ -639,9 +646,9 @@
                         'funicular': '🚡',
                         'taxi': '🚕'
                     };
-                    
+
                     const transportIcon = transportIcons[item.transport] || '🚶';
-                    
+
                     marker.bindPopup(`
                         <div class="text-gray-900 max-w-xs">
                             <h3 class="font-bold text-sm mb-1">${item.title}</h3>
@@ -689,7 +696,7 @@
                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                    </svg>
                                  </div>`;
-                
+
                 div.onclick = function() {
                     if (navigator.geolocation) {
                         div.style.backgroundColor = '#8b5cf6';
@@ -697,26 +704,26 @@
                             function(position) {
                                 const lat = position.coords.latitude;
                                 const lng = position.coords.longitude;
-                                
+
                                 // Sposta la mappa alla posizione utente
                                 map.setView([lat, lng], 16);
-                                
+
                                 // Aggiungi marker per la posizione utente
                                 if (window.userLocationMarker) {
                                     map.removeLayer(window.userLocationMarker);
                                 }
-                                
+
                                 const userIcon = L.divIcon({
                                     className: 'user-location-marker',
                                     html: '<div style="background: #10b981; border: 3px solid white; border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
                                     iconSize: [20, 20],
                                     iconAnchor: [10, 10]
                                 });
-                                
+
                                 window.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
                                     .addTo(map)
                                     .bindPopup('<div class="text-gray-900"><strong>La tua posizione</strong></div>');
-                                
+
                                 div.style.backgroundColor = '#1F2937';
                             },
                             function() {
@@ -728,38 +735,38 @@
                         alert('Geolocalizzazione non supportata da questo browser.');
                     }
                 };
-                
+
                 return div;
             };
-            
+
             locateControl.addTo(map);
         }
 
         // --- ROUTING REALISTICO ---
         async function drawRealisticRoute(coordinates, layer) {
             console.log('🛣️ Disegno percorso realistico per', coordinates.length, 'punti');
-            
+
             // Disegna percorsi tra coppie di punti consecutive
             for (let i = 0; i < coordinates.length - 1; i++) {
                 const start = coordinates[i];
                 const end = coordinates[i + 1];
-                
+
                 try {
                     // Determina il tipo di routing basato sul trasporto
                     let routeProfile = 'foot-walking'; // default
-                    
+
                     // Nota: OpenRouteService gratuito ha limitazioni su alcuni profili
                     // Usiamo foot-walking come base universale
-                    
+
                     const response = await fetch(`/route_proxy?profile=${routeProfile}&start=${start[1]},${start[0]}&end=${end[1]},${end[0]}`);
-                    
+
                     if (response.ok) {
                         const data = await response.json();
                         const route = data.features[0].geometry.coordinates;
-                        
+
                         // Converti coordinate da [lng, lat] a [lat, lng] per Leaflet
                         const leafletCoords = route.map(coord => [coord[1], coord[0]]);
-                        
+
                         // Stili diversi per diversi mezzi di trasporto
                         let routeStyle = {
                             color: '#8b5cf6',
@@ -768,12 +775,12 @@
                             lineCap: 'round',
                             lineJoin: 'round'
                         };
-                        
+
                         // Personalizza stile basato su mezzo di trasporto (se disponibile nei dati)
                         // Per ora usiamo lo stile standard
-                        
+
                         const routeLine = L.polyline(leafletCoords, routeStyle).addTo(layer);
-                        
+
                         console.log(`✅ Percorso reale disegnato da punto ${i} a punto ${i+1} (${routeProfile})`);
                     } else {
                         // Fallback: linea retta se il servizio non funziona
@@ -795,7 +802,7 @@
                         dashArray: '10, 5'
                     }).addTo(layer);
                 }
-                
+
                 // Pausa breve per evitare rate limiting
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
@@ -804,27 +811,27 @@
         // Altre funzioni...
         function renderItinerary(data) {
             console.log('🔄 renderItinerary chiamata con dati:', data);
-            
+
             if (!data || !data.itinerary) {
                 timelineContainer.innerHTML = `<p class="text-gray-400 p-4">Nessun itinerario generato.</p>`;
                 return;
             }
-            
+
             // FORZA PULIZIA E RE-RENDER COMPLETO
             console.log('🔄 Pulizia timeline per nuovo itinerario...');
-            
+
             // Forza pulizia completa timeline
             timelineContainer.innerHTML = '';
             timelineContainer.style.display = 'none';
-            
+
             // Forza re-render dopo un tick
             setTimeout(() => {
                 timelineContainer.style.display = 'block';
-                
+
                 // AGGIORNA LA MAPPA CON I NUOVI DATI
                 console.log('🗺️ Aggiornamento mappa con itinerario...');
                 updateMapWithItinerary(data.itinerary);
-                
+
                 // RENDERIZZA LA TIMELINE
                 data.itinerary.forEach(item => {
                 if (item.type === 'tip') {
@@ -833,7 +840,7 @@
                     // Genera un trigger contestuale intelligente per ogni tappa
                     const contextualTrigger = generateContextualTrigger(item);
                     const triggerClass = contextualTrigger.active ? 'border-l-4 border-red-500 bg-red-900/20' : '';
-                    
+
                     timelineContainer.innerHTML += `
                         <div class="timeline-item relative pb-8 ${triggerClass}">
                             <div class="dot bg-gray-500"></div>
@@ -883,7 +890,7 @@
         // --- FUNZIONE OPEN MODAL (MANCANTE) ---
         function openModal(context) {
             console.log(`Richiesta dettagli per: ${context}`);
-            
+
             // Mostra modal con loading
             showModalWithHTML('Caricamento dettagli...', `
                 <div class="flex items-center justify-center py-8">
@@ -891,7 +898,7 @@
                     <span class="ml-2 text-gray-300">Caricamento dettagli e immagini...</span>
                 </div>
             `);
-            
+
             fetch('/get_details', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -901,7 +908,7 @@
             .then(data => {
                 // Gestisce la struttura ricca dei dati dal backend
                 let content = '';
-                
+
                 // Aggiungi immagine se disponibile (ora tramite proxy)
                 if (data.imageUrl) {
                     console.log(`🖼️ URL immagine ricevuta: ${data.imageUrl}`);
@@ -915,11 +922,11 @@
                 } else {
                     console.log('⚠️ Nessun URL immagine ricevuto dal backend');
                 }
-                
+
                 if (data.summary) {
                     content += `<p class="text-gray-300 mb-4">${data.summary}</p>`;
                 }
-                
+
                 if (data.details && data.details.length > 0) {
                     content += '<div class="mb-4">';
                     data.details.forEach(detail => {
@@ -930,7 +937,7 @@
                     });
                     content += '</div>';
                 }
-                
+
                 if (data.timetable && data.timetable.length > 0) {
                     content += '<div class="mb-4"><h4 class="text-white font-semibold mb-2">Orari</h4>';
                     data.timetable.forEach(schedule => {
@@ -941,7 +948,7 @@
                     });
                     content += '</div>';
                 }
-                
+
                 if (data.actionLink) {
                     content += `<div class="mt-4">
                                   <a href="${data.actionLink.url}" target="_blank" 
@@ -950,11 +957,11 @@
                                   </a>
                                 </div>`;
                 }
-                
+
                 if (!content) {
                     content = '<p class="text-gray-300">Informazioni non disponibili al momento.</p>';
                 }
-                
+
                 showModalWithHTML(data.title || 'Dettagli', content);
             })
             .catch(error => {
@@ -971,7 +978,7 @@
         function showModalWithHTML(title, htmlContent) {
             const modal = document.getElementById('modal');
             const modalContainer = document.getElementById('modal-container');
-            
+
             modal.innerHTML = `
                 <div class="p-4 border-b border-gray-700">
                     <div class="flex justify-between items-center">
@@ -1003,7 +1010,7 @@
         modalOverlay.addEventListener('click', window.closeModal);
 
         // === SISTEMA TRIGGER CONTESTUALI COMPAGNO AI ===
-        
+
         // Genera trigger contestuali intelligenti basati su eventi reali
         function generateContextualTrigger(item) {
             const triggers = {
@@ -1030,7 +1037,7 @@
             // Determina categoria basata sul contesto
             let category = 'general';
             const context = (item.context || '').toLowerCase();
-            
+
             if (context.includes('museo') || context.includes('galleria') || context.includes('palazzo')) category = 'museo';
             else if (context.includes('metro') || context.includes('bus') || context.includes('stazione')) category = 'trasporto';
             else if (context.includes('parco') || context.includes('giardini') || context.includes('passeggiata')) category = 'outdoor';
@@ -1040,10 +1047,10 @@
                 // Simula eventi contestuali realistici
                 const relevantTriggers = triggers[category];
                 const randomTrigger = relevantTriggers[Math.floor(Math.random() * relevantTriggers.length)];
-                
+
                 // Attiva trigger basato su probabilità realistica
                 const isActive = Math.random() < randomTrigger.probability;
-                
+
                 return {
                     active: isActive,
                     type: randomTrigger.type,
@@ -1059,10 +1066,10 @@
         // Trigger del Compagno AI per evento contestuale
         window.triggerAICompanion = function(location, eventType) {
             console.log(`🚨 Trigger AI Companion: ${eventType} a ${location}`);
-            
+
             // Apri modal del Compagno AI con contesto specifico
             const contextMessage = `⚠️ EVENTO RILEVATO: ${eventType.toUpperCase()}\n\nPosizione: ${location}\n\nIl tuo Compagno AI sta analizzando la situazione e preparando soluzioni alternative...`;
-            
+
             // Passa al sistema Advanced Features con contesto
             localStorage.setItem('aiCompanionContext', JSON.stringify({
                 trigger: true,
@@ -1070,7 +1077,7 @@
                 location: location,
                 timestamp: new Date().toISOString()
             }));
-            
+
             // Apri il Compagno AI
             window.location.href = '/advanced-features?trigger=' + eventType + '&location=' + encodeURIComponent(location);
         };
@@ -1078,14 +1085,14 @@
         // Compagno AI per specifica location
         window.openAICompanionForLocation = function(location) {
             console.log(`🧠 Apertura Compagno AI per: ${location}`);
-            
+
             localStorage.setItem('aiCompanionContext', JSON.stringify({
                 trigger: false,
                 location: location,
                 mode: 'exploration',
                 timestamp: new Date().toISOString()
             }));
-            
+
             window.location.href = '/advanced-features?location=' + encodeURIComponent(location);
         };
 
@@ -1094,10 +1101,10 @@
             console.log(`🧠 Apertura Compagno AI generico`);
             window.location.href = '/advanced-features';
         };
-        
+
         // Carica il profilo utente all'avvio
         loadUserProfile();
-        
+
         // Funzione per caricare il profilo utente completo
         async function loadUserProfile() {
             try {
@@ -1110,19 +1117,19 @@
                 console.log('Profilo utente non disponibile');
             }
         }
-        
+
         // Aggiorna il nome utente nell'interfaccia
         function updateUserName(profileData) {
             const userNameElement = document.getElementById('user-name');
             if (userNameElement && profileData) {
                 let userName = 'Viaggiatore';
-                
+
                 if (profileData.name && profileData.name !== 'Viaggiatore') {
                     userName = profileData.name;
                 } else if (profileData.profile && profileData.profile.name && profileData.profile.name !== 'Viaggiatore') {
                     userName = profileData.profile.name;
                 }
-                
+
                 userNameElement.textContent = userName;
             }
         }

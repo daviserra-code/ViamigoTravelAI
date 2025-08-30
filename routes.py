@@ -903,9 +903,9 @@ def generate_generic_itinerary(start, end):
         }
     ]
 
-@app.route('/get_details', methods=['POST'])
+@app.route('/get_details_backup', methods=['POST'])
 @login_required
-def api_get_details():
+def api_get_details_backup():
     """API endpoint per dettagli luoghi - sistema ibrido locale + dinamico"""
     try:
         data = request.get_json()

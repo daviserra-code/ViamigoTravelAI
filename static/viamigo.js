@@ -457,30 +457,32 @@ function createTimelineItem(item, index) {
         const icon = iconMap[iconKey] || '📍';
         const timeDisplay = item.time || `Step ${index + 1}`;
 
-        // Build rich details HTML if available
-        let richDetailsHTML = '';
-        if (item.opening_hours || item.price_range || item.highlights || item.insider_tip) {
-            richDetailsHTML = `
-                <div class="mt-3 space-y-2">
-                    ${item.opening_hours ? `<div class="flex items-center space-x-2 text-xs">
-                        <span class="text-green-400">🕒</span>
-                        <span class="text-gray-300">${item.opening_hours}</span>
-                    </div>` : ''}
-                    ${item.price_range ? `<div class="flex items-center space-x-2 text-xs">
-                        <span class="text-yellow-400">💰</span>
-                        <span class="text-gray-300">${item.price_range}</span>
-                    </div>` : ''}
-                    ${item.highlights && item.highlights.length > 0 ? `<div class="flex items-start space-x-2 text-xs">
-                        <span class="text-purple-400">✨</span>
-                        <span class="text-gray-300">${item.highlights.slice(0, 2).join(', ')}</span>
-                    </div>` : ''}
-                    ${item.insider_tip ? `<div class="flex items-start space-x-2 text-xs">
-                        <span class="text-blue-400">💡</span>
-                        <span class="text-gray-300">${item.insider_tip}</span>
-                    </div>` : ''}
-                </div>
-            `;
-        }
+        // Extract rich details from _rich_details or direct properties
+            const richDetails = item._rich_details || item;
+            let richDetailsHTML = '';
+
+            if (richDetails.opening_hours || richDetails.price_range || richDetails.highlights || richDetails.insider_tip) {
+                richDetailsHTML = `
+                    <div class="mt-3 space-y-2">
+                        ${richDetails.opening_hours ? `<div class="flex items-center space-x-2 text-xs">
+                            <span class="text-green-400">🕒</span>
+                            <span class="text-gray-300">${richDetails.opening_hours}</span>
+                        </div>` : ''}
+                        ${richDetails.price_range ? `<div class="flex items-center space-x-2 text-xs">
+                            <span class="text-yellow-400">💰</span>
+                            <span class="text-gray-300">${richDetails.price_range}</span>
+                        </div>` : ''}
+                        ${richDetails.highlights && richDetails.highlights.length > 0 ? `<div class="flex items-start space-x-2 text-xs">
+                            <span class="text-purple-400">✨</span>
+                            <span class="text-gray-300">${richDetails.highlights.slice(0, 2).join(', ')}</span>
+                        </div>` : ''}
+                        ${richDetails.insider_tip ? `<div class="flex items-start space-x-2 text-xs">
+                            <span class="text-blue-400">💡</span>
+                            <span class="text-gray-300">${richDetails.insider_tip}</span>
+                        </div>` : ''}
+                    </div>
+                `;
+            }
 
         return `
             <div class="timeline-item bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-violet-500 transition-all duration-200 cursor-pointer" onclick="openModal('${item.context || ''}', '${item.title || ''}', '${item.description || ''}')">

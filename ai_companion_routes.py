@@ -745,7 +745,7 @@ def plan_ai_powered():
                 "title": attraction['name'],
                 "description": description,
                 "type": "activity",
-                "context": attraction['name'].lower().replace(' ', '_').replace('di', '').replace('del', '').strip('_'),
+                "context": attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_'),
                 "coordinates": attraction['coords'],
                 "transport": "visit",
                 
