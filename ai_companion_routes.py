@@ -21,7 +21,7 @@ openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 class AICompanionEngine:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=3)
-    
+
     def generate_piano_b(self, current_itinerary, context, emergency_type="weather"):
         """Real AI Piano B generation with fast timeout"""
         try:
@@ -53,7 +53,7 @@ Crea un JSON con alternative realistiche e intelligenti:
 
 Rispondi SOLO con JSON valido. Sii specifico e intelligente.
 """
-            
+
             response = openai_client.chat.completions.create(
                 model="gpt-5",  # Latest model as per blueprint
                 messages=[
@@ -63,11 +63,11 @@ Rispondi SOLO con JSON valido. Sii specifico e intelligente.
                 response_format={"type": "json_object"},
                 timeout=6  # Fast timeout
             )
-            
+
             result = json.loads(response.choices[0].message.content)
             print(f"✅ AI Piano B generato: {result.get('ai_confidence', 'unknown')} confidence")
             return result
-            
+
         except Exception as e:
             print(f"⚠️ AI Piano B fallback: {e}")
             return {
@@ -87,12 +87,12 @@ Rispondi SOLO con JSON valido. Sii specifico e intelligente.
                 "cost_impact": "Simile al piano originale",
                 "ai_confidence": "fallback"
             }
-    
+
     def generate_scoperte_intelligenti(self, location, time_context, user_profile=None):
         """Real AI intelligent discoveries"""
         try:
             profile_context = f"Profilo utente: {user_profile}" if user_profile else "Profilo generico"
-            
+
             prompt = f"""
 Sei un AI travel companion che scopre gemme nascoste. Analizza questa situazione:
 
@@ -121,7 +121,7 @@ Genera scoperte intelligenti e contestuali:
 
 Sii specifico, intelligente e contextualmente rilevante.
 """
-            
+
             response = openai_client.chat.completions.create(
                 model="gpt-5",
                 messages=[
@@ -131,11 +131,11 @@ Sii specifico, intelligente e contextualmente rilevante.
                 response_format={"type": "json_object"},
                 timeout=6
             )
-            
+
             result = json.loads(response.choices[0].message.content)
             print(f"✅ AI Scoperte generate: {len(result.get('contextual_discoveries', []))} scoperte")
             return result
-            
+
         except Exception as e:
             print(f"⚠️ AI Scoperte fallback: {e}")
             return {
@@ -155,7 +155,7 @@ Sii specifico, intelligente e contextualmente rilevante.
                 "adaptive_suggestions": ["Esplora la zona", "Chiedi ai locals"],
                 "ai_confidence": "fallback"
             }
-    
+
     def generate_diario_insights(self, user_actions, preferences, location_history):
         """Real AI travel diary with behavioral analysis"""
         try:
@@ -186,7 +186,7 @@ Genera insights intelligenti del diario di viaggio in JSON:
 
 Sii perspicace e intelligente nell'analisi comportamentale.
 """
-            
+
             response = openai_client.chat.completions.create(
                 model="gpt-5",
                 messages=[
@@ -196,11 +196,11 @@ Sii perspicace e intelligente nell'analisi comportamentale.
                 response_format={"type": "json_object"},
                 timeout=6
             )
-            
+
             result = json.loads(response.choices[0].message.content)
             print(f"✅ AI Diario generato: {result.get('personalization_level', 'unknown')} personalizzazione")
             return result
-            
+
         except Exception as e:
             print(f"⚠️ AI Diario fallback: {e}")
             return {
@@ -240,9 +240,9 @@ def generate_ai_piano_b():
         itinerary = data.get('itinerary', [])
         context = data.get('context', 'travel planning')
         emergency_type = data.get('emergency_type', 'weather')
-        
+
         print(f"🧠 Generating AI Piano B for {emergency_type}")
-        
+
         # Use thread pool for fast AI generation
         future = ai_engine.executor.submit(
             ai_engine.generate_piano_b, 
@@ -250,7 +250,7 @@ def generate_ai_piano_b():
             context, 
             emergency_type
         )
-        
+
         # Wait with timeout
         try:
             result = future.result(timeout=8)
@@ -268,7 +268,7 @@ def generate_ai_piano_b():
                 'generation_time': 'fallback mode',
                 'ai_powered': False
             })
-        
+
     except Exception as e:
         return jsonify({'error': f'AI Piano B error: {str(e)}'}), 500
 
@@ -280,16 +280,16 @@ def generate_ai_scoperte():
         location = data.get('location', 'unknown')
         time_context = data.get('time_context', 'morning')
         user_profile = data.get('user_profile')
-        
+
         print(f"🧠 Generating AI Scoperte for {location} at {time_context}")
-        
+
         future = ai_engine.executor.submit(
             ai_engine.generate_scoperte_intelligenti,
             location,
             time_context,
             user_profile
         )
-        
+
         try:
             result = future.result(timeout=8)
             return jsonify({
@@ -306,7 +306,7 @@ def generate_ai_scoperte():
                 'generation_time': 'fallback mode',
                 'ai_powered': False
             })
-        
+
     except Exception as e:
         return jsonify({'error': f'AI Scoperte error: {str(e)}'}), 500
 
@@ -318,16 +318,16 @@ def generate_ai_diario():
         user_actions = data.get('user_actions', [])
         preferences = data.get('preferences', {})
         location_history = data.get('location_history', [])
-        
+
         print(f"🧠 Generating AI Diario insights")
-        
+
         future = ai_engine.executor.submit(
             ai_engine.generate_diario_insights,
             user_actions,
             preferences,
             location_history
         )
-        
+
         try:
             result = future.result(timeout=8)
             return jsonify({
@@ -344,7 +344,7 @@ def generate_ai_diario():
                 'generation_time': 'fallback mode',
                 'ai_powered': False
             })
-        
+
     except Exception as e:
         return jsonify({'error': f'AI Diario error: {str(e)}'}), 500
 
@@ -358,9 +358,9 @@ def plan_ai_powered():
         interests = data.get('interests', [])
         pace = data.get('pace', 'Moderato')
         budget = data.get('budget', '€€')
-        
+
         print(f"🧠 AI-powered planning: {start} → {end}")
-        
+
         # Detect city from input with proper geographical mapping
         def detect_city_from_input(location_text):
             city_mappings = {
@@ -387,34 +387,34 @@ def plan_ai_powered():
                 'manhattan': ('new_york', 'New York'),
                 'brooklyn': ('new_york', 'New York')
             }
-            
+
             location_lower = location_text.lower()
             for city_name, (city_key, city_display) in city_mappings.items():
                 if city_name in location_lower:
                     return city_key, city_display
-            
+
             # If no match found, try to extract a reasonable city name
             if 'sardegna' in location_lower or 'sardinia' in location_lower:
                 return 'olbia', 'Sardegna'
-            
+
             return 'genova', 'Genova'  # Default fallback
-        
+
         # 🗄️ DATA SOURCE HIERARCHY: PostgreSQL → Cost-effective scraping → Static fallback
         from cost_effective_scraping import CostEffectiveDataProvider
         from models import PlaceCache
-        
+
         # Get city information
         end_city_key, end_city_name = detect_city_from_input(end)
-        
+
         # Check if destination is specifically Nervi
         is_nervi_destination = 'nervi' in end.lower() or 'parchi' in end.lower()
-        
+
         print(f"🏛️ Checking PostgreSQL database for {end_city_name}")
-        
+
         # 1. FIRST: Check PostgreSQL database for pre-populated data
         postgres_attractions = []
         postgres_restaurants = []
-        
+
         try:
             # Query attractions from PostgreSQL
             attraction_cache = PlaceCache.query.filter(
@@ -422,7 +422,7 @@ def plan_ai_powered():
             ).filter(
                 PlaceCache.place_data.contains('tourist_attraction')
             ).limit(4).all()
-            
+
             for cache_entry in attraction_cache:
                 place_data = cache_entry.get_place_data()
                 if place_data:
@@ -433,28 +433,28 @@ def plan_ai_powered():
                         'description': place_data.get('description', f'Historic attraction in {end_city_name}'),
                         'source': 'PostgreSQL Database'
                     })
-                    
+
             print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
-            
+
         except Exception as e:
             print(f"⚠️ PostgreSQL query error: {e}")
-        
+
         # 2. SECOND: If insufficient data, use cost-effective scraping
         real_attractions = postgres_attractions
         real_restaurants = postgres_restaurants
-        
+
         if len(real_attractions) < 2:
             print(f"🔍 PostgreSQL insufficient, using cost-effective scraping for {end_city_name}")
             scraping_provider = CostEffectiveDataProvider()
             scraped_attractions = scraping_provider.get_places_data(end_city_name, "tourist_attraction")
             scraped_restaurants = scraping_provider.get_places_data(end_city_name, "restaurant")
-            
+
             # Combine PostgreSQL + scraped data
             real_attractions.extend(scraped_attractions)
             real_restaurants.extend(scraped_restaurants)
         else:
             print(f"✅ Using PostgreSQL data for {end_city_name}")
-        
+
         # City coordinates and attractions - Updated with proper geographical data
         city_data = {
             'genova': {
@@ -499,7 +499,7 @@ def plan_ai_powered():
                 ]
             }
         }
-        
+
         # Always use verified static data to prevent hallucinated coordinates
         # The scraping data is returning wrong coordinates, so use curated real data
         if is_nervi_destination:
@@ -508,33 +508,43 @@ def plan_ai_powered():
             end_city_name = 'Nervi, Genova'
         else:
             city_info = city_data.get(end_city_key, city_data['genova'])
-        
+
         dynamic_attractions = [
             {'name': attr['name'], 'coords': attr['coords'], 'duration': attr['duration']}
             for attr in city_info['attractions'][:4]
         ]
-        
+
         print(f"✅ Using verified {len(dynamic_attractions)} real attractions for {end_city_name}")
-        
-        # Build itinerary with real data
-        itinerary = []
-        current_time = 9.0  # 9:00 AM
-        
-        # Starting point - use proper coordinates based on detected city
-        start_city_key, start_city_name = detect_city_from_input(start)
-        start_coords = city_data.get(start_city_key, city_data['genova'])['coords']
-        
-        # ALWAYS add starting location
-        itinerary.append({
-            'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
-            'title': start,
-            'description': f'Punto di partenza: {start}',
-            'coordinates': start_coords,
-            'context': f'{start.lower().replace(" ", "_")}_{end_city_key}',
-            'type': 'activity',
-            'transport': 'start'
-        })
-        
+
+        # Get proper starting coordinates for the detected city
+        city_coordinates = {
+            'genova': [44.4063, 8.9314],
+            'milano': [45.4642, 9.1900],
+            'roma': [41.9028, 12.4964],
+            'firenze': [43.7696, 11.2558],
+            'venezia': [45.4408, 12.3155],
+            'napoli': [40.8518, 14.2681],
+            'torino': [45.0703, 7.6869],
+            'bologna': [44.4949, 11.3426],
+            'new_york': [40.7589, -73.9851]
+        }
+
+        starting_coords = city_coordinates.get(end_city_key, [44.4063, 8.9314])  # Default to Genova if not found
+        print(f"🗺️ Using coordinates {starting_coords} for city: {end_city_key}")
+
+        # Build intelligent itinerary starting from user's specified location
+        itinerary = [
+            {
+                'time': '09:00',
+                'title': start,
+                'description': f'Punto di partenza: {start}',
+                'coordinates': starting_coords,
+                'context': f'{start.lower().replace(" ", "_").replace(",", "")}_{end_city_key}',
+                'transport': 'start',
+                'type': 'activity'
+            }
+        ]
+
         # For Nervi destination, add train travel
         if is_nervi_destination:
             current_time += 0.5  # 30 minutes
@@ -548,13 +558,13 @@ def plan_ai_powered():
                 'transport': 'train'
             })
             current_time += 0.33  # 20 minutes
-        
+
         # Generate comprehensive itinerary with multiple waypoints
         end_lower = end.lower()
-        
+
         # Always include multiple attractions for a rich experience
         selected_attractions = []
-        
+
         # If user specifically requested a destination, include it as main attraction
         if 'acquario' in end_lower:
             # Build complete Genova waterfront experience
@@ -575,44 +585,44 @@ def plan_ai_powered():
         else:
             # Complete Genova experience with multiple attractions
             selected_attractions = dynamic_attractions[:4]  # Include 4 attractions for rich experience
-        
+
         # GEOGRAPHIC SEQUENCING: Sort attractions by proximity to create logical route
         def calculate_distance(coord1, coord2):
             """Calculate simple Euclidean distance between two coordinates"""
             return ((coord1[0] - coord2[0])**2 + (coord1[1] - coord2[1])**2)**0.5
-        
+
         def sort_attractions_by_proximity(attractions, start_coords):
             """Sort attractions to create optimal geographical sequence"""
             if not attractions:
                 return []
-            
+
             sorted_attractions = []
             remaining = attractions.copy()
             current_location = start_coords
-            
+
             while remaining:
                 # Find closest attraction to current location
                 closest_idx = min(range(len(remaining)), 
                                 key=lambda i: calculate_distance(current_location, remaining[i]['coords']))
-                
+
                 closest_attraction = remaining.pop(closest_idx)
                 sorted_attractions.append(closest_attraction)
                 current_location = closest_attraction['coords']
-            
+
             return sorted_attractions
-        
+
         # Apply geographical sorting
-        selected_attractions = sort_attractions_by_proximity(selected_attractions, start_coords)
-        
+        selected_attractions = sort_attractions_by_proximity(selected_attractions, starting_coords)
+
         print(f"🗺️ Optimized route with {len(selected_attractions)} stops in geographical order")
-        
+
         for i, attraction in enumerate(selected_attractions):
             # Calculate real travel time and method based on distance
             if i > 0:
                 prev_coords = selected_attractions[i-1]['coords']
                 current_coords = attraction['coords']
                 distance_km = calculate_distance(prev_coords, current_coords) * 111  # Rough km conversion
-                
+
                 # Determine transport method and time based on distance
                 if distance_km > 2:  # >2km = public transport
                     if attraction['name'] == 'Spianata Castelletto':
@@ -631,11 +641,11 @@ def plan_ai_powered():
                     transport_method = "walking"
                     travel_duration = 0.17  # 10 min
                     transport_desc = f"Breve passeggiata di {int(travel_duration*60)} minuti"
-                
+
                 start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
                 current_time += travel_duration
                 end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
-                
+
                 itinerary.append({
                     "time": f"{start_time} - {end_time}",
                     "title": f"Verso {attraction['name']}",
@@ -647,13 +657,13 @@ def plan_ai_powered():
                     "distance_km": round(distance_km, 1),
                     "duration_minutes": int(travel_duration * 60)
                 })
-            
+
             # Add main activity with FULL DETAILS
             activity_duration = attraction.get('duration', 1.5)
             start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             current_time += activity_duration
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
-            
+
             # Rich details database for each attraction
             attraction_details = {
                 'Acquario di Genova': {
@@ -723,7 +733,7 @@ def plan_ai_powered():
                     'photo_spots': ['Palazzo medievali', 'Vicoli stretti', 'Bancarelle mercato']
                 }
             }
-            
+
             # Get comprehensive details for this attraction
             details = attraction_details.get(attraction['name'], {
                 'description': f"Visita {attraction['name']} - una delle principali attrazioni di {end_city_name.title()}",
@@ -736,10 +746,10 @@ def plan_ai_powered():
                 'accessibility': 'Da verificare accessibilità',
                 'photo_spots': ['Punti panoramici disponibili']
             })
-            
+
             # Use rich description from details
             description = details['description']
-            
+
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
@@ -748,7 +758,7 @@ def plan_ai_powered():
                 "context": attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_'),
                 "coordinates": attraction['coords'],
                 "transport": "visit",
-                
+
                 # Store rich details in context for modal display only
                 "_rich_details": {
                     "opening_hours": details['opening_hours'],
@@ -761,7 +771,7 @@ def plan_ai_powered():
                     "visit_duration_hours": details['visit_duration']
                 }
             })
-            
+
             # Add contextual tips and photo opportunities
             if i == 0:
                 if is_nervi_destination:
@@ -776,7 +786,7 @@ def plan_ai_powered():
                         "title": "📸 Photo Stop",
                         "description": f"Perfetto per foto ai caratteristici caruggi. Cerca i dettagli architettonici medievali."
                     })
-            
+
             # Add intermediate photo stops and local insights
             if i == 1 and len(selected_attractions) > 2:
                 current_time += 0.17  # 10 minutes
@@ -789,7 +799,7 @@ def plan_ai_powered():
                     "type": "activity",
                     "transport": "photo"
                 })
-            
+
             if i == 2 and 'acquario' in end_lower:
                 # Add gelato break before Acquario
                 current_time += 0.25  # 15 minutes
@@ -807,13 +817,13 @@ def plan_ai_powered():
                         "highlights": ["Gelato artigianale", "Vista porto", "Gusti tipici liguri"]
                     }
                 })
-                
+
                 itinerary.append({
                     "type": "tip",
                     "title": "🍦 Local Secret",
                     "description": "I genovesi mangiano il gelato anche d'inverno! Il 'focaccia al formaggio' con gelato è una combo locale."
                 })
-        
+
         # Add lunch break if itinerary is long enough
         if current_time > 12.5:  # After 12:30
             itinerary.append({
@@ -832,13 +842,13 @@ def plan_ai_powered():
                 }
             })
             current_time += 1.0  # 1 hour lunch
-            
+
             itinerary.append({
                 "type": "tip",
                 "title": "🍝 Tradizione culinaria",
                 "description": "Il pesto genovese DOP deve essere fatto solo con basilico genovese, aglio, pinoli, parmigiano, pecorino e olio EVO ligure."
             })
-        
+
         # Add aperitivo if it's late afternoon
         if current_time > 17.0:
             itinerary.append({
@@ -854,19 +864,19 @@ def plan_ai_powered():
                 "highlights": ["Vista panoramica", "Cocktail signature", "Aperitivo ligure", "Terrazza storica"]
             })
             current_time += 0.5
-        
+
         # Ensure the itinerary ends meaningfully
         if current_time < 19.0:  # If still early evening
             itinerary.append({
                 "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
                 "title": "Passeggiata serale",
                 "description": "Rientro attraverso i caruggi illuminati - Genova di sera ha un fascino particolare",
-                "coordinates": start_coords,
+                "coordinates": starting_coords,
                 "context": "evening_walk_caruggi",
                 "type": "activity",
                 "transport": "walking"
             })
-        
+
         # Add comprehensive local tips and cultural insights
         if is_nervi_destination:
             itinerary.append({
@@ -898,21 +908,19 @@ def plan_ai_powered():
                     "description": "Genova ha dato i natali a Cristoforo Colombo. La sua casa (presunta) è in Via del Mulcento, vicino a Porta Soprana."
                 }
             ])
-        
+
         print(f"✅ Generated itinerary with {len(itinerary)} items, ending at: {end}")
-        
+
         return jsonify({
             "itinerary": itinerary,
             "city": end_city_name,
             "total_duration": f"{current_time - 9:.1f} hours",
             "status": "success"
         })
-        
+
     except Exception as e:
         print(f"❌ AI-powered planning error: {e}")
         return jsonify({
             "error": f"Planning failed: {str(e)}",
             "itinerary": []
         }), 500
-        
-        
