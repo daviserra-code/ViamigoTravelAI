@@ -549,37 +549,59 @@ def plan_ai_powered():
             })
             current_time += 0.33  # 20 minutes
         
-        # Filter attractions to match the actual destination requested
+        # Generate comprehensive itinerary with multiple waypoints
         end_lower = end.lower()
         
-        # If user specifically requested a destination, prioritize it
+        # Always include multiple attractions for a rich experience
+        selected_attractions = []
+        
+        # If user specifically requested a destination, include it as main attraction
         if 'acquario' in end_lower:
-            # Find and prioritize Acquario di Genova
-            selected_attractions = [attr for attr in dynamic_attractions if 'acquario' in attr['name'].lower()]
-            if not selected_attractions:
-                # If not found in dynamic attractions, add it specifically
-                selected_attractions = [{'name': 'Acquario di Genova', 'coords': [44.4109, 8.9326], 'duration': 2.5}]
+            # Build complete Genova waterfront experience
+            selected_attractions = [
+                {'name': 'Via del Campo', 'coords': [44.4055, 8.9298], 'duration': 0.75},
+                {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
+                {'name': 'Porto Antico', 'coords': [44.4108, 8.9279], 'duration': 1.0},
+                {'name': 'Acquario di Genova', 'coords': [44.4109, 8.9326], 'duration': 2.5}
+            ]
         elif 'castelletto' in end_lower or 'spianata' in end_lower:
-            # Only use castelletto if explicitly requested
-            selected_attractions = [attr for attr in dynamic_attractions if 'castelletto' in attr['name'].lower() or 'spianata' in attr['name'].lower()]
+            # Build complete historic center + panoramic experience
+            selected_attractions = [
+                {'name': 'Via del Campo', 'coords': [44.4055, 8.9298], 'duration': 0.75},
+                {'name': 'Cattedrale di San Lorenzo', 'coords': [44.4082, 8.9309], 'duration': 1.0},
+                {'name': 'Palazzo Ducale', 'coords': [44.4071, 8.9348], 'duration': 1.0},
+                {'name': 'Spianata Castelletto', 'coords': [44.4127, 8.9264], 'duration': 1.5}
+            ]
         else:
-            # Use dynamic attractions but ensure we don't add random destinations
-            selected_attractions = dynamic_attractions[:3]  # Limit to 3 to prevent arbitrary additions
+            # Complete Genova experience with multiple attractions
+            selected_attractions = dynamic_attractions[:4]  # Include 4 attractions for rich experience
         
         for i, attraction in enumerate(selected_attractions):
-            # Add walking time between locations
-            if i > 0 or start.lower() != end.lower():
-                travel_duration = 0.5  # 30 minutes
+            # Add detailed walking time between locations with route descriptions
+            if i > 0:
+                travel_duration = 0.25  # 15 minutes
                 start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
                 current_time += travel_duration
                 end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
                 
+                # Generate specific route descriptions
+                route_descriptions = {
+                    'Via del Campo': 'Cammina attraverso i caratteristici caruggi del centro storico medievale',
+                    'Cattedrale di San Lorenzo': 'Prosegui verso il Duomo attraverso Via San Lorenzo, strada storica',
+                    'Porto Antico': 'Scendi verso il porto attraverso Via del Borgo Incrociati',
+                    'Acquario di Genova': 'Breve passeggiata lungo il Porto Antico verso l\'Acquario',
+                    'Palazzo Ducale': 'Risali verso Piazza Matteotti attraverso Via XXV Aprile',
+                    'Spianata Castelletto': 'Prendi la funicolare da Piazza Portello (€0.90) o sali a piedi per Via Spianata Castelletto'
+                }
+                
+                description = route_descriptions.get(attraction['name'], f"Passeggiata di 15 minuti verso {attraction['name']}")
+                
                 itinerary.append({
                     "time": f"{start_time} - {end_time}",
-                    "title": f"Trasferimento verso {attraction['name']}",
-                    "description": "Spostamento con mezzi pubblici o a piedi",
+                    "title": f"Verso {attraction['name']}",
+                    "description": description,
                     "type": "transport",
-                    "context": "walk",
+                    "context": f"walk_to_{attraction['name'].lower().replace(' ', '_')}",
                     "coordinates": attraction['coords'],
                     "transport": "walking"
                 })
@@ -682,7 +704,7 @@ def plan_ai_powered():
                 "best_time": details['best_time']
             })
             
-            # Add AI tip for first location
+            # Add contextual tips and photo opportunities
             if i == 0:
                 if is_nervi_destination:
                     itinerary.append({
@@ -693,40 +715,127 @@ def plan_ai_powered():
                 else:
                     itinerary.append({
                         "type": "tip",
-                        "title": "Consiglio dell'AI",
-                        "description": f"💡 Per un'esperienza ottimale a {attraction['name']}, ti consiglio di visitarlo durante le ore meno affollate."
+                        "title": "📸 Photo Stop",
+                        "description": f"Perfetto per foto ai caratteristici caruggi. Cerca i dettagli architettonici medievali."
                     })
+            
+            # Add intermediate photo stops and local insights
+            if i == 1 and len(selected_attractions) > 2:
+                current_time += 0.17  # 10 minutes
+                itinerary.append({
+                    "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                    "title": "Sosta panoramica",
+                    "description": "Fermata per foto al panorama sui tetti di Genova e il porto",
+                    "coordinates": [attraction['coords'][0] + 0.001, attraction['coords'][1] + 0.001],
+                    "context": "photo_stop_panorama",
+                    "type": "activity",
+                    "transport": "photo"
+                })
+            
+            if i == 2 and 'acquario' in end_lower:
+                # Add gelato break before Acquario
+                current_time += 0.25  # 15 minutes
+                itinerary.append({
+                    "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                    "title": "Gelateria Il Doge",
+                    "description": "Pausa gelato con vista sul porto prima dell'Acquario. Prova il gusto 'Pesto' tipico genovese!",
+                    "coordinates": [44.4105, 8.9285],
+                    "context": "gelato_break_porto_antico",
+                    "type": "activity",
+                    "transport": "visit",
+                    "opening_hours": "10:00-22:00",
+                    "price_range": "€3-5",
+                    "highlights": ["Gelato artigianale", "Vista porto", "Gusti tipici liguri"]
+                })
+                
+                itinerary.append({
+                    "type": "tip",
+                    "title": "🍦 Local Secret",
+                    "description": "I genovesi mangiano il gelato anche d'inverno! Il 'focaccia al formaggio' con gelato è una combo locale."
+                })
         
-        # Ensure the itinerary ends at the requested destination
-        end_lower = end.lower()
-        if not any(end_lower in item.get('title', '').lower() for item in itinerary if item.get('type') != 'tip'):
-            # Add the specific end destination if it wasn't included
-            current_time += 0.5
-            end_coords = start_coords  # Default fallback
-            
-            # Get specific coordinates for requested destination
-            if 'acquario' in end_lower:
-                end_coords = [44.4109, 8.9326]
-            elif 'castelletto' in end_lower or 'spianata' in end_lower:
-                end_coords = [44.4127, 8.9264]
-            
+        # Add lunch break if itinerary is long enough
+        if current_time > 12.5:  # After 12:30
             itinerary.append({
                 "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
-                "title": end,
-                "description": f"Destinazione finale: {end}",
-                "coordinates": end_coords,
-                "context": f'{end.lower().replace(" ", "_")}_{end_city_key}',
+                "title": "Pranzo tipico genovese",
+                "description": "Trattoria Antica Osteria del Borgo - Pesto fatto in casa, focaccia col formaggio e farinata",
+                "coordinates": [44.4065, 8.9295],
+                "context": "lunch_break_borgo",
                 "type": "activity",
-                "transport": "arrival"
+                "transport": "visit",
+                "opening_hours": "12:00-15:00, 19:00-23:00",
+                "price_range": "€25-35 a persona",
+                "highlights": ["Pesto al mortaio", "Focaccia col formaggio DOP", "Farinata calda", "Vino Vermentino"],
+                "insider_tip": "Ordina il 'menu degustazione ligure' - include pesto, focaccia e farinata"
+            })
+            current_time += 1.0  # 1 hour lunch
+            
+            itinerary.append({
+                "type": "tip",
+                "title": "🍝 Tradizione culinaria",
+                "description": "Il pesto genovese DOP deve essere fatto solo con basilico genovese, aglio, pinoli, parmigiano, pecorino e olio EVO ligure."
             })
         
-        # Add additional Nervi-specific tips
+        # Add aperitivo if it's late afternoon
+        if current_time > 17.0:
+            itinerary.append({
+                "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                "title": "Aperitivo con vista",
+                "description": "Rooftop Bar Palazzo Grillo - Cocktail con vista panoramica sui tetti di Genova",
+                "coordinates": [44.4075, 8.9325],
+                "context": "aperitivo_palazzo_grillo",
+                "type": "activity", 
+                "transport": "visit",
+                "opening_hours": "17:00-02:00",
+                "price_range": "€8-12 per cocktail",
+                "highlights": ["Vista panoramica", "Cocktail signature", "Aperitivo ligure", "Terrazza storica"]
+            })
+            current_time += 0.5
+        
+        # Ensure the itinerary ends meaningfully
+        if current_time < 19.0:  # If still early evening
+            itinerary.append({
+                "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                "title": "Passeggiata serale",
+                "description": "Rientro attraverso i caruggi illuminati - Genova di sera ha un fascino particolare",
+                "coordinates": start_coords,
+                "context": "evening_walk_caruggi",
+                "type": "activity",
+                "transport": "walking"
+            })
+        
+        # Add comprehensive local tips and cultural insights
         if is_nervi_destination:
             itinerary.append({
                 "type": "tip",
                 "title": "🌸 Stagione ideale",
                 "description": "Primavera per la fioritura nei parchi, estate per il mare."
             })
+        else:
+            # Add multiple cultural and practical tips
+            itinerary.extend([
+                {
+                    "type": "tip",
+                    "title": "🏛️ Storia dei Caruggi",
+                    "description": "I caruggi (vicoli) di Genova sono il centro storico medievale più grande d'Europa. Ogni vicolo ha una storia millenaria."
+                },
+                {
+                    "type": "tip", 
+                    "title": "🎭 Genova nascosta",
+                    "description": "Cerca i 'madonnette' (edicole sacre) sui muri dei caruggi - sono oltre 3000 e proteggono la città da secoli."
+                },
+                {
+                    "type": "tip",
+                    "title": "🚇 Trasporti unici",
+                    "description": "Genova ha funicolari, ascensori pubblici e una ferrovia a cremagliera - il trasporto pubblico più verticale d'Italia!"
+                },
+                {
+                    "type": "tip",
+                    "title": "🏴‍☠️ Curiosità marinara", 
+                    "description": "Genova ha dato i natali a Cristoforo Colombo. La sua casa (presunta) è in Via del Mulcento, vicino a Porta Soprana."
+                }
+            ])
         
         print(f"✅ Generated itinerary with {len(itinerary)} items, ending at: {end}")
         
