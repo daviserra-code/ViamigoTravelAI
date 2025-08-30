@@ -1,0 +1,22 @@
+🧠 AI-powered planning: porto,olbia → Portorotondo
+🔍 Using cost-effective scraping for genova
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.geoapify.com:443
+DEBUG:urllib3.connectionpool:https://api.geoapify.com:443 "GET /v2/places?categories=tourism.sights&filter=place%3Agenova&limit=10&apiKey=cd3908eabb314fc0b9541e91cdad8b6f HTTP/1.1" 400 106
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): overpass-api.de:443
+DEBUG:urllib3.connectionpool:https://overpass-api.de:443 "POST /api/interpreter HTTP/1.1" 200 251
+💰 Dati insufficienti (0), usando ScrapingDog economico
+💰 COSTO: Usando ScrapingDog per genova - $0.0033 per 10 luoghi
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.scrapingdog.com:443
+DEBUG:urllib3.connectionpool:https://api.scrapingdog.com:443 "GET /scrape?api_key=68b1da260b49efb0644b926b&url=https%3A%2F%2Fwww.google.com%2Fmaps%2Fsearch%2Ftourist_attraction%2Bin%2Bgenova&dynamic=false HTTP/1.1" 200 None
+💰 Usando 1 luoghi disponibili
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.geoapify.com:443
+DEBUG:urllib3.connectionpool:https://api.geoapify.com:443 "GET /v2/places?categories=catering.restaurant&filter=place%3Agenova&limit=10&apiKey=cd3908eabb314fc0b9541e91cdad8b6f HTTP/1.1" 400 106
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): overpass-api.de:443
+DEBUG:urllib3.connectionpool:https://overpass-api.de:443 "POST /api/interpreter HTTP/1.1" 200 251
+💰 Dati insufficienti (0), usando ScrapingDog economico
+💰 COSTO: Usando ScrapingDog per genova - $0.0033 per 10 luoghi
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.scrapingdog.com:443
+DEBUG:urllib3.connectionpool:https://api.scrapingdog.com:443 "GET /scrape?api_key=68b1da260b49efb0644b926b&url=https%3A%2F%2Fwww.google.com%2Fmaps%2Fsearch%2Frestaurant%2Bin%2Bgenova&dynamic=false HTTP/1.1" 200 None
+💰 Usando 1 luoghi disponibili
+✅ Generated itinerary with 10 items
+INFO:werkzeug:10.83.9.91 - - [30/Aug/2025 05:11:52] "POST /plan_ai_powered HTTP/1.1" 200 -
