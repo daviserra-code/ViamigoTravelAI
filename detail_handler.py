@@ -31,6 +31,21 @@ def get_details():
         
         # Database of comprehensive details for Genova attractions
         details_database = {
+            # Handle various context formats from frontend
+            'piazza_de_ferrari,_genova_genova': {
+                'title': 'Piazza De Ferrari, Genova',
+                'summary': 'Il salotto di Genova, circondata da palazzi storici e dominata dalla grande fontana centrale.',
+                'details': [
+                    {'label': 'Fontana', 'value': 'Costruita nel 1936, ristrutturata nel 2001'},
+                    {'label': 'Palazzi storici', 'value': 'Palazzo Ducale, Palazzo della Regione'},
+                    {'label': 'Teatro', 'value': 'Teatro Carlo Felice (opera house)'},
+                    {'label': 'Shopping', 'value': 'Gallerie Mazzini, Via XX Settembre'},
+                    {'label': 'Metro', 'value': 'Stazione De Ferrari (linea rossa)'}
+                ],
+                'tip': 'Centro perfetto per iniziare la visita di Genova',
+                'opening_hours': 'Sempre accessibile',
+                'cost': 'Gratuito'
+            },
             # Fix context keys to match frontend
             'piazza_de_ferrari': {
                 'title': 'Piazza De Ferrari, Genova',
@@ -103,6 +118,22 @@ def get_details():
                 'tip': 'Area perfetta per aperitivo serale. Eventi gratuiti nei weekend.',
                 'opening_hours': 'Sempre accessibile (attrazioni 10:00-19:00)',
                 'cost': 'Passeggiata gratuita, attrazioni a pagamento'
+            },
+            'acquario_genova': {
+                'title': 'Acquario di Genova',
+                'summary': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini in 70 vasche tematiche.',
+                'details': [
+                    {'label': 'Orari', 'value': 'Lun-Ven 9:00-20:00, Sab-Dom 8:30-20:00 (estate)'},
+                    {'label': 'Prezzo', 'value': '€29 adulti, €19 bambini 4-12 anni'},
+                    {'label': 'Durata consigliata', 'value': '2-3 ore'},
+                    {'label': 'Accessibilità', 'value': 'Completamente accessibile'},
+                    {'label': 'Highlights', 'value': 'Delfini, squali, tunnel sottomarino, Biosfera'}
+                ],
+                'highlights': ['70 vasche tematiche', 'Tunnel sottomarino', 'Biosfera Renzo Piano'],
+                'insider_tip': 'Arriva alle 9:00 per evitare code. Il biglietto include la Biosfera.',
+                'imageUrl': '/static/images/acquario_genova.jpg',
+                'opening_hours': 'Lun-Ven 9:00-20:00, Sab-Dom 8:30-20:00',
+                'cost': '€29 adulti, €19 bambini'
             },
             'gelateria_il_doge': {
                 'title': 'Gelateria Il Doge',
@@ -231,18 +262,36 @@ def get_details():
         # Try to find details for the context (try multiple variations)
         detail_data = None
         
+        print(f"🔍 Searching for context: '{context}'")
+        print(f"🔍 Normalized context: '{normalized_context}'")
+        print(f"🔍 Available keys: {list(details_database.keys())[:10]}...")  # Show first 10 keys
+        
         # Try exact match first
         if context in details_database:
             detail_data = details_database[context]
+            print(f"✅ Exact match found for: {context}")
         # Try normalized context
         elif normalized_context in details_database:
             detail_data = details_database[normalized_context]
+            print(f"✅ Normalized match found for: {normalized_context}")
         # Try partial matching for context variations
         else:
+            # Try removing underscores and special characters
+            simple_context = context.replace('_', ' ').replace(',', '').lower().strip()
             for key in details_database.keys():
-                if key in context or context.startswith(key):
+                simple_key = key.replace('_', ' ').replace(',', '').lower().strip()
+                if simple_key in simple_context or simple_context in simple_key:
                     detail_data = details_database[key]
+                    print(f"✅ Partial match found: '{key}' matches '{context}'")
                     break
+            
+            # If still not found, try substring matching
+            if not detail_data:
+                for key in details_database.keys():
+                    if any(word in key for word in normalized_context.split('_')):
+                        detail_data = details_database[key]
+                        print(f"✅ Substring match found: '{key}' for '{context}'")
+                        break
         
         if detail_data:
             print(f"✅ Found details for {context}")

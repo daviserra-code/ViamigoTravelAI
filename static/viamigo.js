@@ -512,6 +512,17 @@ function openModal(context, title, description) {
     alert(`Details for ${title}:\n${description}\n(Context: ${context})`);
 }
 
+// Placeholder for the fallback modal
+function showFallbackModal(context) {
+    console.log(`Showing fallback modal for context: ${context}`);
+    document.getElementById('modal-title').textContent = 'Informazioni non disponibili';
+    document.getElementById('modal-summary').textContent = 'Mi dispiace, non è stato possibile caricare i dettagli per questa attrazione. Riprova più tardi.';
+    document.getElementById('modal-details').innerHTML = '';
+    document.getElementById('modal-tip').style.display = 'none';
+    document.getElementById('details-modal').style.display = 'flex';
+}
+
+
 // --- MAP RELATED FUNCTIONS ---
 
 let mapInstance = null;
@@ -559,14 +570,14 @@ function drawRouteOnMap(itinerary) {
             // Rileva la città dall'itinerario
             const currentCity = window.currentCityName || 'genova';
 
-            // Usa le coordinate dal backend (formato lat/lon) se disponibili
+            // Use coordinates from backend (lat/lon format) if available
             let lat, lng;
             if (item.lat && item.lon) {
                 lat = item.lat;
                 lng = item.lon;
                 console.log(`✓ Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
             } else if (item.coordinates && Array.isArray(item.coordinates) && item.coordinates.length === 2) {
-                // Formato array [lat, lng] dal backend
+                // Array format [lat, lng] from backend
                 lat = item.coordinates[0];
                 lng = item.coordinates[1];
                 console.log(`✓ Coordinate backend array per ${item.title}: ${lat}, ${lng}`);
@@ -578,14 +589,14 @@ function drawRouteOnMap(itinerary) {
                 console.log(`❌ ERRORE: Nessuna coordinata valida per ${item.title}`);
                 console.log(`Dati ricevuti:`, item);
 
-                // Fallback: prova il database locale
+                // Fallback: try local database
                 const realCoords = getRealCoordinates(item.title, currentCity);
                 if (realCoords) {
                     lat = realCoords.lat;
                     lng = realCoords.lng;
                     console.log(`⚠ Coordinate locali per ${item.title}: ${lat}, ${lng}`);
                 } else {
-                    // Fallback su Genova invece di NYC per mantenere coerenza
+                    // Fallback to Genova instead of NYC to maintain consistency
                     console.log(`🚨 EMERGENCY: Nessuna coordinata per ${item.title} - usando Genova!`);
                     lat = 44.4063 + (index * 0.002);  // Genova + offset
                     lng = 8.9314 + (index * 0.002);
@@ -593,7 +604,7 @@ function drawRouteOnMap(itinerary) {
                 }
             }
 
-            // Aggiungi coordinate al percorso
+            // Add coordinates to the route
             routeCoordinates.push([lat, lng]);
 
             // Determine marker color based on type
@@ -609,9 +620,9 @@ function drawRouteOnMap(itinerary) {
             } else {
                 console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
             }
-            markerIndex++; // Incrementa per OGNI waypoint visibile
+            markerIndex++; // Increment for EACH visible waypoint
 
-            // Marker personalizzato con numero sequenziale
+            // Custom marker with sequential numbering
             const customIcon = L.divIcon({
                 className: 'custom-marker activity-marker',
                 html: `<div class="marker-content bg-${markerColor}-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 border-white shadow-lg">${markerIcon}</div>`,
@@ -622,7 +633,7 @@ function drawRouteOnMap(itinerary) {
 
             const marker = L.marker([lat, lng], { icon: customIcon }).addTo(routeLayer);
 
-            // Popup con informazioni della fermata e icona trasporto
+            // Popup with stop information and transport icon
             const transportIcons = {
                 'walking': '🚶',
                 'metro': '🚇',
@@ -659,7 +670,7 @@ function drawRouteOnMap(itinerary) {
     }
 }
 
-// --- ROUTING REALISTICO ---
+// --- REALISTIC ROUTING ---
         async function drawRealisticRoute(coordinates, layer) {
             console.log('🛣️ Disegno percorso semplificato per', coordinates.length, 'punti');
 
