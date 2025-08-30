@@ -280,21 +280,31 @@ def get_details():
         city_detected = 'genova'  # Default fallback
         context_lower = context.lower()
         
-        # Detect city from context
-        if 'milano' in context_lower or 'milan' in context_lower:
+        # Detect city from context - check specific attractions first
+        if 'big_ben' in context_lower or 'tower_bridge' in context_lower or 'british_museum' in context_lower or 'buckingham' in context_lower:
+            city_detected = 'london'
+        elif 'colosseo' in context_lower or 'trevi' in context_lower or 'pantheon' in context_lower:
+            city_detected = 'roma'
+        elif 'san_marco' in context_lower or 'rialto' in context_lower or 'ducale' in context_lower and 'venezia' in context_lower:
+            city_detected = 'venezia'
+        elif 'spaccanapoli' in context_lower or 'castel_dell' in context_lower:
+            city_detected = 'napoli'
+        elif 'milano' in context_lower or 'milan' in context_lower:
             city_detected = 'milano'
         elif 'roma' in context_lower or 'rome' in context_lower:
             city_detected = 'roma'
         elif 'venezia' in context_lower or 'venice' in context_lower:
             city_detected = 'venezia'
+        elif 'napoli' in context_lower or 'naples' in context_lower:
+            city_detected = 'napoli'
         elif 'firenze' in context_lower or 'florence' in context_lower:
             city_detected = 'firenze'
+        elif 'london' in context_lower:
+            city_detected = 'london'
         elif 'new_york' in context_lower or 'nyc' in context_lower:
             city_detected = 'new_york'
         elif 'paris' in context_lower:
             city_detected = 'paris'
-        elif 'london' in context_lower:
-            city_detected = 'london'
         
         # Try dynamic generation first for non-Genova cities
         if city_detected != 'genova':
