@@ -576,7 +576,8 @@
 
             itineraryData.forEach((item, index) => {
                 console.log(`Analizzando item ${index}:`, item);
-                if (item.type !== 'tip') {
+                // Only count actual activity stops, not transport or tips
+                if (item.type !== 'tip' && item.type !== 'transport') {
                     console.log(`📍 Processando waypoint: ${item.title}, stopNumber attuale: ${stopNumber}`);
                     // Rileva la città dall'itinerario
                     const currentCity = window.currentCityName || 'new york';
@@ -629,7 +630,7 @@
                     } else {
                         console.log(`🔢 Assegnando numero ${stopNumber} a ${item.title}`);
                     }
-                    stopNumber++; // Increment only for actual stops, not tips
+                    stopNumber++; // Increment only for actual activity stops
 
                     // Marker personalizzato con numero sequenziale
                     const customIcon = L.divIcon({
@@ -929,10 +930,11 @@
                     modalData = data.details;
                 }
 
-                // Check if we have valid data - fix validation logic
+                // Fix validation: if modalData is an array, it IS the details array
                 const hasValidData = modalData && (
                     modalData.summary ||
                     modalData.title ||
+                    Array.isArray(modalData) ||
                     (modalData.details && Array.isArray(modalData.details) && modalData.details.length > 0)
                 );
 
@@ -974,9 +976,11 @@
                     content += `<p class="text-gray-300 mb-4">${modalData.summary}</p>`;
                 }
 
-                if (modalData.details && modalData.details.length > 0) {
+                // Handle details whether it's modalData.details or modalData itself is the array
+                const detailsArray = Array.isArray(modalData) ? modalData : modalData.details;
+                if (detailsArray && detailsArray.length > 0) {
                     content += '<div class="mb-4">';
-                    modalData.details.forEach(detail => {
+                    detailsArray.forEach(detail => {
                         content += `<div class="flex justify-between py-2 border-b border-gray-700">
                                       <span class="text-gray-400 text-sm">${detail.label}:</span>
                                       <span class="text-gray-200 text-sm">${detail.value}</span>
