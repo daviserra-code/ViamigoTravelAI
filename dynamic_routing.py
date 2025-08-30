@@ -434,6 +434,61 @@ class DynamicRouter:
                 "cost_impact": "Similar cost"
             }
     
+    def _validate_coordinates_for_city(self, coords: List[float], city: str) -> bool:
+        """Validate that coordinates make sense for the requested city"""
+        city_lower = city.lower()
+        lat, lon = coords
+        
+        # Basic validation for major cities
+        city_bounds = {
+            'milano': {'lat': (45.3, 45.6), 'lon': (9.0, 9.4)},
+            'roma': {'lat': (41.7, 42.0), 'lon': (12.3, 12.7)},
+            'new york': {'lat': (40.5, 40.9), 'lon': (-74.3, -73.7)},
+            'paris': {'lat': (48.7, 49.0), 'lon': (2.1, 2.5)},
+            'london': {'lat': (51.3, 51.7), 'lon': (-0.5, 0.2)}
+        }
+        
+        for city_key, bounds in city_bounds.items():
+            if city_key in city_lower:
+                lat_ok = bounds['lat'][0] <= lat <= bounds['lat'][1]
+                lon_ok = bounds['lon'][0] <= lon <= bounds['lon'][1]
+                return lat_ok and lon_ok
+        
+        return True  # For unknown cities, accept coordinates
+    
+    def _fallback_geocoding(self, city: str) -> List[float]:
+        """Fallback geocoding using Nominatim"""
+        try:
+            import requests
+            url = "https://nominatim.openstreetmap.org/search"
+            params = {
+                'q': city,
+                'format': 'json',
+                'limit': 1
+            }
+            response = requests.get(url, params=params, timeout=5)
+            if response.ok and response.json():
+                result = response.json()[0]
+                return [float(result['lat']), float(result['lon'])]
+        except:
+            pass
+        
+        # Ultimate fallback - return center of major cities
+        fallback_coords = {
+            'milano': [45.4642, 9.1900],
+            'roma': [41.9028, 12.4964],
+            'new york': [40.7589, -73.9851],
+            'paris': [48.8566, 2.3522],
+            'london': [51.5074, -0.1278]
+        }
+        
+        city_lower = city.lower()
+        for city_key, coords in fallback_coords.items():
+            if city_key in city_lower:
+                return coords
+        
+        return [0, 0]  # Last resort
+    
     def _get_real_city_coordinates(self, city: str) -> List[float]:
         """Ottiene coordinate reali per qualsiasi città mondiale via geocoding"""
         try:
@@ -1105,6 +1160,11 @@ class DynamicRouter:
         # 🌍 GEOCODING DINAMICO: Ottieni coordinate reali per QUALSIASI città
         city_coords = self._get_real_city_coordinates(city)
         print(f"📍 Coordinate dinamiche per {city}: {city_coords}")
+        
+        # Validate coordinates match the requested city
+        if not self._validate_coordinates_for_city(city_coords, city):
+            print(f"⚠️ Coordinate mismatch for {city}, using fallback geocoding")
+            city_coords = self._fallback_geocoding(city)
         
         # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO + AI per destinazioni mondiali
         from cost_effective_scraping import CostEffectiveDataProvider

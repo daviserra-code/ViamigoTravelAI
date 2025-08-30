@@ -532,14 +532,11 @@ let bounds = null;
 let activityMarkerIndex = 1; // Only count actual activity stops
 
 // Function to initialize the map
-function initializeMap() {
+function initializeMap(centerCoordinates = null) {
     if (!mapInstance) {
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) {
-            console.error('Map container not found!');
-            return;
-        }
-        mapInstance = L.map('map').setView([44.4071, 8.9237], 13); // Centered on Genova
+        // Use provided coordinates or detect from current context
+        const center = centerCoordinates || detectCityCenter();
+        mapInstance = L.map('map').setView(center, 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -552,14 +549,70 @@ function initializeMap() {
     }
 }
 
+// Function to detect city center based on URL or default
+function detectCityCenter() {
+    // Extract city from current itinerary or URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const destination = urlParams.get('destination') || 'milano';
+
+    const cityCoordinates = {
+        'milano': [45.4642, 9.1900],
+        'roma': [41.9028, 12.4964],
+        'new york': [40.7589, -73.9851],
+        'paris': [48.8566, 2.3522],
+        'london': [51.5074, -0.1278],
+        'genova': [44.4071, 8.9237]
+    };
+
+    for (const [city, coords] of Object.entries(cityCoordinates)) {
+        if (destination.toLowerCase().includes(city)) {
+            return coords;
+        }
+    }
+
+    return [45.4642, 9.1900]; // Default to Milano instead of Genova
+}
+
 // Function to draw the route on the map
 function drawRouteOnMap(itinerary) {
-    initializeMap(); // Ensure map is initialized
+    console.log('🗺️ Aggiornamento mappa con itinerario...');
 
-    // Clear previous route and markers
-    if (routeLayer) {
-        routeLayer.clearLayers();
+    if (!mapInstance) {
+        // Determine center from first valid coordinate in itinerary
+        const firstValidPoint = itinerary.find(item =>
+            item.coordinates &&
+            Array.isArray(item.coordinates) &&
+            item.coordinates.length === 2 &&
+            item.coordinates[0] !== 0 &&
+            item.coordinates[1] !== 0
+        );
+
+        const mapCenter = firstValidPoint ? firstValidPoint.coordinates : detectCityCenter();
+        initializeMap(mapCenter);
     }
+
+    // Clear existing markers and routes
+    mapInstance.eachLayer(function (layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+            mapInstance.removeLayer(layer);
+        }
+    });
+
+    const validWaypoints = itinerary.filter(item =>
+        item.coordinates &&
+        Array.isArray(item.coordinates) &&
+        item.coordinates.length === 2 &&
+        item.coordinates[0] !== 0 &&
+        item.coordinates[1] !== 0
+    );
+
+    if (validWaypoints.length === 0) {
+        console.log('⚠️ No valid coordinates, using dynamic center');
+        const center = detectCityCenter();
+        mapInstance.setView(center, 13);
+        return;
+    }
+
     routeCoordinates = [];
     activityMarkerIndex = 1; // Reset activity marker index for new route
 

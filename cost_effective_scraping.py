@@ -99,11 +99,12 @@ class CostEffectiveDataProvider:
                     lat = element.get('lat') or element.get('center', {}).get('lat')
                     lon = element.get('lon') or element.get('center', {}).get('lon')
                     
-                    # 🚨 FILTRO GEOGRAFICO: Solo coordinate nell'area target
-                    if "new york" in city.lower():
-                        # Solo NYC area: lat 40.6-40.8, lon -74.1 a -73.9
-                        if not (40.6 <= lat <= 40.8 and -74.1 <= lon <= -73.9):
-                            continue
+                    # ✅ FILTRO GEOGRAFICO: Validate coordinates are reasonable
+                    if lat is None or lon is None:
+                        continue
+                    # Basic sanity check for global coordinates
+                    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                        continue
                     
                     tags = element.get('tags', {})
                     name = tags.get('name', 'Unknown')

@@ -1,611 +1,269 @@
-from flask import request, jsonify, render_template_string
-from flask_login import login_required, current_user
-from flask_app import app, db
-from models import TravelJournal, SmartDiscovery, PlanBEvent, UserPreferences, AIInsight
-from datetime import datetime, date
+from flask import Blueprint, request, jsonify
 import json
-import random
-from typing import Dict, List, Any
-import openai
+import time
 import os
+from openai import OpenAI
 
-# Configura OpenAI
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+advanced_bp = Blueprint('advanced', __name__)
 
-@app.route('/advanced-features')
-@login_required
-def advanced_features():
-    """Pagina delle funzionalità avanzate"""
-    with open('static/advanced_features.html', 'r', encoding='utf-8') as f:
-        return f.read()
+# Initialize OpenAI client
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# === PIANO B DINAMICO ===
-
-@app.route('/api/plan-b/analyze', methods=['POST'])
-@login_required
-def analyze_plan_b():
-    """Analizza un imprevisto e genera alternative intelligenti"""
+@advanced_bp.route('/piano_b', methods=['POST'])
+def generate_piano_b():
+    """Generate intelligent Plan B for current itinerary"""
     try:
         data = request.get_json()
-        
-        # Estrai dati dell'imprevisto
-        original_plan = data.get('original_plan', {})
-        disruption_type = data.get('disruption_type', 'crowded')
-        disruption_description = data.get('disruption_description', '')
-        affected_location = data.get('affected_location', '')
-        city = data.get('city', '')
-        user_location = data.get('user_location', '')
-        
-        # Genera alternative usando AI
-        alternatives = generate_plan_b_alternatives(
-            original_plan, disruption_type, city, affected_location
-        )
-        
-        # Salva evento Piano B
-        plan_b_event = PlanBEvent(
-            user_id=current_user.id,
-            original_plan=original_plan,
-            disruption_type=disruption_type,
-            disruption_description=disruption_description,
-            city=city,
-            affected_location=affected_location,
-            current_user_location=user_location,
-            ai_alternatives=alternatives,
-            ai_reasoning=f"Analisi automatica per {disruption_type} a {affected_location}"
-        )
-        
-        db.session.add(plan_b_event)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'event_id': plan_b_event.id,
-            'alternatives': alternatives,
-            'processing_time': 2.5,
-            'ai_confidence': 0.87
-        })
-        
-    except Exception as e:
-        print(f"Errore Piano B: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        current_location = data.get('current_location', 'Unknown')
+        disruption_type = data.get('disruption_type', 'weather')
+        original_plan = data.get('original_plan', [])
+        city = data.get('city', 'Milano')
 
-@app.route('/api/plan-b/select', methods=['POST'])
-@login_required
-def select_plan_b_option():
-    """Registra la scelta dell'utente per Piano B"""
-    try:
-        data = request.get_json()
-        event_id = data.get('event_id')
-        selected_option = data.get('selected_option')
-        selected_alternative = data.get('selected_alternative', {})
-        
-        # Aggiorna evento Piano B
-        plan_b_event = PlanBEvent.query.filter_by(
-            id=event_id, 
-            user_id=current_user.id
-        ).first()
-        
-        if not plan_b_event:
-            return jsonify({'success': False, 'error': 'Evento non trovato'}), 404
-            
-        plan_b_event.selected_option = selected_option
-        plan_b_event.selected_alternative = selected_alternative
-        plan_b_event.resolved_at = datetime.now()
-        
-        db.session.commit()
-        
-        # Aggiorna preferenze utente
-        update_user_plan_b_preferences(current_user.id, selected_option)
-        
-        return jsonify({
-            'success': True,
-            'message': 'Piano B applicato con successo',
-            'updated_itinerary': selected_alternative
-        })
-        
-    except Exception as e:
-        print(f"Errore selezione Piano B: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"🚨 Generating Piano B for {disruption_type} at {current_location}")
 
-# === SCOPERTE INTELLIGENTI ===
-
-@app.route('/api/discoveries/find', methods=['POST'])
-@login_required
-def find_smart_discoveries():
-    """Trova scoperte intelligenti basate sulla posizione e interessi"""
-    try:
-        data = request.get_json()
-        user_lat = data.get('lat')
-        user_lon = data.get('lon')
-        city = data.get('city', '')
-        current_location = data.get('current_location', '')
-        radius_meters = data.get('radius_meters', 500)
-        
-        # Ottieni preferenze utente
-        user_prefs = get_user_preferences(current_user.id)
-        
-        # Genera scoperte usando AI
-        discoveries = generate_smart_discoveries(
-            user_lat, user_lon, city, user_prefs, radius_meters
-        )
-        
-        # Salva scoperte nel database
-        for discovery_data in discoveries:
-            discovery = SmartDiscovery(
-                user_id=current_user.id,
-                discovery_type=discovery_data['type'],
-                trigger_location=current_location,
-                suggested_place=discovery_data['name'],
-                user_lat=user_lat,
-                user_lon=user_lon,
-                place_lat=discovery_data['lat'],
-                place_lon=discovery_data['lon'],
-                distance_meters=discovery_data['distance'],
-                relevance_score=discovery_data['relevance'],
-                user_interests_matched=discovery_data['matched_interests'],
-                ai_reasoning=discovery_data['reasoning']
-            )
-            db.session.add(discovery)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'discoveries': discoveries,
-            'total_found': len(discoveries)
-        })
-        
-    except Exception as e:
-        print(f"Errore scoperte intelligenti: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/discoveries/respond', methods=['POST'])
-@login_required
-def respond_to_discovery():
-    """Registra la risposta dell'utente a una scoperta"""
-    try:
-        data = request.get_json()
-        discovery_id = data.get('discovery_id')
-        action = data.get('action')  # 'accepted', 'ignored'
-        feedback = data.get('feedback', '')
-        
-        discovery = SmartDiscovery.query.filter_by(
-            id=discovery_id,
-            user_id=current_user.id
-        ).first()
-        
-        if not discovery:
-            return jsonify({'success': False, 'error': 'Scoperta non trovata'}), 404
-            
-        discovery.user_action = action
-        discovery.action_timestamp = datetime.now()
-        discovery.user_feedback = feedback
-        discovery.was_useful = action == 'accepted'
-        
-        db.session.commit()
-        
-        # Aggiorna preferenze basate sul feedback
-        update_user_discovery_preferences(current_user.id, discovery, action)
-        
-        return jsonify({
-            'success': True,
-            'message': f'Scoperta {action} con successo'
-        })
-        
-    except Exception as e:
-        print(f"Errore risposta scoperta: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# === DIARIO DI VIAGGIO AI ===
-
-@app.route('/api/journal/create', methods=['POST'])
-@login_required
-def create_travel_journal():
-    """Crea un nuovo diario di viaggio con AI"""
-    try:
-        data = request.get_json()
-        
-        title = data.get('title')
-        city = data.get('city')
-        travel_date = datetime.strptime(data.get('travel_date'), '%Y-%m-%d').date()
-        itinerary_data = data.get('itinerary_data', {})
-        user_notes = data.get('user_notes', '')
-        
-        # Genera contenuto AI per il diario
-        ai_content = generate_journal_ai_content(
-            city, itinerary_data, user_notes, current_user.id
-        )
-        
-        journal = TravelJournal(
-            user_id=current_user.id,
-            title=title,
-            city=city,
-            travel_date=travel_date,
-            itinerary_data=itinerary_data,
-            user_notes=user_notes,
-            ai_summary=ai_content['summary'],
-            highlights=ai_content['highlights'],
-            insights=ai_content['insights'],
-            total_steps=len(itinerary_data.get('steps', [])),
-            ai_confidence=ai_content['confidence']
-        )
-        
-        db.session.add(journal)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'journal_id': journal.id,
-            'ai_content': ai_content
-        })
-        
-    except Exception as e:
-        print(f"Errore creazione diario: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/journal/list')
-@login_required
-def list_travel_journals():
-    """Lista tutti i diari di viaggio dell'utente"""
-    try:
-        journals = TravelJournal.query.filter_by(
-            user_id=current_user.id
-        ).order_by(TravelJournal.travel_date.desc()).all()
-        
-        journals_data = []
-        for journal in journals:
-            journals_data.append({
-                'id': journal.id,
-                'title': journal.title,
-                'city': journal.city,
-                'travel_date': journal.travel_date.isoformat(),
-                'ai_summary': journal.ai_summary,
-                'highlights': journal.highlights,
-                'user_rating': journal.user_rating,
-                'completed_steps': journal.completed_steps,
-                'total_steps': journal.total_steps,
-                'duration_hours': journal.duration_hours,
-                'distance_km': journal.distance_km
-            })
-        
-        return jsonify({
-            'success': True,
-            'journals': journals_data,
-            'total_count': len(journals_data)
-        })
-        
-    except Exception as e:
-        print(f"Errore lista diari: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/journal/<int:journal_id>')
-@login_required  
-def get_journal_detail(journal_id):
-    """Ottieni dettagli completi di un diario"""
-    try:
-        journal = TravelJournal.query.filter_by(
-            id=journal_id,
-            user_id=current_user.id
-        ).first()
-        
-        if not journal:
-            return jsonify({'success': False, 'error': 'Diario non trovato'}), 404
-            
-        return jsonify({
-            'success': True,
-            'journal': {
-                'id': journal.id,
-                'title': journal.title,
-                'city': journal.city,
-                'travel_date': journal.travel_date.isoformat(),
-                'ai_summary': journal.ai_summary,
-                'highlights': journal.highlights,
-                'insights': journal.insights,
-                'itinerary_data': journal.itinerary_data,
-                'user_notes': journal.user_notes,
-                'user_rating': journal.user_rating,
-                'duration_hours': journal.duration_hours,
-                'distance_km': journal.distance_km,
-                'ai_confidence': journal.ai_confidence,
-                'generated_suggestions': journal.generated_suggestions
-            }
-        })
-        
-    except Exception as e:
-        print(f"Errore dettaglio diario: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/insights/generate')
-@login_required
-def generate_ai_insights():
-    """Genera insights AI basati sui diari dell'utente"""
-    try:
-        # Ottieni tutti i diari dell'utente
-        journals = TravelJournal.query.filter_by(user_id=current_user.id).all()
-        
-        if len(journals) < 2:
-            return jsonify({
-                'success': False,
-                'error': 'Servono almeno 2 viaggi per generare insights'
-            })
-        
-        # Genera insights usando AI
-        insights = generate_user_insights(current_user.id, journals)
-        
-        # Salva insights nel database
-        for insight_data in insights:
-            insight = AIInsight(
-                user_id=current_user.id,
-                insight_type=insight_data['type'],
-                insight_category=insight_data['category'],
-                title=insight_data['title'],
-                description=insight_data['description'],
-                confidence_score=insight_data['confidence'],
-                supporting_data=insight_data['data'],
-                suggested_actions=insight_data['actions']
-            )
-            db.session.add(insight)
-        
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'insights': insights,
-            'total_generated': len(insights)
-        })
-        
-    except Exception as e:
-        print(f"Errore generazione insights: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# === FUNZIONI DI SUPPORTO AI ===
-
-def generate_plan_b_alternatives(original_plan: Dict, disruption_type: str, 
-                                     city: str, affected_location: str) -> List[Dict]:
-    """Genera alternative per Piano B usando AI"""
-    try:
         prompt = f"""
-        Situazione: {disruption_type} a {affected_location} in {city}.
-        Piano originale: {json.dumps(original_plan, indent=2)}
-        
-        Genera 3 alternative intelligenti per gestire questo imprevisto.
-        Considera: vicinanza geografica, qualità equivalente, tempi di attesa.
-        
-        Rispondi in JSON con questo formato:
-        {{
-            "alternatives": [
-                {{
-                    "option": "skip|alternative|reschedule",
-                    "title": "Titolo dell'alternativa",
-                    "description": "Descrizione dettagliata",
-                    "location": "Nome del luogo alternativo",
-                    "time_impact": "Impatto sui tempi",
-                    "quality_score": 0.8,
-                    "distance_meters": 200
-                }}
-            ]
-        }}
-        """
-        
-        # Usa GPT-5 per generare alternative
-        response = openai.chat.completions.create(
-            model="gpt-5",  # il modello più recente
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_tokens=800
-        )
-        
-        result = json.loads(response.choices[0].message.content)
-        return result.get("alternatives", [])
-        
-    except Exception as e:
-        print(f"Errore generazione Piano B: {e}")
-        # Fallback con alternative predefinite
-        return [
-            {
-                "option": "skip",
-                "title": "Salta la tappa",
-                "description": "Prosegui con il resto del programma",
-                "time_impact": "Risparmi 2 ore",
-                "quality_score": 0.6,
-                "distance_meters": 0
-            }
-        ]
+        SITUAZIONE EMERGENZA: {disruption_type} a {current_location}, {city}
 
-def generate_smart_discoveries(lat: float, lon: float, city: str, 
-                                   user_prefs: Dict, radius: int) -> List[Dict]:
-    """Genera scoperte intelligenti usando AI e preferenze utente"""
-    try:
-        prompt = f"""
-        Posizione utente: {lat}, {lon} in {city}
-        Raggio di ricerca: {radius} metri
-        Preferenze utente: {json.dumps(user_prefs)}
-        
-        Trova 2-3 luoghi interessanti nelle vicinanze che corrispondono agli interessi dell'utente.
-        Considera: autenticità locale, qualità, distanza, orari di apertura.
-        
-        Rispondi in JSON:
-        {{
-            "discoveries": [
-                {{
-                    "name": "Nome del luogo",
-                    "type": "restaurant|attraction|shop|event",
-                    "description": "Descrizione coinvolgente",
-                    "lat": 45.123,
-                    "lon": 9.456,
-                    "distance": 150,
-                    "relevance": 0.9,
-                    "matched_interests": ["cibo", "storia"],
-                    "reasoning": "Perché è stato suggerito",
-                    "estimated_time": "30 min"
-                }}
-            ]
-        }}
-        """
-        
-        response = openai.chat.completions.create(
-            model="gpt-5",
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_tokens=600
-        )
-        
-        result = json.loads(response.choices[0].message.content)
-        return result.get("discoveries", [])
-        
-    except Exception as e:
-        print(f"Errore scoperte intelligenti: {e}")
-        return []
+        Piano originale compromesso:
+        {json.dumps(original_plan, indent=2)}
 
-def generate_journal_ai_content(city: str, itinerary: Dict, 
-                                     user_notes: str, user_id: str) -> Dict:
-    """Genera contenuto AI per il diario di viaggio"""
-    try:
-        prompt = f"""
-        Crea un diario di viaggio AI per {city}.
-        
-        Itinerario: {json.dumps(itinerary, indent=2)}
-        Note utente: {user_notes}
-        
-        Genera contenuto emotivo e personale che catturi l'essenza del viaggio.
-        
-        Rispondi in JSON:
+        Genera Piano B intelligente con alternative immediate:
         {{
-            "summary": "Riassunto coinvolgente del viaggio (200 parole)",
-            "highlights": [
+            "emergency_type": "{disruption_type}",
+            "current_location": "{current_location}",
+            "immediate_actions": [
                 {{
-                    "moment": "Descrizione del momento",
-                    "location": "Dove è successo", 
-                    "emotion": "Emozione provata",
-                    "photo_suggestion": "Cosa fotografare"
+                    "action": "Azione immediata da fare ora",
+                    "location": "Dove andare",
+                    "time_needed": "5-10 minuti",
+                    "why": "Perché questa soluzione funziona"
                 }}
             ],
-            "insights": {{
-                "travel_style": "Stile di viaggio emerso",
-                "preferences_discovered": ["nuove preferenze"],
-                "recommendations": "Suggerimenti per viaggi futuri"
-            }},
-            "confidence": 0.85
-        }}
-        """
-        
-        response = openai.chat.completions.create(
-            model="gpt-5",
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_tokens=1000
-        )
-        
-        return json.loads(response.choices[0].message.content)
-        
-    except Exception as e:
-        print(f"Errore contenuto diario AI: {e}")
-        return {
-            "summary": f"Un bellissimo viaggio a {city}",
-            "highlights": [],
-            "insights": {},
-            "confidence": 0.5
-        }
-
-def generate_user_insights(user_id: str, journals: List[TravelJournal]) -> List[Dict]:
-    """Genera insights comportamentali dall'analisi dei viaggi"""
-    try:
-        journals_data = []
-        for journal in journals:
-            journals_data.append({
-                'city': journal.city,
-                'date': journal.travel_date.isoformat(),
-                'rating': journal.user_rating,
-                'highlights': journal.highlights,
-                'insights': journal.insights
-            })
-        
-        prompt = f"""
-        Analizza i viaggi dell'utente e genera insights comportamentali.
-        
-        Dati viaggi: {json.dumps(journals_data, indent=2)}
-        
-        Identifica pattern, preferenze nascoste, suggerimenti personalizzati.
-        
-        Rispondi in JSON:
-        {{
-            "insights": [
+            "alternative_itinerary": [
                 {{
-                    "type": "pattern|recommendation|trend",
-                    "category": "travel_behavior|preferences|efficiency",
-                    "title": "Titolo dell'insight",
+                    "time": "Nuovo orario",
+                    "title": "Attività alternativa",
                     "description": "Descrizione dettagliata",
-                    "confidence": 0.8,
-                    "data": {{"supporting_evidence": "dati di supporto"}},
-                    "actions": ["azioni suggerite"]
+                    "indoor": true,
+                    "distance_from_current": "200m a piedi",
+                    "accessibility": "Informazioni accessibilità"
                 }}
-            ]
+            ],
+            "cost_impact": "Variazione di costo",
+            "real_time_tip": "Consiglio pratico immediato"
         }}
+
+        Rispondi SOLO con JSON valido.
         """
-        
-        response = openai.chat.completions.create(
+
+        response = openai_client.chat.completions.create(
             model="gpt-5",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "Sei un travel expert che gestisce emergenze in tempo reale. Conosci alternative immediate per ogni tipo di disruzione."},
+                {"role": "user", "content": prompt}
+            ],
             response_format={"type": "json_object"},
-            max_tokens=800
+            timeout=30,
+            temperature=0.7
         )
-        
-        result = json.loads(response.choices[0].message.content)
-        return result.get("insights", [])
-        
+
+        plan_b = json.loads(response.choices[0].message.content)
+
+        print(f"✅ Piano B generato per {disruption_type}")
+        return jsonify({
+            "status": "success",
+            "plan_b": plan_b,
+            "generated_at": time.time()
+        })
+
     except Exception as e:
-        print(f"Errore generazione insights: {e}")
-        return []
+        print(f"❌ Error generating Piano B: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "fallback_plan": {
+                "immediate_actions": [
+                    {
+                        "action": "Cerca un caffè o centro commerciale nelle vicinanze",
+                        "location": "Centro città",
+                        "time_needed": "5-10 minuti",
+                        "why": "Rifugio sicuro e coperto"
+                    }
+                ]
+            }
+        }), 500
 
-# === FUNZIONI DI SUPPORTO ===
+@advanced_bp.route('/scoperte_intelligenti', methods=['POST'])
+def smart_discoveries():
+    """Generate contextualized discoveries based on current location and time"""
+    try:
+        data = request.get_json()
+        current_location = data.get('current_location', 'Milano Centro')
+        time_of_day = data.get('time_of_day', 'morning')
+        user_interests = data.get('interests', ['culture', 'food'])
+        city = data.get('city', 'Milano')
 
-def get_user_preferences(user_id: str) -> Dict:
-    """Ottieni preferenze utente dal database"""
-    prefs = UserPreferences.query.filter_by(user_id=user_id).first()
-    if not prefs:
-        return {
-            'favorite_categories': ['storia', 'arte'],
-            'travel_pace': 'medium',
-            'budget_preference': 'medium'
-        }
-    
-    return {
-        'favorite_categories': prefs.favorite_categories or ['storia', 'arte'],
-        'travel_pace': prefs.travel_pace or 'medium',
-        'budget_preference': prefs.budget_preference or 'medium',
-        'crowding_tolerance': prefs.crowding_tolerance or 0.5,
-        'spontaneity_score': prefs.spontaneity_score or 0.5
-    }
+        print(f"🔍 Generating smart discoveries for {current_location} at {time_of_day}")
 
-def update_user_plan_b_preferences(user_id: str, selected_option: str):
-    """Aggiorna preferenze basate su scelte Piano B"""
-    prefs = UserPreferences.query.filter_by(user_id=user_id).first()
-    if not prefs:
-        prefs = UserPreferences(user_id=user_id)
-        db.session.add(prefs)
-    
-    # Aggiorna metriche Piano B
-    if selected_option == 'alternative':
-        prefs.spontaneity_score = min(1.0, (prefs.spontaneity_score or 0.5) + 0.1)
-    elif selected_option == 'skip':
-        prefs.crowding_tolerance = max(0.0, (prefs.crowding_tolerance or 0.5) - 0.1)
-    
-    db.session.commit()
+        prompt = f"""
+        POSIZIONE ATTUALE: {current_location}, {city}
+        MOMENTO: {time_of_day}
+        INTERESSI: {', '.join(user_interests)}
 
-def update_user_discovery_preferences(user_id: str, discovery: SmartDiscovery, action: str):
-    """Aggiorna preferenze basate su feedback scoperte"""
-    prefs = UserPreferences.query.filter_by(user_id=user_id).first()
-    if not prefs:
-        prefs = UserPreferences(user_id=user_id)
-        db.session.add(prefs)
-    
-    # Aggiorna ratio di accettazione scoperte
-    current_ratio = prefs.accepted_discoveries_ratio or 0.5
-    if action == 'accepted':
-        prefs.accepted_discoveries_ratio = min(1.0, current_ratio + 0.05)
-    else:
-        prefs.accepted_discoveries_ratio = max(0.0, current_ratio - 0.05)
-    
-    db.session.commit()
+        Genera 3 scoperte intelligenti nelle immediate vicinanze:
+        {{
+            "current_context": {{
+                "location": "{current_location}",
+                "optimal_time": "{time_of_day}",
+                "weather_consideration": "Considera condizioni attuali"
+            }},
+            "discoveries": [
+                {{
+                    "title": "Nome scoperta specifica",
+                    "category": "food|culture|shopping|nature|nightlife",
+                    "description": "Cosa rende speciale questo posto ADESSO",
+                    "distance": "Distanza esatta a piedi",
+                    "why_now": "Perché è perfetto proprio in questo momento",
+                    "local_secret": "Segreto che solo i locals sanno",
+                    "opening_status": "Aperto ora | Apre alle XX:XX",
+                    "quick_tip": "Tip pratico immediato",
+                    "coordinates": [lat, lon]
+                }}
+            ],
+            "contextual_alert": "Avviso importante per il momento attuale"
+        }}
+
+        Basa le scoperte su luoghi REALI e verificabili a {city}.
+        """
+
+        response = openai_client.chat.completions.create(
+            model="gpt-5",
+            messages=[
+                {"role": "system", "content": f"Sei un local expert di {city} che conosce ogni angolo della città e sa cosa è meglio fare in ogni momento della giornata."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            timeout=30,
+            temperature=0.8
+        )
+
+        discoveries = json.loads(response.choices[0].message.content)
+
+        print(f"✅ Smart discoveries generated for {current_location}")
+        return jsonify({
+            "status": "success",
+            "discoveries": discoveries,
+            "generated_at": time.time()
+        })
+
+    except Exception as e:
+        print(f"❌ Error generating discoveries: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "fallback_discoveries": {
+                "discoveries": [
+                    {
+                        "title": f"Esplora il centro di {city}",
+                        "category": "culture",
+                        "description": "Scopri l'architettura locale",
+                        "distance": "Zona pedonale",
+                        "why_now": "Sempre interessante",
+                        "local_secret": "Osserva i dettagli architettonici"
+                    }
+                ]
+            }
+        }), 500
+
+@advanced_bp.route('/diario_ai', methods=['POST'])
+def ai_diary():
+    """Generate personalized travel diary insights"""
+    try:
+        data = request.get_json()
+        visited_places = data.get('visited_places', [])
+        current_mood = data.get('mood', 'curious')
+        travel_style = data.get('travel_style', 'explorer')
+        city = data.get('city', 'Milano')
+
+        print(f"📖 Generating AI diary for {len(visited_places)} places in {city}")
+
+        prompt = f"""
+        DIARIO DI VIAGGIO PERSONALE - {city}
+
+        Luoghi visitati oggi:
+        {json.dumps(visited_places, indent=2)}
+
+        Stato d'animo: {current_mood}
+        Stile di viaggio: {travel_style}
+
+        Crea un diario di viaggio personalizzato:
+        {{
+            "diary_entry": {{
+                "title": "Titolo poetico della giornata",
+                "narrative": "Racconto fluido e personale dell'esperienza",
+                "highlights": [
+                    {{
+                        "moment": "Momento specifico",
+                        "emotion": "Emozione provata",
+                        "detail": "Dettaglio che rimarrà nella memoria"
+                    }}
+                ],
+                "personal_growth": "Cosa ho imparato oggi",
+                "tomorrow_inspiration": "Cosa voglio esplorare domani",
+                "hidden_gems_discovered": ["Scoperta inaspettata 1", "Scoperta 2"],
+                "local_connections": "Interazioni con locals o culture locali",
+                "sensory_memories": {{
+                    "taste": "Sapore che ricorderò",
+                    "sound": "Suono caratteristico",
+                    "sight": "Immagine più bella",
+                    "feeling": "Sensazione fisica del momento"
+                }}
+            }},
+            "travel_wisdom": "Lezione di viaggio per il futuro",
+            "gratitude_note": "Cosa apprezzo di più di oggi"
+        }}
+
+        Rendi il diario personale, emotivo e memorabile.
+        """
+
+        response = openai_client.chat.completions.create(
+            model="gpt-5",
+            messages=[
+                {"role": "system", "content": f"Sei un travel writer esperto che crea diari di viaggio personali e toccanti. Trasformi le esperienze in ricordi indimenticabili."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            timeout=30,
+            temperature=0.9
+        )
+
+        diary = json.loads(response.choices[0].message.content)
+
+        print(f"✅ AI diary generated for {city}")
+        return jsonify({
+            "status": "success",
+            "diary": diary,
+            "generated_at": time.time()
+        })
+
+    except Exception as e:
+        print(f"❌ Error generating diary: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "fallback_diary": {
+                "diary_entry": {
+                    "title": f"Giornata di scoperte a {city}",
+                    "narrative": f"Oggi ho esplorato {city} scoprendo luoghi interessanti e vivendo momenti unici.",
+                    "highlights": [
+                        {
+                            "moment": "Passeggiata nel centro",
+                            "emotion": "Curiosità",
+                            "detail": "L'atmosfera autentica della città"
+                        }
+                    ]
+                }
+            }
+        }), 500
 
 print("🚀 Advanced Routes caricato - Piano B, Scoperte Intelligenti, Diario AI attivi!")

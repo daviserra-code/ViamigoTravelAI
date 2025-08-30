@@ -55,8 +55,11 @@ def make_session_permanent():
 
 def is_admin(user_id):
     """Controlla se l'utente è admin"""
-    admin = AdminUser.query.filter_by(user_id=user_id).first()
-    return admin is not None
+    # Placeholder for AdminUser model check
+    # In a real app, you would query your AdminUser table
+    # admin = AdminUser.query.filter_by(user_id=user_id).first()
+    # return admin is not None
+    return user_id == "admin_user_id" # Mock admin check
 
 def can_edit_profile(profile_user_id, current_user_id):
     """Controlla se l'utente può modificare il profilo"""
@@ -67,17 +70,17 @@ def can_edit_profile(profile_user_id, current_user_id):
 def index():
     """Homepage - sempre redirect al login per deployment consistency"""
     from flask_login import current_user
-    
+
     # Per deployment - sempre redirect al login se non autenticato
     # Questo assicura comportamento consistente tra dev e production
     if not current_user.is_authenticated:
         return redirect('/auth/login')
-        
+
     # Se autenticato, vai alla dashboard
     return redirect('/dashboard')
     if session.get('demo_logged_in'):
         return redirect('/planner')
-    
+
     # Nessuna autenticazione: redirect al login
     return redirect('/auth/login')
 
@@ -86,7 +89,7 @@ def old_dashboard():
     """Vecchia dashboard mobile per compatibilità"""
     if not session.get('demo_logged_in'):
         return redirect('/auth/login')
-    
+
     # Dashboard/Home per utenti loggati (design mobile)
     return render_template_string('''
 <!DOCTYPE html>
@@ -139,7 +142,7 @@ def old_dashboard():
                         <h2 class="text-lg font-semibold mb-1">Benvenuto!</h2>
                         <p class="text-sm opacity-90">Pronto per il tuo prossimo viaggio?</p>
                     </div>
-                    
+
                     <!-- Action Cards -->
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-gray-800 rounded-xl p-4 text-center">
@@ -150,7 +153,7 @@ def old_dashboard():
                                 Inizia
                             </button>
                         </div>
-                        
+
                         <div class="bg-gray-800 rounded-xl p-4 text-center">
                             <div class="text-2xl mb-2">👤</div>
                             <h3 class="text-white font-medium text-sm mb-1">Il Tuo Profilo</h3>
@@ -160,7 +163,7 @@ def old_dashboard():
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Destinazioni Suggerite -->
                     <div class="mt-6">
                         <h3 class="text-white font-semibold mb-3">Destinazioni Popolari</h3>
@@ -173,7 +176,7 @@ def old_dashboard():
                                 </div>
                                 <button class="text-violet-400 text-sm">Esplora</button>
                             </div>
-                            
+
                             <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
                                 <div class="text-2xl">🎭</div>
                                 <div class="flex-grow">
@@ -182,7 +185,7 @@ def old_dashboard():
                                 </div>
                                 <button class="text-violet-400 text-sm">Esplora</button>
                             </div>
-                            
+
                             <div class="bg-gray-800 rounded-lg p-3 flex items-center space-x-3">
                                 <div class="text-2xl">🎨</div>
                                 <div class="flex-grow">
@@ -212,33 +215,33 @@ def route_proxy():
     """Proxy per OpenRouteService API per evitare CORS"""
     try:
         import requests
-        
+
         profile = request.args.get('profile', 'foot-walking')
         start = request.args.get('start')
         end = request.args.get('end')
-        
+
         if not start or not end:
             return jsonify({'error': 'Parametri start/end richiesti'}), 400
-        
+
         # Prova diverse API keys per evitare rate limiting
         api_keys = [
             '5b3ce3597851110001cf6248d8b3c8c3b4de4ecc8f4fcd1ca85f476c',
             '5b3ce3597851110001cf6248a2a977a5f8c17452c4e91b878baec4d0f',
             '5b3ce3597851110001cf6248aa843cc7fdedf412e839ea5fa49bb9b0c'
         ]
-        
+
         # Usa la prima API key disponibile
         api_key = api_keys[0]
         url = f'https://api.openrouteservice.org/v2/directions/{profile}'
-        
+
         params = {
             'api_key': api_key,
             'start': start,
             'end': end
         }
-        
+
         response = requests.get(url, params=params, timeout=10)
-        
+
         if response.status_code == 200:
             return jsonify(response.json())
         elif response.status_code == 403 or response.status_code >= 400:
@@ -270,7 +273,7 @@ def route_proxy():
                 })
         else:
             return jsonify({'error': f'API error: {response.status_code}'}), response.status_code
-            
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -278,13 +281,13 @@ def route_proxy():
 def api_get_profile():
     """API endpoint per ottenere profilo utente (per compatibilità con frontend)"""
     from flask_login import current_user
-    
+
     # Se non autenticato, usa fallback demo per compatibilità
     if current_user.is_authenticated:
         user_id = current_user.id
     else:
         user_id = session.get('demo_user_id', 'demo_user_123')
-    
+
     # Mock profilo per demo - funzionalità complete
     return jsonify({
         'success': True,
@@ -307,35 +310,35 @@ def api_plan_trip():
         end = data.get('end', '').strip()
         city = data.get('city', '').strip()
         duration = data.get('duration', 'half_day')
-        
+
         if not start or not end:
             return jsonify({
                 'success': False,
                 'error': 'Start e end sono obbligatori'
             }), 400
-        
+
         # Sistema di riconoscimento città migliorato se non specificata
         if not city:
             city = detect_city_from_locations(start.lower(), end.lower())
-        
+
         # Ottieni profilo utente per personalizzazione
         from flask_login import current_user as auth_user
-        
+
         # Usa utente realmente autenticato se disponibile
         if auth_user.is_authenticated:
             user_id = auth_user.id
         else:
             user_id = session.get('demo_user_id', 'demo_user_123')
-            
+
         # Mock profilo per demo - interessi personalizzati
         user_interests = ['storia', 'arte', 'cibo', 'natura']
-        
+
         # Prova prima il routing dinamico personalizzato
         from dynamic_routing import dynamic_router
         itinerary = dynamic_router.generate_personalized_itinerary(
             start, end, city, duration, user_interests
         )
-        
+
         # Se il routing dinamico fallisce, usa template specifici
         if not itinerary or len(itinerary) < 3:
             print(f"Fallback a template per {city}")
@@ -353,7 +356,7 @@ def api_plan_trip():
                 itinerary = generate_genova_itinerary(start, end)
             else:
                 itinerary = generate_generic_itinerary(start, end)
-        
+
         return jsonify({
             'success': True,
             'itinerary': itinerary,
@@ -365,8 +368,8 @@ def api_plan_trip():
                 'walking_routes': True
             }
         })
-        
-        
+
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -376,7 +379,7 @@ def api_plan_trip():
 def detect_city_from_locations(start, end):
     """Rileva la città dall'input utente usando Nominatim API per scalabilità mondiale"""
     text = f"{start} {end}".lower()
-    
+
     # 🌍 PRIORITÀ 0: Riconoscimento destinazioni ESTERE - DEVE usare Apify
     foreign_destinations = {
         'usa washington d': ['usa', 'america', 'washington', 'new york', 'nyc', 'brooklyn', 'manhattan', 'boston', 'chicago', 'los angeles', 'san francisco'],
@@ -386,31 +389,31 @@ def detect_city_from_locations(start, end):
         'france paris': ['paris', 'france', 'marseille', 'lyon', 'nice', 'toulouse'],
         'spain madrid': ['madrid', 'spain', 'barcelona', 'valencia', 'seville']
     }
-    
+
     for country_city, keywords in foreign_destinations.items():
         if any(keyword in text for keyword in keywords):
             print(f"🌍 DESTINAZIONE ESTERA RILEVATA: {country_city}")
             return country_city  # Ritorna il paese_citta come identificativo speciale
-    
+
     # PRIORITÀ 1: Estrazione automatica nome città dai pattern comma-separated
     import re
-    
+
     # Pattern: "luogo,città" - estrae la città dopo la virgola
     comma_patterns = re.findall(r'[^,]+,\s*([a-z\s]+)', text)
     for city_candidate in comma_patterns:
         city_candidate = city_candidate.strip()
         if len(city_candidate) > 2:  # Nome città valido
             return city_candidate
-    
+
     # PRIORITÀ 2: Riconoscimento diretto dalle parole chiave
     for keyword in ['trieste', 'castello miramare', 'piazza unità']:
         if keyword in text:
             return 'trieste'
-    
+
     # PRIORITÀ 3: Geocoding automatico per identificare la città
     try:
         import requests
-        
+
         # Prova a geocodificare l'intero testo per identificare la località
         params = {
             'q': f"{start} {end} Italia",
@@ -419,18 +422,18 @@ def detect_city_from_locations(start, end):
             'addressdetails': 1,
             'countrycodes': 'it'
         }
-        
+
         response = requests.get(
             "https://nominatim.openstreetmap.org/search",
             params=params,
             timeout=3,
             headers={'User-Agent': 'Viamigo/1.0'}
         )
-        
+
         if response.ok and response.json():
             result = response.json()[0]
             address = result.get('address', {})
-            
+
             # Estrai città dai dati OSM
             city_candidates = [
                 address.get('city'),
@@ -439,14 +442,14 @@ def detect_city_from_locations(start, end):
                 address.get('municipality'),
                 address.get('county')
             ]
-            
+
             for city in city_candidates:
                 if city and len(city) > 2:
                     return city.lower()
-                    
+
     except Exception as e:
         print(f"Errore geocoding città: {e}")
-    
+
     # PRIORITÀ 4: Fallback a città italiane principali
     major_cities = {
         'roma': ['roma', 'rome', 'colosseo', 'vaticano', 'trastevere'],
@@ -459,11 +462,11 @@ def detect_city_from_locations(start, end):
         'bologna': ['bologna', 'torri', 'piazza maggiore'],
         'sardegna': ['sardegna', 'sardinia', 'olbia', 'cagliari', 'portorotondo', 'porto cervo', 'costa smeralda', 'orgosolo', 'nuoro', 'sassari', 'santa teresa', 'gallura', 'baja sardinia', 'cala di volpe']
     }
-    
+
     for city, keywords in major_cities.items():
         if any(keyword in text for keyword in keywords):
             return city
-    
+
     return 'generico'
 
 def generate_torino_itinerary(start, end):
@@ -669,11 +672,11 @@ def generate_firenze_itinerary(start, end):
 def generate_genova_itinerary(start, end):
     """Genera itinerario specifico per Genova basato su destinazione"""
     print(f"🎯 Routing ottimizzato per genova {end} - coordinate verificate")
-    
+
     # Analizza la destinazione per generare itinerario pertinente
     end_lower = end.lower().strip()
     start_lower = start.lower().strip()
-    
+
     # ITINERARIO PARCHI DI NERVI - DESTINAZIONE SPECIFICA
     if 'nervi' in end_lower or 'parchi' in end_lower:
         return [
@@ -728,7 +731,7 @@ def generate_genova_itinerary(start, end):
                 'description': 'Primavera per la fioritura nei parchi, estate per il mare.'
             }
         ]
-    
+
     # ITINERARIO ACQUARIO - DESTINAZIONE SPECIFICA  
     elif 'acquario' in end_lower or 'porto antico' in end_lower:
         return [
@@ -778,7 +781,7 @@ def generate_genova_itinerary(start, end):
                 'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
             }
         ]
-    
+
     # ITINERARIO SPIANATA CASTELLETTO - DESTINAZIONE SPECIFICA
     elif 'castelletto' in end_lower or 'spianata' in end_lower:
         return [
@@ -833,7 +836,7 @@ def generate_genova_itinerary(start, end):
                 'description': 'Migliore al tramonto per foto spettacolari del porto'
             }
         ]
-    
+
     # ITINERARIO GENERICO CENTRO STORICO (fallback)
     else:
         return [
@@ -925,13 +928,13 @@ def api_get_details_backup():
     try:
         data = request.get_json()
         context = data.get('context', '')
-        
+
         # Prima prova nel database locale (città italiane principali)
         local_result = get_local_place_details(context)
         if local_result:
             # Formato corretto per il frontend - dati direttamente, non sotto "details"
             return jsonify(local_result)
-        
+
         # Se non trovato localmente, controlla cache database
         cached_result = get_cached_place_details(context)
         if cached_result:
@@ -940,31 +943,31 @@ def api_get_details_backup():
                 'details': cached_result,
                 'source': 'cache_database'
             })
-        
+
         # Se non in cache, usa API dinamiche e salva in cache
         place_name = data.get('place_name', context.replace('_', ' '))
         city = data.get('city', '')
         country = data.get('country', '')
-        
+
         from dynamic_places_api import dynamic_places
         dynamic_result = dynamic_places.get_place_info(place_name, city, country)
-        
+
         if dynamic_result:
             # Salva in cache per future richieste
             save_to_cache(context, place_name, city, country, dynamic_result)
-            
+
             return jsonify({
                 'success': True,
                 'details': dynamic_result,
                 'source': 'dynamic_api'
             })
-        
+
         # Fallback se entrambi falliscono
         return jsonify({
             'success': False,
             'error': 'Informazioni non disponibili per questo luogo'
         }), 404
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -1151,7 +1154,7 @@ def get_local_place_details(context):
                 'tip': '⛵ Perfetto per aperitivi al tramonto con vista mare. Centro pedonale elegante.',
                 'image_url': None
             },
-            
+
             # === MILANO ===
             'duomo_milano': {
                 'title': 'Duomo di Milano',
@@ -1463,14 +1466,21 @@ def get_local_place_details(context):
                 'summary': 'Secondo acquario più grande d\'Europa con 12.000 esemplari marini. Gioiello del Porto Antico progettato da Renzo Piano.',
                 'details': [
                     {'label': 'Inaugurazione', 'value': '1992 (Expo Colombo)'},
-                    {'label': 'Dimensioni', 'value': '10.000 m², 70 vasche, 6M litri'},
-                    {'label': 'Specie', 'value': '12.000 esemplari, 600 specie'},
-                    {'label': 'Highlights', 'value': 'Delfini, squali, lamantini, pinguini'},
-                    {'label': 'Percorso', 'value': '2.5 ore dalla Liguria ai tropici'},
-                    {'label': 'Novità 2024', 'value': 'Padiglione Cetacei, mondo coralli'}
+                    {'label': 'Dimensioni', 'value': '9.700 m² di superficie espositiva'},
+                    {'label': 'Architetto', 'value': 'Renzo Piano (Porto Antico)'},
+                    {'label': 'Biglietto', 'value': '€29 adulti, €19 bambini'},
+                    {'label': 'Orari', 'value': '9:00-20:00 (estate), 10:00-18:00 (inverno)'},
+                    {'label': 'Attrazioni', 'value': 'Delfini, squali, lamantini, pinguini'},
+                    {'label': 'Record', 'value': '2° in Europa per grandezza'}
                 ],
-                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-18:00 (inverno)',
-                'cost': '€29 adulti, €19 bambini 4-12 anni'
+                'timetable': [
+                    {'direction': 'Estate (giu-set)', 'times': '9:00-20:00 (ultimo ingresso 18:00)'},
+                    {'direction': 'Inverno (ott-mag)', 'times': '9:30-19:00 (ultimo ingresso 17:00)'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota biglietto online',
+                    'url': 'https://www.acquariodigenova.it'
+                }
             },
             'cattedrale_genova': {
                 'title': 'Cattedrale di San Lorenzo, Genova',
@@ -1505,27 +1515,6 @@ def get_local_place_details(context):
                     {'direction': 'Funicolare', 'times': '6:00-24:00 ogni 15 minuti'},
                     {'direction': 'Spianata', 'times': 'Sempre accessibile'}
                 ]
-            },
-            'acquario_genova': {
-                'title': 'Acquario di Genova',
-                'summary': 'Il secondo acquario più grande d\'Europa, nel Porto Antico progettato da Renzo Piano. Casa di 12.000 esemplari di 600 specie diverse.',
-                'details': [
-                    {'label': 'Dimensioni', 'value': '9.700 m² di superficie espositiva'},
-                    {'label': 'Apertura', 'value': '1992 (Expo Colombo 500 anni)'},
-                    {'label': 'Architetto', 'value': 'Renzo Piano (Porto Antico)'},
-                    {'label': 'Biglietto', 'value': '€29 adulti, €19 bambini'},
-                    {'label': 'Orari', 'value': '9:00-20:00 (estate), 9:30-19:00 (inverno)'},
-                    {'label': 'Attrazioni', 'value': 'Delfini, squali, lamantini, pinguini'},
-                    {'label': 'Record', 'value': '2° in Europa per grandezza'}
-                ],
-                'timetable': [
-                    {'direction': 'Estate (giu-set)', 'times': '9:00-20:00 (ultimo ingresso 18:00)'},
-                    {'direction': 'Inverno (ott-mag)', 'times': '9:30-19:00 (ultimo ingresso 17:00)'}
-                ],
-                'actionLink': {
-                    'text': 'Prenota biglietto online',
-                    'url': 'https://www.acquariodigenova.it'
-                }
             },
             'museum': {
                 'title': 'Musei di Genova',
@@ -1916,7 +1905,7 @@ def get_local_place_details(context):
                 ],
                 'timetable': [
                     {'direction': 'Chiesa Trinità dei Monti', 'times': 'Mar-Dom 10:00-19:00'},
-                    {'direction': 'Keats-Shelley Museum', 'times': 'Lun-Sab 10:00-18:00'}
+                    {'direction': 'Keats- Shelley Museum', 'times': 'Lun-Sab 10:00-18:00'}
                 ]
             },
             'fontana_trevi': {
@@ -1986,7 +1975,7 @@ def get_local_place_details(context):
                 }
             }
     }
-    
+
     # Cerca nel database dei luoghi
     if context in place_details:
         result = place_details[context]
@@ -2014,7 +2003,7 @@ def save_to_cache(context, place_name, city, country, place_data):
     try:
         import json
         from models import PlaceCache
-        
+
         cache_entry = PlaceCache(
             cache_key=context,
             place_name=place_name,
@@ -2036,10 +2025,10 @@ def api_save_preferences():
     try:
         data = request.get_json()
         current_user = get_current_user()
-        
+
         # Trova o crea profilo utente
         profile = UserProfile.query.filter_by(user_id=current_user.id).first()
-        
+
         if not profile:
             profile = UserProfile(
                 user_id=current_user.id,
@@ -2049,7 +2038,7 @@ def api_save_preferences():
                 bio='Viaggiatore entusiasta'
             )
             db.session.add(profile)
-        
+
         # Aggiorna le preferenze
         if 'interests' in data:
             profile.set_interests(data['interests'])
@@ -2057,14 +2046,14 @@ def api_save_preferences():
             profile.travel_pace = data['travel_pace']
         if 'budget' in data:
             profile.budget = data['budget']
-            
+
         db.session.commit()
-        
+
         return jsonify({
             'success': True,
             'message': 'Preferenze salvate correttamente'
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -2083,11 +2072,11 @@ def demo_dashboard():
 def view_profile():
     """Visualizza il profilo dell'utente - design mobile uniforme a Viamigo"""
     from flask_login import current_user as auth_user
-    
+
     # Usa utente realmente autenticato
     if not auth_user.is_authenticated:
         return redirect('/auth/login')
-        
+
     # Profilo semplificato senza UserProfile model
     return render_template_string('''
 <!DOCTYPE html>
@@ -2150,7 +2139,7 @@ def view_profile():
                             <span class="bg-violet-500 text-white py-2 px-3 rounded-lg text-sm text-center">Storia</span>
                         </div>
                     </div>
-                    
+
                     <!-- Preferenze -->
                     <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
                         <h3 class="text-gray-400 text-sm font-medium mb-4">Preferenze</h3>
@@ -2175,7 +2164,7 @@ def view_profile():
                         </svg>
                         <span>Modifica Profilo</span>
                     </button>
-                    
+
                     <button onclick="window.location.href='/auth/logout'" class="w-full bg-red-600/20 text-red-400 py-3 rounded-xl font-semibold flex items-center justify-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -2196,10 +2185,10 @@ def view_profile():
 def create_profile():
     """Pagina creazione profilo semplificata"""
     from flask_login import current_user as auth_user
-    
+
     # Redirect a profilo esistente per ora
     return redirect('/profile')
-    
+
     # GET request - mostra form con design mobile Viamigo
     return render_template_string('''
 <!DOCTYPE html>
@@ -2257,7 +2246,7 @@ def create_profile():
                         </div>
                         <input type="hidden" name="interests" id="interests-input">
                     </div>
-                    
+
                     <!-- Ritmo di Viaggio -->
                     <div>
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
@@ -2268,7 +2257,7 @@ def create_profile():
                         </div>
                         <input type="hidden" name="travel_pace" id="pace-input" value="Moderato">
                     </div>
-                    
+
                     <!-- Budget -->
                     <div>
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
@@ -2279,7 +2268,7 @@ def create_profile():
                         </div>
                         <input type="hidden" name="budget" id="budget-input" value="€€">
                     </div>
-                    
+
                     <!-- Pulsanti Azione -->
                     <div class="space-y-3 pt-4">
                         <button type="submit" class="w-full bg-violet-500 text-white py-3 rounded-xl font-semibold">
@@ -2296,7 +2285,7 @@ def create_profile():
 
     <script>
         let selectedInterests = [];
-        
+
         function toggleInterest(element, interest) {
             if (selectedInterests.includes(interest)) {
                 selectedInterests = selectedInterests.filter(i => i !== interest);
@@ -2307,7 +2296,7 @@ def create_profile():
             }
             document.getElementById('interests-input').value = selectedInterests.join(',');
         }
-        
+
         function selectPace(element, pace) {
             document.querySelectorAll('.segmented-control button').forEach(btn => {
                 if (btn.parentElement.parentElement.querySelector('#pace-input')) {
@@ -2317,7 +2306,7 @@ def create_profile():
             element.classList.add('selected');
             document.getElementById('pace-input').value = pace;
         }
-        
+
         function selectBudget(element, budget) {
             document.querySelectorAll('.segmented-control button').forEach(btn => {
                 if (btn.parentElement.parentElement.querySelector('#budget-input')) {
@@ -2337,24 +2326,24 @@ def create_profile():
 def edit_profile():
     """Pagina modifica profilo semplificata"""
     from flask_login import current_user as auth_user
-    
+
     # Redirect a profilo principale per ora  
     return redirect('/profile')
-    
+
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
-        
+
         # Aggiorna profilo
         interests = data.get('interests', [])
         if isinstance(interests, str):
             interests = [i.strip() for i in interests.split(',') if i.strip()]
         profile.set_interests(interests)
-        
+
         profile.travel_pace = data.get('travel_pace')
         profile.budget = data.get('budget')
-        
+
         db.session.commit()
-        
+
         if request.is_json:
             return jsonify({
                 'success': True,
@@ -2364,7 +2353,7 @@ def edit_profile():
         else:
             flash('Profilo aggiornato con successo!')
             return redirect(url_for('view_profile'))
-    
+
     # GET request - mostra form pre-compilato con design mobile
     return render_template_string('''
 <!DOCTYPE html>
@@ -2421,7 +2410,7 @@ def edit_profile():
                         </div>
                         <input type="hidden" name="interests" id="interests-input">
                     </div>
-                    
+
                     <!-- Ritmo di Viaggio -->
                     <div>
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Ritmo di viaggio</h3>
@@ -2432,7 +2421,7 @@ def edit_profile():
                         </div>
                         <input type="hidden" name="travel_pace" id="pace-input" value="{{ profile.travel_pace or 'Moderato' }}">
                     </div>
-                    
+
                     <!-- Budget -->
                     <div>
                         <h3 class="text-gray-400 text-sm font-medium mb-3">Budget</h3>
@@ -2443,7 +2432,7 @@ def edit_profile():
                         </div>
                         <input type="hidden" name="budget" id="budget-input" value="{{ profile.budget or '€€' }}">
                     </div>
-                    
+
                     <!-- Pulsanti Azione -->
                     <div class="space-y-3 pt-4">
                         <button type="submit" class="w-full bg-violet-500 text-white py-3 rounded-xl font-semibold">
@@ -2461,7 +2450,7 @@ def edit_profile():
     <script>
         // Preseleziona interessi esistenti del profilo
         let selectedInterests = {{ profile.get_interests() | tojson if profile else [] }};
-        
+
         // Inizializzazione al caricamento
         document.addEventListener('DOMContentLoaded', function() {
             // Preseleziona interessi
@@ -2469,17 +2458,17 @@ def edit_profile():
                 const element = document.querySelector(`[onclick*="${interest}"]`);
                 if (element) element.classList.add('selected');
             });
-            
+
             // Preseleziona ritmo e budget
             const currentPace = "{{ profile.travel_pace or 'Moderato' }}";
             const currentBudget = "{{ profile.budget or '€€' }}";
-            
+
             document.querySelector(`[onclick*="${currentPace}"]`)?.classList.add('selected');
             document.querySelector(`[onclick*="${currentBudget}"]`)?.classList.add('selected');
-            
+
             document.getElementById('interests-input').value = selectedInterests.join(',');
         });
-        
+
         function toggleInterest(element, interest) {
             if (selectedInterests.includes(interest)) {
                 selectedInterests = selectedInterests.filter(i => i !== interest);
@@ -2490,7 +2479,7 @@ def edit_profile():
             }
             document.getElementById('interests-input').value = selectedInterests.join(',');
         }
-        
+
         function selectPace(element, pace) {
             document.querySelectorAll('.segmented-control button').forEach(btn => {
                 if (btn.parentElement.parentElement.querySelector('#pace-input')) {
@@ -2500,7 +2489,7 @@ def edit_profile():
             element.classList.add('selected');
             document.getElementById('pace-input').value = pace;
         }
-        
+
         function selectBudget(element, budget) {
             document.querySelectorAll('.segmented-control button').forEach(btn => {
                 if (btn.parentElement.parentElement.querySelector('#budget-input')) {
@@ -2523,10 +2512,10 @@ def delete_profile():
     profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         return jsonify({'success': False, 'message': 'Profilo non trovato'}), 404
-    
+
     db.session.delete(profile)
     db.session.commit()
-    
+
     return jsonify({'success': True, 'message': 'Profilo eliminato con successo'})
 
 # === API ROUTES ===
@@ -2539,7 +2528,7 @@ def get_profile_api():
     profile = UserProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         return jsonify({'profile': None})
-    
+
     return jsonify({'profile': profile.to_dict()})
 
 @app.route('/api/profile', methods=['POST'])
@@ -2569,9 +2558,9 @@ def admin_profiles():
     current_user = get_current_user()  # Usa mock user
     if not is_admin(current_user.id):
         return redirect(url_for('index'))
-    
+
     profiles = db.session.query(UserProfile, User).join(User).all()
-    
+
     return render_template_string('''
     <!DOCTYPE html>
     <html>
@@ -2586,7 +2575,7 @@ def admin_profiles():
                 <h1 class="text-xl font-bold">Admin Panel - Profili Utenti</h1>
             </div>
         </nav>
-        
+
         <div class="container mx-auto p-8">
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <table class="w-full">

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 🧠 AI COMPANION ROUTES - Real AI-powered travel intelligence
@@ -57,13 +56,13 @@ Rispondi SOLO con JSON valido. Sii specifico e intelligente.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-5",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion esperto che genera Piani B intelligenti e dinamici."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=6
+                timeout=30
             )
 
             result = json.loads(response.choices[0].message.content)
@@ -125,13 +124,13 @@ Sii specifico, intelligente e contextualmente rilevante.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-5",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion che scopre gemme nascoste con intelligenza contestuale."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=6
+                timeout=30
             )
 
             result = json.loads(response.choices[0].message.content)
@@ -190,13 +189,13 @@ Sii perspicace e intelligente nell'analisi comportamentale.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-5",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion che analizza comportamenti e genera insights personalizzati."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                timeout=6
+                timeout=30
             )
 
             result = json.loads(response.choices[0].message.content)
@@ -345,7 +344,7 @@ def get_dynamic_city_coordinates(city_name: str):
     """Get city coordinates dynamically using geocoding"""
     try:
         import requests
-        
+
         # Use Nominatim for free geocoding
         url = "https://nominatim.openstreetmap.org/search"
         params = {
@@ -353,7 +352,7 @@ def get_dynamic_city_coordinates(city_name: str):
             'format': 'json',
             'limit': 1
         }
-        
+
         response = requests.get(url, params=params, timeout=5)
         if response.ok and response.json():
             data = response.json()[0]
@@ -362,7 +361,7 @@ def get_dynamic_city_coordinates(city_name: str):
             return coords
     except Exception as e:
         print(f"⚠️ Geocoding failed for {city_name}: {e}")
-    
+
     # Fallback coordinates for major cities
     city_coords = {
         'milano': [45.4642, 9.1900],
@@ -371,7 +370,7 @@ def get_dynamic_city_coordinates(city_name: str):
         'venezia': [45.4408, 12.3155],
         'firenze': [43.7696, 11.2558]
     }
-    
+
     return city_coords.get(city_name.lower(), [41.9028, 12.4964])
 
 def generate_dynamic_attraction_details(attraction, city_name: str):
@@ -435,7 +434,7 @@ def plan_ai_powered():
         # Get city information from both start and end
         start_city_key, start_city_name = detect_city_from_input(start)
         end_city_key, end_city_name = detect_city_from_input(end)
-        
+
         # Use the destination city as primary
         city_key = end_city_key
         city_name = end_city_name
@@ -517,7 +516,7 @@ def plan_ai_powered():
             starting_coords = dynamic_attractions[0]['coords']
         else:
             starting_coords = get_dynamic_city_coordinates(city_name)
-            
+
         print(f"🗺️ Using coordinates {starting_coords} for city: {city_key}")
 
         # Initialize current_time for itinerary building
@@ -542,7 +541,7 @@ def plan_ai_powered():
             if i > 0:
                 travel_duration = 0.33  # 20 minutes between attractions
                 current_time += travel_duration
-                
+
                 itinerary.append({
                     "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
                     "title": f"Verso {attraction['name']}",
