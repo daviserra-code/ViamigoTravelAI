@@ -370,6 +370,8 @@ def get_dynamic_city_coordinates(city_name: str):
         'venezia': [45.4408, 12.3155],
         'firenze': [43.7696, 11.2558],
         'napoli': [40.8518, 14.2681],
+        'palermo': [38.1157, 13.3615],  # Palermo, Sicily
+        'catania': [37.5079, 15.0830],
         'london': [51.5074, -0.1278],
         'paris': [48.8566, 2.3522],
         'new york': [40.7128, -74.0060]
@@ -433,6 +435,14 @@ def plan_ai_powered():
                 'napoli': ('napoli', 'Napoli'),
                 'naples': ('napoli', 'Napoli'),
                 'spaccanapoli': ('napoli', 'Napoli'),
+                # Sicilia - ADD PALERMO AND OTHER SICILIAN CITIES
+                'palermo': ('palermo', 'Palermo'),
+                'pretoria': ('palermo', 'Palermo'),
+                'villena': ('palermo', 'Palermo'),
+                'quattro canti': ('palermo', 'Palermo'),
+                'catania': ('catania', 'Catania'),
+                'taormina': ('taormina', 'Taormina'),
+                'siracusa': ('siracusa', 'Siracusa'),
                 # UK
                 'london': ('london', 'London'),
                 'londra': ('london', 'London'),
@@ -445,8 +455,26 @@ def plan_ai_powered():
                 if city_name in location_lower:
                     return city_key, city_display
 
-            # Default to Milano if not found
-            return 'milano', 'Milano'
+            # Dynamic city extraction from comma-separated format
+            import re
+            # Extract city name after comma (e.g., "piazza pretoria,palermo" -> "palermo")
+            comma_match = re.search(r',\s*([a-z]+)', location_lower)
+            if comma_match:
+                extracted_city = comma_match.group(1)
+                # Capitalize properly for display
+                city_display = extracted_city.capitalize()
+                return extracted_city, city_display
+            
+            # If no city found, try to extract from the input
+            # Split by spaces and check last word as potential city
+            words = location_lower.split()
+            if len(words) > 0:
+                potential_city = words[-1]
+                if len(potential_city) > 3:  # Reasonable city name length
+                    return potential_city, potential_city.capitalize()
+
+            # Default to generic city handling (will use AI to generate appropriate content)
+            return 'generic', 'Unknown City'
 
         # Get city information from both start and end
         start_city_key, start_city_name = detect_city_from_input(start)
@@ -499,6 +527,14 @@ def plan_ai_powered():
                 {'name': 'Tower Bridge', 'latitude': 51.5055, 'longitude': -0.0754, 'description': 'Victorian Gothic bridge over Thames'},
                 {'name': 'British Museum', 'latitude': 51.5194, 'longitude': -0.1270, 'description': 'World history and culture museum'},
                 {'name': 'Buckingham Palace', 'latitude': 51.5014, 'longitude': -0.1419, 'description': 'Royal residence with changing of guard'}
+            ],
+            'palermo': [
+                {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561, 'description': 'Maestosa cattedrale normanna con cripta reale'},
+                {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571, 'description': 'Il più grande teatro lirico d\'Italia'},
+                {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590, 'description': 'Mercato storico con street food siciliano'},
+                {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530, 'description': 'Palazzo reale con Cappella Palatina'},
+                {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613, 'description': 'Piazza barocca ottagonale al centro'},
+                {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620, 'description': 'Piazza con fontana monumentale'}
             ]
         }
         
