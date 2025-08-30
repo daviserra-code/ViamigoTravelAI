@@ -924,11 +924,15 @@
                     modalData = data.details;
                 }
                 
-                // Check if we have valid data
-                const hasValidData = modalData && (modalData.summary || modalData.details || modalData.title);
+                // Check if we have valid data - fix validation logic
+                const hasValidData = modalData && (
+                    modalData.summary || 
+                    modalData.title || 
+                    (modalData.details && Array.isArray(modalData.details) && modalData.details.length > 0)
+                );
                 
                 if (!hasValidData) {
-                    console.log('No valid data received, showing fallback');
+                    console.log('No valid data received, showing fallback', modalData);
                     showModalWithHTML('Dettagli luogo', `
                         <p class="text-gray-300 mb-4">Questo è un luogo interessante del tuo itinerario.</p>
                         <div class="mb-4">

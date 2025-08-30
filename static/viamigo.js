@@ -529,12 +529,12 @@ let mapInstance = null;
 let routeLayer = null;
 let routeCoordinates = [];
 let bounds = null;
-let markerIndex = 1; // Initialize marker index
+let activityMarkerIndex = 1; // Only count actual activity stops
 
 // Function to initialize the map
 function initializeMap() {
     if (!mapInstance) {
-        const mapContainer = document.getElementById('map'); // Assuming a map div with id 'map'
+        const mapContainer = document.getElementById('map');
         if (!mapContainer) {
             console.error('Map container not found!');
             return;
@@ -561,12 +561,13 @@ function drawRouteOnMap(itinerary) {
         routeLayer.clearLayers();
     }
     routeCoordinates = [];
-    markerIndex = 1; // Reset marker index for new route
+    activityMarkerIndex = 1; // Reset activity marker index for new route
 
     itinerary.forEach((item, index) => {
         console.log(`Analizzando item ${index}:`, item);
-        if (item.type !== 'tip') {
-            console.log(`📍 Processando waypoint: ${item.title}, markerIndex attuale: ${markerIndex}`);
+        // Only process items that are actual stops (not tips or pure transport)
+        if (item.type !== 'tip' && item.type !== 'transport') {
+            console.log(`📍 Processando waypoint: ${item.title}, activityMarkerIndex attuale: ${activityMarkerIndex}`);
             // Rileva la città dall'itinerario
             const currentCity = window.currentCityName || 'genova';
 
@@ -613,14 +614,14 @@ function drawRouteOnMap(itinerary) {
             else if (item.type === 'transport') markerColor = 'orange';
 
             // Different icon for starting point
-            let markerIcon = markerIndex.toString();
+            let markerIcon = activityMarkerIndex.toString();
             if (item.transport === 'start') {
                 markerIcon = '🏁';
                 console.log(`🏁 Punto di partenza: ${item.title}`);
             } else {
-                console.log(`🔢 Assegnando numero ${markerIndex} a ${item.title}`);
+                console.log(`🔢 Assegnando numero ${activityMarkerIndex} a ${item.title}`);
             }
-            markerIndex++; // Increment for EACH visible waypoint
+            activityMarkerIndex++; // Increment only for actual activity stops
 
             // Custom marker with sequential numbering
             const customIcon = L.divIcon({
