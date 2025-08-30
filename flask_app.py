@@ -62,9 +62,7 @@ def create_tables():
     else:
         logging.warning("Skipping table creation - no database configured")
 
-from ai_companion_routes import ai_companion_bp
 from detail_handler import detail_bp
 
 # Register blueprints
-app.register_blueprint(ai_companion_bp)
 app.register_blueprint(detail_bp)
