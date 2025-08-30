@@ -524,17 +524,16 @@ def plan_ai_powered():
         start_city_key, start_city_name = detect_city_from_input(start)
         start_coords = city_data.get(start_city_key, city_data['genova'])['coords']
         
-        if start.lower() != end.lower():
-            # Add starting location
-            itinerary.append({
-                'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
-                'title': start,
-                'description': f'Punto di partenza: {start}',
-                'coordinates': start_coords,
-                'context': f'{start.lower().replace(" ", "_")}_{end_city_key}',
-                'type': 'activity',
-                'transport': 'start'
-            })
+        # ALWAYS add starting location
+        itinerary.append({
+            'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+            'title': start,
+            'description': f'Punto di partenza: {start}',
+            'coordinates': start_coords,
+            'context': f'{start.lower().replace(" ", "_")}_{end_city_key}',
+            'type': 'activity',
+            'transport': 'start'
+        })
         
         # For Nervi destination, add train travel
         if is_nervi_destination:
@@ -550,8 +549,22 @@ def plan_ai_powered():
             })
             current_time += 0.33  # 20 minutes
         
-        # Add attractions using dynamic scraped data
-        selected_attractions = dynamic_attractions
+        # Filter attractions to match the actual destination requested
+        end_lower = end.lower()
+        
+        # If user specifically requested a destination, prioritize it
+        if 'acquario' in end_lower:
+            # Find and prioritize Acquario di Genova
+            selected_attractions = [attr for attr in dynamic_attractions if 'acquario' in attr['name'].lower()]
+            if not selected_attractions:
+                # If not found in dynamic attractions, add it specifically
+                selected_attractions = [{'name': 'Acquario di Genova', 'coords': [44.4109, 8.9326], 'duration': 2.5}]
+        elif 'castelletto' in end_lower or 'spianata' in end_lower:
+            # Only use castelletto if explicitly requested
+            selected_attractions = [attr for attr in dynamic_attractions if 'castelletto' in attr['name'].lower() or 'spianata' in attr['name'].lower()]
+        else:
+            # Use dynamic attractions but ensure we don't add random destinations
+            selected_attractions = dynamic_attractions[:3]  # Limit to 3 to prevent arbitrary additions
         
         for i, attraction in enumerate(selected_attractions):
             # Add walking time between locations
@@ -684,6 +697,29 @@ def plan_ai_powered():
                         "description": f"💡 Per un'esperienza ottimale a {attraction['name']}, ti consiglio di visitarlo durante le ore meno affollate."
                     })
         
+        # Ensure the itinerary ends at the requested destination
+        end_lower = end.lower()
+        if not any(end_lower in item.get('title', '').lower() for item in itinerary if item.get('type') != 'tip'):
+            # Add the specific end destination if it wasn't included
+            current_time += 0.5
+            end_coords = start_coords  # Default fallback
+            
+            # Get specific coordinates for requested destination
+            if 'acquario' in end_lower:
+                end_coords = [44.4109, 8.9326]
+            elif 'castelletto' in end_lower or 'spianata' in end_lower:
+                end_coords = [44.4127, 8.9264]
+            
+            itinerary.append({
+                "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+                "title": end,
+                "description": f"Destinazione finale: {end}",
+                "coordinates": end_coords,
+                "context": f'{end.lower().replace(" ", "_")}_{end_city_key}',
+                "type": "activity",
+                "transport": "arrival"
+            })
+        
         # Add additional Nervi-specific tips
         if is_nervi_destination:
             itinerary.append({
@@ -692,7 +728,7 @@ def plan_ai_powered():
                 "description": "Primavera per la fioritura nei parchi, estate per il mare."
             })
         
-        print(f"✅ Generated itinerary with {len(itinerary)} items")
+        print(f"✅ Generated itinerary with {len(itinerary)} items, ending at: {end}")
         
         return jsonify({
             "itinerary": itinerary,
