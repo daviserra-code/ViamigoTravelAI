@@ -381,11 +381,20 @@ def plan_ai_powered():
             
             return 'genova', 'genova'  # Default to Genova
         
+        # 🌍 INTEGRATE COST-EFFECTIVE SCRAPING SYSTEM
+        from cost_effective_scraping import CostEffectiveDataProvider
+        scraping_provider = CostEffectiveDataProvider()
+        
         # Get city information
         end_city_key, end_city_name = detect_city_from_input(end)
         
         # Check if destination is specifically Nervi
         is_nervi_destination = 'nervi' in end.lower() or 'parchi' in end.lower()
+        
+        # Get real data from cost-effective scraping system
+        print(f"🔍 Using cost-effective scraping for {end_city_name}")
+        real_attractions = scraping_provider.get_places_data(end_city_name, "tourist_attraction")
+        real_restaurants = scraping_provider.get_places_data(end_city_name, "restaurant")
         
         # City coordinates and attractions
         city_data = {
@@ -420,15 +429,33 @@ def plan_ai_powered():
             }
         }
         
-        # Use Nervi-specific data if destination is Nervi
-        if is_nervi_destination:
-            city_info = city_data['nervi']
-            end_city_key = 'nervi'
-            end_city_name = 'Nervi, Genova'
+        # Use real scraped data if available, otherwise fallback to static data
+        if real_attractions and len(real_attractions) >= 2:
+            print(f"✅ Using {len(real_attractions)} real attractions from scraping")
+            dynamic_attractions = [
+                {
+                    'name': attr['name'],
+                    'coords': [attr['latitude'], attr['longitude']], 
+                    'duration': 1.5,
+                    'description': attr['description'],
+                    'source': attr['source']
+                }
+                for attr in real_attractions[:4]  # Max 4 attractions
+            ]
         else:
-            city_info = city_data.get(end_city_key, city_data['genova'])
+            # Fallback to static data
+            if is_nervi_destination:
+                city_info = city_data['nervi']
+                end_city_key = 'nervi'
+                end_city_name = 'Nervi, Genova'
+            else:
+                city_info = city_data.get(end_city_key, city_data['genova'])
+            dynamic_attractions = [
+                {'name': attr['name'], 'coords': attr['coords'], 'duration': attr['duration']}
+                for attr in city_info['attractions'][:4]
+            ]
         
-        # Build itinerary
+        # Build itinerary with real data
         itinerary = []
         current_time = 9.0  # 9:00 AM
         
@@ -460,13 +487,8 @@ def plan_ai_powered():
             })
             current_time += 0.33  # 20 minutes
         
-        # Add attractions from the city
-        import random
-        # For Nervi, use all attractions in order. For others, sample randomly
-        if is_nervi_destination:
-            selected_attractions = city_info['attractions']
-        else:
-            selected_attractions = random.sample(city_info['attractions'], min(3, len(city_info['attractions'])))
+        # Add attractions using dynamic scraped data
+        selected_attractions = dynamic_attractions
         
         for i, attraction in enumerate(selected_attractions):
             # Add walking time between locations
@@ -487,13 +509,15 @@ def plan_ai_powered():
                 })
             
             # Add main activity
-            activity_duration = attraction['duration']
+            activity_duration = attraction.get('duration', 1.5)
             start_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             current_time += activity_duration
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
             
-            # Get specific description for Nervi attractions
-            if is_nervi_destination:
+            # Use scraped description or fallback
+            if 'description' in attraction:
+                description = f"{attraction['description']} (fonte: {attraction.get('source', 'web scraping')})"
+            elif is_nervi_destination:
                 nervi_descriptions = {
                     'Stazione Genova Nervi': 'Arrivo alla stazione ferroviaria di Nervi, elegante borgo della Riviera di Levante',
                     'Passeggiata Anita Garibaldi': 'Splendida passeggiata a mare di 2 km con vista sul Golfo Paradiso',
