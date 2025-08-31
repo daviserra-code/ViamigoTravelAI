@@ -1,146 +1,80 @@
 # Viamigo - AI-Powered Travel Organizer
 
 ## Overview
-
-Viamigo is an AI-powered travel recommendation system that uses Retrieval Augmented Generation (RAG) to provide personalized travel suggestions. The application combines vector-based document retrieval with Large Language Models to deliver contextually relevant travel recommendations based on user queries. Built with FastAPI, it integrates ChromaDB for vector storage and supports multiple LLM providers including OpenAI and Gemini.
+Viamigo is an AI-powered travel recommendation system designed to provide personalized travel suggestions using Retrieval Augmented Generation (RAG). It combines vector-based document retrieval with Large Language Models to deliver contextually relevant recommendations based on user queries. The system is built to offer a seamless travel planning experience, integrating diverse data sources to minimize AI hallucinations and provide accurate, actionable itineraries.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
 ### Backend Architecture
-- **Framework**: Hybrid architecture - FastAPI for AI/API endpoints, Flask for web interface and authentication
-- **Architecture Pattern**: Service-oriented architecture with clear separation of concerns
-- **Application Lifecycle**: Managed startup/shutdown with proper resource initialization and cleanup
-- **Routing**: Modular route organization with separate modules for travel recommendations and health checks
+- **Framework**: Hybrid architecture utilizing FastAPI for AI/API endpoints and Flask for the web interface and authentication.
+- **Architecture Pattern**: Service-oriented architecture ensuring clear separation of concerns.
+- **Application Lifecycle**: Managed startup/shutdown processes with proper resource initialization and cleanup.
+- **Routing**: Modular organization of routes, with distinct modules for travel recommendations and health checks.
 
 ### RAG (Retrieval Augmented Generation) Pipeline
-- **Core Design**: Three-stage pipeline combining document retrieval with LLM generation
-- **Query Enhancement**: LLM-powered query refinement for better document matching
-- **Document Retrieval**: Vector similarity search using ChromaDB with configurable similarity thresholds
-- **Context Integration**: Retrieved documents are used as context for LLM recommendation generation
-- **Post-processing**: Recommendation ranking and filtering based on relevance scores
-- **Geographic Validation**: Anti-hallucination system with verified GPS coordinates for Italian cities
-- **Coordinate Correction**: Automatic detection and correction of inaccurate AI-generated coordinates
+- **Core Design**: A three-stage pipeline integrating document retrieval with LLM-based generation.
+- **Query Enhancement**: Uses LLM for refining user queries to improve document matching.
+- **Document Retrieval**: Employs vector similarity search via ChromaDB with configurable thresholds.
+- **Context Integration**: Retrieved documents form the context for LLM recommendation generation.
+- **Post-processing**: Recommendations are ranked and filtered based on relevance scores.
+- **Geographic Validation**: Includes an anti-hallucination system that verifies GPS coordinates, especially for Italian cities, and automatically corrects inaccurate AI-generated coordinates.
+- **Scalable Universal System**: Designed to support any Italian/European city with a multi-tiered approach: local database, dynamic cache for API-discovered cities, intelligent geographic fallback, and automated coverage for medium/small cities.
+- **Dynamic Worldwide System**: Hybrid architecture combining a local database for Italian cities with a dynamic API system for global destinations, utilizing OpenStreetMap, Nominatim, and AI for authentic worldwide travel information.
 
 ### Vector Database Layer
-- **Storage**: ChromaDB for persistent vector storage with configurable data directory
-- **Collections**: Single collection approach for travel data with metadata support
-- **Initialization**: Automatic collection creation with initial travel data seeding
-- **Operations**: Support for document addition, similarity search, and collection statistics
+- **Storage**: ChromaDB is used for persistent vector storage, with configurable data directory.
+- **Collections**: A single collection approach for travel data with comprehensive metadata support.
+- **Initialization**: Automatic collection creation, including initial seeding with travel data.
+- **Operations**: Supports document addition, similarity search, and collection statistics.
 
 ### LLM Integration
-- **Multi-provider Support**: Configurable support for OpenAI and Gemini models
-- **Primary Provider**: OpenAI with GPT-5 as the default model
-- **Fallback Strategy**: Graceful handling of unavailable LLM services
-- **Context Management**: Dynamic context preparation from retrieved documents
+- **Multi-provider Support**: Configurable to support both OpenAI and Google Gemini models.
+- **Primary Provider**: OpenAI, with GPT-5 as the default model.
+- **Fallback Strategy**: Implements graceful handling for unavailable LLM services.
+- **Context Management**: Dynamic preparation of context from retrieved documents for LLM processing.
 
 ### Data Models
-- **Request/Response**: Pydantic models for type safety and validation
-- **Travel Queries**: Structured support for destinations, budgets, dates, and preferences
-- **Recommendations**: Standardized format with confidence scores and detailed information
-- **Enumerations**: Type-safe travel categories and preferences
+- **Request/Response**: Utilizes Pydantic models for type safety and validation.
+- **Travel Queries**: Structured to support detailed queries including destinations, budgets, dates, and preferences.
+- **Recommendations**: Standardized format providing confidence scores and detailed information.
+- **Enumerations**: Type-safe enumerations for travel categories and preferences.
 
 ### Configuration Management
-- **Settings**: Centralized configuration using Pydantic Settings
-- **Environment Variables**: Support for .env files and environment-based configuration
-- **Defaults**: Sensible defaults for all configurable parameters
-- **Validation**: Type checking and validation for all configuration values
+- **Settings**: Centralized configuration managed via Pydantic Settings.
+- **Environment Variables**: Supports `.env` files and environment-based configuration.
+- **Defaults**: Provides sensible default values for all configurable parameters.
+- **Validation**: Includes type checking and validation for all configuration values.
 
 ### Error Handling and Monitoring
-- **Logging**: Structured logging with configurable levels and multiple handlers
-- **Health Checks**: Comprehensive service health monitoring including ChromaDB and LLM status
-- **Exception Management**: Proper HTTP status codes and error responses
-- **Service Dependencies**: Dependency injection pattern for service management
+- **Logging**: Structured logging with configurable levels and multiple handlers.
+- **Health Checks**: Comprehensive monitoring of service health, including ChromaDB and LLM status.
+- **Exception Management**: Proper HTTP status codes and error responses for exceptions.
+- **Service Dependencies**: Dependency injection pattern is used for service management.
+
+### UI/UX and Feature Specifications
+- **Unified Mobile Design**: All profile pages use a consistent mobile phone mockup design.
+- **Modern Login UI**: Integrated Gemini-designed login page with Viamigo branding and mobile-first design.
+- **Dashboard Navigation**: Added a dashboard button in the mobile app header for direct access.
+- **Intelligent Travel Companion**: Features include "Piano B Dinamico" for unforeseen events, "Scoperte Intelligenti" for contextual suggestions, and "Diario di Viaggio AI" for behavioral analysis.
 
 ## External Dependencies
 
 ### AI/ML Services
-- **OpenAI API**: Primary LLM provider for travel recommendation generation
-- **Google Gemini**: Alternative LLM provider with fallback support
-- **ChromaDB**: Vector database for document storage and similarity search
+- **OpenAI API**: Primary Large Language Model provider for generating travel recommendations.
+- **Google Gemini**: An alternative LLM provider with fallback support.
+- **ChromaDB**: Utilized as the vector database for document storage and similarity search.
 
 ### Core Framework Dependencies
-- **FastAPI**: Web framework with automatic API documentation
-- **Uvicorn**: ASGI server for production deployment
-- **Pydantic**: Data validation and settings management
-- **Python Asyncio**: Asynchronous programming support
+- **FastAPI**: The web framework, providing automatic API documentation.
+- **Uvicorn**: The ASGI server used for production deployment.
+- **Pydantic**: Employed for data validation and managing application settings.
+- **Python Asyncio**: Provides support for asynchronous programming within the application.
 
-### Optional Integrations
-- **CORS Middleware**: Cross-origin request support for web clients
-- **Environment Configuration**: .env file support for local development
-- **Persistent Storage**: File-based vector storage for data persistence
-
-## Deployment Configuration
-
-### Health Check Endpoints
-- **Primary Health Check**: `/health` endpoint for deployment monitoring with proper error handling
-- **Root Endpoint**: `/` endpoint serves static content with fallback health response for deployment systems
-- **Status Responses**: Structured JSON responses with service status and error details
-
-### Server Configuration
-- **Host Binding**: Application configured to listen on `0.0.0.0:5000` for external accessibility
-- **Port Mapping**: Internal port 5000 mapped for deployment compatibility
-- **Entry Point**: Explicit `main.py` specification for reliable deployment startup
-
-### Workflow Management  
-- **Development Server**: Configured via workflow system for consistent local development
-- **Process Management**: Automatic restart capabilities with proper port monitoring
-- **Resource Initialization**: Proper startup sequence ensuring all services are ready
-
-### Recent Changes  
-- **August 29, 2025**: **AI COMPANION OPTIMIZATION ATTEMPTS CONCLUDED** - Multiple optimization approaches tested including smart cache, instant routes, lightning routes, pure instant routes, and AI companion routes. User feedback indicates satisfaction with current functionality despite performance constraints. System remains genuinely AI-powered with Piano B Dinamico, Scoperte Intelligenti, and Diario di Viaggio AI features.
-- **August 29, 2025**: **GENOVA CITY DETECTION IMPLEMENTED** - Added proper detection for Genova with authentic Ligurian attractions (Palazzo Rosso, Spianata Castelletto, Via del Campo) and local restaurants serving pesto genovese and focaccia.
-- **August 28, 2025**: **SISTEMA SCALABILE UNIVERSALE** - Implementato sistema sostenibile per qualsiasi città italiana/europea: (1) Database esteso con 100+ città italiane/europee, (2) Cache dinamico per città scoperte via API, (3) Fallback geografico intelligente per regioni/nazioni, (4) Coverage automatica per città medie/piccole
-- **August 28, 2025**: **VERONA COMPATIBILITY CRISIS RISOLTO** - Problema Verona completamente risolto: coordinate corrette (45.4xxx, 10.9xxx), mappa centrata su Verona, sistema ottimizzato completo
-- **August 28, 2025**: **DASHBOARD NAVIGATION ADDED** - Aggiunto pulsante dashboard nell'header dell'app mobile per accesso diretto alla dashboard completa
-- **August 28, 2025**: **COORDINATE REGRESSION FIXED** - Risolto bug critico sistema universale che causava coordinate Roma invece Genova. Backend genera coordinate corrette, investigating frontend coordinate passing issue
-- **August 28, 2025**: **UNIVERSAL DYNAMIC SYSTEM DEPLOYED** - Sistema routing universale completamente funzionante per 25+ destinazioni turistiche con AI GPT-5 waypoint generation e coordinate validation
-- **August 28, 2025**: **CORS E WARNING PRODUCTION RISOLTI** - Implementato proxy backend /route_proxy per OpenRouteService evitando CORS. Eliminato warning Tailwind CDN in production con script intelligente
-- **August 28, 2025**: **SESSION ROUTING DEPLOYMENT RISOLTO** - Sostituiti tutti i @require_login con @login_required per consistency Flask-Login. Route /planner ora accessibile dopo autenticazione anche nel deployment
-- **August 28, 2025**: **DEPLOYMENT ENTRY POINT RISOLTO** - Corretto run.py per usare Flask app con tutti i blueprint registrati invece di FastAPI. Deployment ora funzionante con login panel corretto
-- **August 28, 2025**: **DEPLOYMENT ROUTING FISSATO** - Route principale / ora sempre redirect a /auth/login per comportamento consistente tra dev e deployment. Nella versione deployata ora si parte sempre dal login panel
-- **August 27, 2025**: **SESSION PERSISTENCE PERFEZIONATO** - Fix LoginManager login_view da 'auth.login' a '/auth/login'. Sistema cookies e Flask-Login ora completamente funzionante: login → session → profilo accessibile
-- **August 27, 2025**: **ERRORI USERPROFILE RISOLTI** - Eliminati tutti i riferimenti al modello UserProfile inesistente. Sistema profilo semplificato con User model diretto. LSP errors ridotti da 215 a 208, pagina /profile completamente funzionante
-- **August 27, 2025**: **HOMEPAGE INTELLIGENTE E LOGIN PERSISTENTE** - App ora parte sempre da /auth/login con riconoscimento automatico utenti loggati. Aggiunta checkbox "Ricordami per 7 giorni" con session.permanent e login_user(remember=True/False) per esperienza fluida
-- **August 27, 2025**: **PRE-TRAINING SYSTEM** - Built intelligent 3-tier architecture: (1) Local database for Italian cities, (2) Smart cache database for dynamic learning, (3) API system for worldwide coverage. Added automated pre-training scripts for 60+ global destinations with priority levels (Italia/Europa/Mondiale)
-- **August 27, 2025**: **DYNAMIC WORLDWIDE SYSTEM** - Implemented hybrid architecture: local database for Italian cities + dynamic API system for global destinations using OpenStreetMap, Nominatim, and AI (GPT-5) for authentic worldwide travel information
-- **August 27, 2025**: **REALISTIC STREET ROUTING** - Integrated OpenRouteService API for authentic pedestrian routes replacing straight-line paths, with multi-modal transport support (walking, metro, bus, tram, funicular)
-- **August 27, 2025**: **CITY-SPECIFIC ITINERARIES** - Added comprehensive support for Torino, Roma, Milano, Venezia, Firenze, Genova with authentic local details, transport costs, and cultural information
-- **August 27, 2025**: **UNIVERSAL DYNAMIC ROUTING** - Sistema completamente scalabile per QUALSIASI città italiana: geocoding automatico Nominatim, cache dinamico, waypoints intelligenti per tipologia città (costiera/montana/interna)
-- **August 27, 2025**: **INTELLIGENT TRAVEL COMPANION** - Implementate tre funzionalità innovative: Piano B Dinamico per gestione imprevisti, Scoperte Intelligenti per suggerimenti contestuali, Diario di Viaggio AI per analisi comportamentali. Sistema completo con 6 nuove tabelle database e AI GPT-5 integrata per esperienza rivoluzionaria
-- **August 27, 2025**: **COMPLETE SYSTEM INTEGRATION** - Fully functional Viamigo app with Flask backend, PostgreSQL database, and original frontend
-- **August 27, 2025**: **API ENDPOINTS WORKING** - `/plan` and `/get_profile` endpoints successfully serving frontend requests
-- **August 27, 2025**: **PERSISTENT SESSION SYSTEM** - Demo login with session management enabling fluid navigation
-- **August 27, 2025**: **UNIFIED MOBILE DESIGN** - All profile pages (view/create/edit) using consistent mobile phone mockup design
-- **August 27, 2025**: **DASHBOARD HOMEPAGE** - Separate dashboard page enabling proper browser back/forward navigation
-- **August 27, 2025**: **MODERN LOGIN UI** - Integrated Gemini-designed login page with Viamigo branding and mobile-first design
-- **August 27, 2025**: **FLASK CRUD SYSTEM** - Successfully deployed complete user profile management with PostgreSQL backend
-- **August 27, 2025**: **UI INTEGRATION** - Combined original Viamigo UI with new authentication system maintaining design consistency
-- **August 27, 2025**: **IMAGE SYSTEM REDESIGN** - Implemented proxy backend system for CORS-free image serving
-- **August 27, 2025**: **STABLE SOLUTION** - App now functions perfectly without images to avoid external dependency issues
-- **August 27, 2025**: **RELIABILITY FOCUS** - Only verified image URLs (Colosseo) used to prevent 403/404 errors
-- **August 27, 2025**: Built `/image_proxy` endpoint to serve external images through backend
-- **August 27, 2025**: Removed dependency on Pixabay, Unsplash due to hotlinking restrictions
-- **August 27, 2025**: DALL-E disabled temporarily due to access issues and performance impact
-- **August 27, 2025**: **BREAKTHROUGH** - Implemented fully dynamic coordinate validation system using OpenStreetMap APIs
-- **August 27, 2025**: **SCALABLE SOLUTION** - Anti-hallucination system now works for ANY Italian city, not just pre-configured ones
-- **August 27, 2025**: Added real-time geographic validation that detects when AI places locations in water/wrong cities
-- **August 27, 2025**: Automatic coordinate correction using Nominatim reverse geocoding and search APIs
-- **August 27, 2025**: Hybrid approach: Local database for frequent locations + API validation for everything else
-- **August 27, 2025**: Venice, Milano, Roma now have verified coordinate databases to prevent "cafe in laguna" errors
-- **August 27, 2025**: Fully implemented dynamic mapping system with real GPS coordinates
-- **August 27, 2025**: **12 CITTÀ OTTIMIZZATE** - Espansione completa: Roma, Milano, Torino, Genova, Firenze, Napoli, Bologna, Palermo, Venezia, Pisa, Cagliari, Perugia con database completi di coordinate verificate e contenuti autentici
-- **August 27, 2025**: Built comprehensive GPS database preventing AI geographic errors (Genova, Milano, Roma, Firenze, Venezia)
-- **August 27, 2025**: Resolved coastal coordinate issues (Parchi di Nervi no longer appear in the sea)
-- **August 27, 2025**: Resolved browser caching issues that prevented JavaScript execution
-- **August 27, 2025**: Backend now generates authentic GPS coordinates with post-processing verification
-- **August 27, 2025**: Frontend successfully integrates Leaflet.js maps with backend coordinate data
-- **August 27, 2025**: Unified itinerary system - single pipeline from user input to interactive map
-- **August 27, 2025**: Real-time itinerary updates with precise geographic positioning
-- **August 27, 2025**: Comprehensive debug logging system for development and troubleshooting
-- **August 27, 2025**: Fixed static file serving and eliminated HEAD request conflicts
-- **January 26, 2025**: Added dedicated `/health` endpoint for deployment monitoring
-- **January 26, 2025**: Enhanced root endpoint with fallback responses for deployment reliability
+### APIs and Integrations
+- **OpenRouteService API**: Integrated for authentic pedestrian routes and multi-modal transport support.
+- **OpenStreetMap & Nominatim**: Used for dynamic worldwide geocoding and coordinate validation.
+- **CORS Middleware**: Supports cross-origin requests for web clients.
+- **PostgreSQL**: Backend database for user profile management.

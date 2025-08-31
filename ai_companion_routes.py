@@ -612,10 +612,12 @@ def plan_ai_powered():
                 'siracusa': ('siracusa', 'Siracusa'),
                 # Sardegna - Costa Smeralda & Olbia
                 'olbia': ('olbia', 'Olbia'),
-                'porto': ('olbia', 'Olbia'),  # Porto di Olbia
                 'portorotondo': ('portorotondo', 'Porto Rotondo'),
                 'porto rotondo': ('portorotondo', 'Porto Rotondo'),
+                'rotondo': ('portorotondo', 'Porto Rotondo'),
                 'porto cervo': ('portocervo', 'Porto Cervo'),
+                'portocervo': ('portocervo', 'Porto Cervo'),
+                'cervo': ('portocervo', 'Porto Cervo'),
                 'costa smeralda': ('costasmeralda', 'Costa Smeralda'),
                 'san teodoro': ('santeodoro', 'San Teodoro'),
                 'golfo aranci': ('golfoaranci', 'Golfo Aranci'),
@@ -656,9 +658,22 @@ def plan_ai_powered():
         start_city_key, start_city_name = detect_city_from_input(start)
         end_city_key, end_city_name = detect_city_from_input(end)
 
-        # Use the destination city as primary
-        city_key = end_city_key
-        city_name = end_city_name
+        # Special handling for Costa Smeralda destinations
+        # If destination contains specific locations, prioritize them
+        end_lower = end.lower()
+        if 'porto cervo' in end_lower or 'portocervo' in end_lower:
+            city_key = 'portocervo'
+            city_name = 'Porto Cervo'
+        elif 'porto rotondo' in end_lower or 'portorotondo' in end_lower:
+            city_key = 'portorotondo'
+            city_name = 'Porto Rotondo'
+        elif 'costa smeralda' in end_lower:
+            city_key = 'costasmeralda'
+            city_name = 'Costa Smeralda'
+        else:
+            # Use the destination city as primary
+            city_key = end_city_key
+            city_name = end_city_name
 
         print(f"🏛️ Planning for {city_name} based on route: {start} → {end}")
 
@@ -741,6 +756,7 @@ def plan_ai_powered():
             
         try:
             # Only query if not in our hardcoded cities
+            attraction_cache = []
             if city_key not in city_attractions:
                 attraction_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
