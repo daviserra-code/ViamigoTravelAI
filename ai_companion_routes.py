@@ -384,7 +384,55 @@ def get_dynamic_city_coordinates(city_name: str):
         'new york': [40.7128, -74.0060]
     }
 
-    return city_coords.get(city_name.lower(), [41.9028, 12.4964])
+    # Never default to Rome - try harder to get real coordinates
+    if city_name.lower() in city_coords:
+        return city_coords[city_name.lower()]
+    
+    # Try OpenStreetMap Nominatim one more time with better query
+    try:
+        import requests
+        url = "https://nominatim.openstreetmap.org/search"
+        
+        # Try with country hint
+        for country in ['Italy', 'Italia', 'France', 'Spain', 'Portugal', 'Greece']:
+            params = {
+                'q': f"{city_name}, {country}",
+                'format': 'json',
+                'limit': 1,
+                'addressdetails': 1
+            }
+            
+            response = requests.get(url, params=params, timeout=3, headers={'User-Agent': 'Viamigo/1.0'})
+            if response.ok and response.json():
+                data = response.json()[0]
+                coords = [float(data['lat']), float(data['lon'])]
+                print(f"🗺️ Found coordinates for {city_name} in {country}: {coords}")
+                return coords
+    except:
+        pass
+    
+    # Last resort - use AI to get approximate coordinates
+    try:
+        from openai import OpenAI
+        import json
+        import os
+        
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-5",
+            messages=[
+                {"role": "system", "content": "Return only JSON with latitude and longitude"},
+                {"role": "user", "content": f"What are the GPS coordinates of {city_name}? Return: {{\"lat\": 0.0, \"lon\": 0.0}}"}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0
+        )
+        
+        coords_data = json.loads(response.choices[0].message.content)
+        return [coords_data['lat'], coords_data['lon']]
+    except:
+        # True last resort - return center of Italy (not Rome)
+        return [42.5, 12.5]  # Geographic center of Italy
 
 def generate_dynamic_attraction_details(attraction, city_name: str):
     """Generate dynamic attraction details from scraped data"""
@@ -399,6 +447,118 @@ def generate_dynamic_attraction_details(attraction, city_name: str):
         'accessibility': 'Da verificare accessibilità',
         'photo_spots': ['Punti panoramici locali']
     }
+
+def generate_ai_attractions_for_city(city_name: str, city_key: str):
+    """Use AI to generate authentic attractions for any city"""
+    try:
+        import os
+        from openai import OpenAI
+        import json
+        
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        
+        # Get coordinates first
+        coords = get_dynamic_city_coordinates(city_name)
+        
+        prompt = f"""Generate 4 authentic tourist attractions for {city_name}.
+        Return a JSON array with exactly 4 attractions in this format:
+        [
+            {{
+                "name": "Name of actual attraction",
+                "latitude": {coords[0]},
+                "longitude": {coords[1]},
+                "description": "Brief authentic description in Italian",
+                "duration": 1.5
+            }}
+        ]
+        
+        Important:
+        - Use REAL attractions that actually exist in {city_name}
+        - Vary the coordinates slightly around the city center
+        - Include mix of historical sites, cultural attractions, and local highlights
+        - Descriptions should be authentic and informative
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-5",
+            messages=[
+                {"role": "system", "content": "You are a travel expert who knows authentic local attractions."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.7
+        )
+        
+        attractions_data = json.loads(response.choices[0].message.content)
+        if 'attractions' in attractions_data:
+            attractions_data = attractions_data['attractions']
+        elif not isinstance(attractions_data, list):
+            attractions_data = [attractions_data]
+            
+        # Convert to our format
+        dynamic_attractions = []
+        for attr in attractions_data[:4]:
+            dynamic_attractions.append({
+                'name': attr.get('name', f'Attrazione {city_name}'),
+                'coords': [
+                    attr.get('latitude', coords[0] + (len(dynamic_attractions) * 0.01)),
+                    attr.get('longitude', coords[1] + (len(dynamic_attractions) * 0.01))
+                ],
+                'duration': attr.get('duration', 1.5),
+                'description': attr.get('description', f'Attrazione autentica di {city_name}')
+            })
+        
+        print(f"✅ AI generated {len(dynamic_attractions)} attractions for {city_name}")
+        return dynamic_attractions
+        
+    except Exception as e:
+        print(f"⚠️ AI generation failed: {e}, using fallback")
+        # Fallback with basic city center
+        coords = get_dynamic_city_coordinates(city_name)
+        return [{
+            'name': f'Centro storico di {city_name}',
+            'coords': coords,
+            'duration': 2.0,
+            'description': f'Esplora il centro storico di {city_name}'
+        }]
+
+def cache_attractions_to_db(city_name: str, attractions):
+    """Cache generated attractions to database for future use"""
+    try:
+        from models import PlaceCache
+        from flask_app import db
+        import json
+        
+        for attraction in attractions:
+            cache_key = f"{city_name.lower()}_{attraction['name'].lower().replace(' ', '_')}"
+            
+            # Check if already exists
+            existing = PlaceCache.query.filter_by(cache_key=cache_key).first()
+            if not existing:
+                place_data = {
+                    'name': attraction['name'],
+                    'latitude': attraction['coords'][0],
+                    'longitude': attraction['coords'][1],
+                    'description': attraction.get('description', ''),
+                    'category': 'tourist_attraction',
+                    'duration': attraction.get('duration', 1.5)
+                }
+                
+                new_cache = PlaceCache(
+                    cache_key=cache_key,
+                    place_name=attraction['name'],
+                    city=city_name,
+                    country='Italy',  # Can be enhanced with country detection
+                    place_data=json.dumps(place_data),
+                    priority_level='ai_generated'
+                )
+                db.session.add(new_cache)
+        
+        db.session.commit()
+        print(f"✅ Cached {len(attractions)} attractions for {city_name}")
+        
+    except Exception as e:
+        print(f"⚠️ Failed to cache attractions: {e}")
 
 @ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
 def plan_ai_powered():
@@ -630,15 +790,13 @@ def plan_ai_powered():
                 })
             print(f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {city_name}")
         else:
-            print(f"⚠️ No dynamic attractions found for {city_name}")
-            # Get correct coordinates for the city
-            city_coords = get_dynamic_city_coordinates(city_name)
-            dynamic_attractions = [{
-                'name': f'Centro di {city_name}',
-                'coords': city_coords,
-                'duration': 1.0,
-                'description': f'Centro storico di {city_name}'
-            }]
+            print(f"⚠️ No dynamic attractions found for {city_name}, using AI generation")
+            # Use AI to generate authentic attractions for any city
+            dynamic_attractions = generate_ai_attractions_for_city(city_name, city_key)
+            
+            # Cache the generated attractions for future use
+            if dynamic_attractions:
+                cache_attractions_to_db(city_name, dynamic_attractions)
 
         # Get coordinates for the correct city
         if dynamic_attractions and dynamic_attractions[0]['coords'][0] != 0:
