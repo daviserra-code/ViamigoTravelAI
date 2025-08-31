@@ -372,6 +372,13 @@ def get_dynamic_city_coordinates(city_name: str):
         'napoli': [40.8518, 14.2681],
         'palermo': [38.1157, 13.3615],  # Palermo, Sicily
         'catania': [37.5079, 15.0830],
+        # Sardegna - Costa Smeralda
+        'olbia': [40.9239, 9.5002],
+        'portorotondo': [41.0165, 9.5353],
+        'portocervo': [41.1366, 9.5353],
+        'costasmeralda': [41.1100, 9.5500],
+        'santeodoro': [40.7731, 9.6656],
+        'golfoaranci': [40.9984, 9.6200],
         'london': [51.5074, -0.1278],
         'paris': [48.8566, 2.3522],
         'new york': [40.7128, -74.0060]
@@ -435,7 +442,7 @@ def plan_ai_powered():
                 'napoli': ('napoli', 'Napoli'),
                 'naples': ('napoli', 'Napoli'),
                 'spaccanapoli': ('napoli', 'Napoli'),
-                # Sicilia - ADD PALERMO AND OTHER SICILIAN CITIES
+                # Sicilia
                 'palermo': ('palermo', 'Palermo'),
                 'pretoria': ('palermo', 'Palermo'),
                 'villena': ('palermo', 'Palermo'),
@@ -443,6 +450,15 @@ def plan_ai_powered():
                 'catania': ('catania', 'Catania'),
                 'taormina': ('taormina', 'Taormina'),
                 'siracusa': ('siracusa', 'Siracusa'),
+                # Sardegna - Costa Smeralda & Olbia
+                'olbia': ('olbia', 'Olbia'),
+                'porto': ('olbia', 'Olbia'),  # Porto di Olbia
+                'portorotondo': ('portorotondo', 'Porto Rotondo'),
+                'porto rotondo': ('portorotondo', 'Porto Rotondo'),
+                'porto cervo': ('portocervo', 'Porto Cervo'),
+                'costa smeralda': ('costasmeralda', 'Costa Smeralda'),
+                'san teodoro': ('santeodoro', 'San Teodoro'),
+                'golfo aranci': ('golfoaranci', 'Golfo Aranci'),
                 # UK
                 'london': ('london', 'London'),
                 'londra': ('london', 'London'),
@@ -535,6 +551,25 @@ def plan_ai_powered():
                 {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530, 'description': 'Palazzo reale con Cappella Palatina'},
                 {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613, 'description': 'Piazza barocca ottagonale al centro'},
                 {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620, 'description': 'Piazza con fontana monumentale'}
+            ],
+            'olbia': [
+                {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002, 'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
+                {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150, 'description': 'Porto turistico con vista sull\'isola di Tavolara'},
+                {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968, 'description': 'Reperti nuragici e relitti di navi romane'},
+                {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978, 'description': 'Via principale dello shopping e aperitivi'}
+            ],
+            'portorotondo': [
+                {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353, 'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
+                {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370, 'description': 'Porto turistico esclusivo con yacht di lusso'},
+                {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345, 'description': 'Chiesa moderna con sculture di Mario Ceroli'},
+                {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400, 'description': 'Spiaggia di sabbia bianca con acque cristalline'},
+                {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360, 'description': 'Anfiteatro all\'aperto per eventi estivi'}
+            ],
+            'portocervo': [
+                {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366, 'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
+                {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370, 'description': 'Porto più esclusivo del Mediterraneo'},
+                {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340, 'description': 'Chiesa moderna con vista panoramica'},
+                {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200, 'description': 'Campo da golf più prestigioso della Sardegna'}
             ]
         }
         
