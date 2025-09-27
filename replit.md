@@ -53,6 +53,9 @@ Preferred communication style: Simple, everyday language.
 - **Health Checks**: Comprehensive monitoring of service health, including ChromaDB and LLM status.
 - **Exception Management**: Proper HTTP status codes and error responses for exceptions.
 - **Service Dependencies**: Dependency injection pattern is used for service management.
+- **Circuit Breaker Pattern**: Implemented automatic circuit breaking for external API failures with configurable thresholds.
+- **API Response Caching**: Time-based caching system for expensive API calls (OpenAI, ScrapingDog, Nominatim) to reduce costs.
+- **Resilient API Calls**: Automatic retry logic with exponential backoff for temporary failures.
 
 ### UI/UX and Feature Specifications
 - **Unified Mobile Design**: All profile pages use a consistent mobile phone mockup design.
@@ -63,7 +66,7 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### AI/ML Services
-- **OpenAI API**: Primary Large Language Model provider for generating travel recommendations.
+- **OpenAI API**: Primary Large Language Model provider for generating travel recommendations (using GPT-4-turbo).
 - **Google Gemini**: An alternative LLM provider with fallback support.
 - **ChromaDB**: Utilized as the vector database for document storage and similarity search.
 
