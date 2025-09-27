@@ -56,7 +56,7 @@ Rispondi SOLO con JSON valido. Sii specifico e intelligente.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-5",
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion esperto che genera Piani B intelligenti e dinamici."},
                     {"role": "user", "content": prompt}
@@ -124,7 +124,7 @@ Sii specifico, intelligente e contextualmente rilevante.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-5",
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion che scopre gemme nascoste con intelligenza contestuale."},
                     {"role": "user", "content": prompt}
@@ -189,7 +189,7 @@ Sii perspicace e intelligente nell'analisi comportamentale.
 """
 
             response = openai_client.chat.completions.create(
-                model="gpt-5",
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": "Sei un AI travel companion che analizza comportamenti e genera insights personalizzati."},
                     {"role": "user", "content": prompt}
@@ -419,7 +419,7 @@ def get_dynamic_city_coordinates(city_name: str):
         
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": "Return only JSON with latitude and longitude"},
                 {"role": "user", "content": f"What are the GPS coordinates of {city_name}? Return: {{\"lat\": 0.0, \"lon\": 0.0}}"}
@@ -480,7 +480,7 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         """
         
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": "You are a travel expert who knows authentic local attractions."},
                 {"role": "user", "content": prompt}

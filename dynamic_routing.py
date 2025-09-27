@@ -655,7 +655,7 @@ class DynamicRouter:
             """
             
             response = client.chat.completions.create(
-                model="gpt-5",  # the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+                model="gpt-4-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
                 max_completion_tokens=600,
@@ -1071,7 +1071,7 @@ class DynamicRouter:
             """
             
             response = client.chat.completions.create(
-                model="gpt-5",  # the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+                model="gpt-4-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
                 max_completion_tokens=400

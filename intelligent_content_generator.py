@@ -10,8 +10,8 @@ from typing import List, Dict, Optional
 class IntelligentContentGenerator:
     def __init__(self):
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        # GPT-5 è il modello più recente (rilasciato 7 agosto 2025)
-        self.model = "gpt-5"
+        # Use GPT-4-turbo as the current best available model
+        self.model = "gpt-4-turbo"
     
     def enrich_place_details(self, place_name: str, city: str, place_type: str) -> Dict:
         """

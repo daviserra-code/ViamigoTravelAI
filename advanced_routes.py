@@ -62,7 +62,7 @@ def generate_piano_b():
         """
 
         response = openai_client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": "Sei un travel expert che gestisce emergenze in tempo reale. Conosci alternative immediate per ogni tipo di disruzione."},
                 {"role": "user", "content": prompt}
@@ -142,7 +142,7 @@ def smart_discoveries():
         """
 
         response = openai_client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": f"Sei un local expert di {city} che conosce ogni angolo della città e sa cosa è meglio fare in ogni momento della giornata."},
                 {"role": "user", "content": prompt}
@@ -232,7 +232,7 @@ def ai_diary():
         """
 
         response = openai_client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": f"Sei un travel writer esperto che crea diari di viaggio personali e toccanti. Trasformi le esperienze in ricordi indimenticabili."},
                 {"role": "user", "content": prompt}

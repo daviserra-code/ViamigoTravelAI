@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     
     # LLM settings
     DEFAULT_LLM_PROVIDER: str = "openai"  # or "gemini"
-    OPENAI_MODEL: str = "gpt-5"  # the newest OpenAI model is "gpt-5" which was released August 7, 2025
+    OPENAI_MODEL: str = "gpt-4-turbo"  # Using GPT-4-turbo as the current best available model
     GEMINI_MODEL: str = "gemini-pro"
     
     # RAG settings
