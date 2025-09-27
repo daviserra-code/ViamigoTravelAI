@@ -62,6 +62,9 @@ Preferred communication style: Simple, everyday language.
 - **Modern Login UI**: Integrated Gemini-designed login page with Viamigo branding and mobile-first design.
 - **Dashboard Navigation**: Added a dashboard button in the mobile app header for direct access.
 - **Intelligent Travel Companion**: Features include "Piano B Dinamico" for unforeseen events, "Scoperte Intelligenti" for contextual suggestions, and "Diario di Viaggio AI" for behavioral analysis.
+- **Weather-Aware Intelligence**: Real-time weather monitoring with automatic Plan B activation for severe conditions.
+- **AI Crowd Prediction**: Smart crowd level predictions with optimal visit time recommendations and AI-powered insights.
+- **Multi-Language Support**: Comprehensive translation system supporting 12 languages for international travelers.
 
 ## External Dependencies
 
