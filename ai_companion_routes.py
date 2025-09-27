@@ -14,6 +14,9 @@ from openai import OpenAI
 import os
 from typing import Dict, List
 from api_error_handler import resilient_api_call, with_cache, cache_openai, cache_scrapingdog
+from weather_intelligence import weather_intelligence
+from crowd_prediction import crowd_predictor
+from multi_language_support import multi_language
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
@@ -919,3 +922,258 @@ def plan_ai_powered():
             "error": f"Planning failed: {str(e)}",
             "itinerary": []
         }), 500
+
+
+# ============= NEW INTELLIGENT FEATURES =============
+
+@ai_companion_bp.route('/weather_intelligence', methods=['POST'])
+def get_weather_intelligence():
+    """Get weather-aware intelligence for trip planning"""
+    try:
+        data = request.get_json()
+        lat = data.get('latitude', 45.4642)  # Default Milan
+        lon = data.get('longitude', 9.1900)
+        language = data.get('language', 'it')
+        
+        # Get current weather
+        weather = weather_intelligence.get_current_weather(lat, lon)
+        
+        # Analyze conditions
+        severity, trigger_plan_b, reasons = weather_intelligence.analyze_weather_conditions(weather)
+        
+        # Get forecast
+        forecast = weather_intelligence.get_forecast(lat, lon, hours=24)
+        
+        # Get weather-appropriate suggestions
+        suggestions = weather_intelligence.suggest_weather_appropriate_activities(
+            weather, 
+            data.get('activity_type', 'general')
+        )
+        
+        # Translate if needed
+        if language != 'en':
+            weather['description'] = multi_language.translate(weather['description'], language, 'en')
+            reasons = [multi_language.translate(r, language, 'en') for r in reasons]
+            
+            # Translate suggestions
+            for key in suggestions:
+                if isinstance(suggestions[key], list):
+                    suggestions[key] = [multi_language.translate(s, language, 'en') for s in suggestions[key]]
+        
+        response = {
+            'current_weather': weather,
+            'severity': severity,
+            'trigger_plan_b': trigger_plan_b,
+            'reasons': reasons,
+            'forecast': forecast[:8],  # Next 24 hours
+            'suggestions': suggestions,
+            'timestamp': weather['timestamp']
+        }
+        
+        # Auto-trigger Plan B if severe weather
+        if trigger_plan_b:
+            print(f"⚠️ Weather Alert: Auto-triggering Plan B due to {severity} weather")
+            response['plan_b_auto_triggered'] = True
+            response['plan_b_reason'] = f"Weather conditions: {', '.join(reasons)}"
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"❌ Weather intelligence error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@ai_companion_bp.route('/crowd_prediction', methods=['POST'])
+def predict_crowds():
+    """Predict crowd levels for attractions"""
+    try:
+        data = request.get_json()
+        places = data.get('places', [])
+        language = data.get('language', 'it')
+        optimize_itinerary = data.get('optimize', False)
+        
+        predictions = []
+        
+        for place in places:
+            # Predict crowd level
+            prediction = crowd_predictor.predict_crowd_level(
+                place.get('name', 'Unknown'),
+                place.get('type', 'general'),
+                None  # Current time by default
+            )
+            
+            # Get AI insights if available
+            if place.get('name') and place.get('city'):
+                ai_insights = crowd_predictor.get_ai_crowd_insights(
+                    place['name'],
+                    place['city']
+                )
+                if ai_insights:
+                    prediction['ai_insights'] = ai_insights
+            
+            # Translate if needed
+            if language != 'en':
+                prediction['description'] = multi_language.translate(
+                    prediction['description'], 
+                    language, 
+                    'en'
+                )
+                prediction['recommendations'] = [
+                    multi_language.translate(r, language, 'en') 
+                    for r in prediction['recommendations']
+                ]
+            
+            predictions.append(prediction)
+        
+        response = {
+            'predictions': predictions,
+            'overall_recommendation': None
+        }
+        
+        # Optimize itinerary if requested
+        if optimize_itinerary and len(places) > 1:
+            from datetime import datetime
+            optimized = crowd_predictor.generate_crowd_aware_itinerary(
+                places,
+                datetime.now()
+            )
+            response['optimized_itinerary'] = optimized
+            response['overall_recommendation'] = "Itinerary optimized to avoid crowds"
+            
+            if language != 'it':
+                response['overall_recommendation'] = multi_language.translate(
+                    response['overall_recommendation'],
+                    language,
+                    'it'
+                )
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"❌ Crowd prediction error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@ai_companion_bp.route('/translate', methods=['POST'])
+def translate_content():
+    """Translate content to user's preferred language"""
+    try:
+        data = request.get_json()
+        content = data.get('content', '')
+        target_language = data.get('target_language', 'en')
+        source_language = data.get('source_language', None)
+        content_type = data.get('content_type', 'text')  # text, itinerary, ui
+        
+        # Auto-detect source language if not provided
+        if not source_language:
+            source_language = multi_language.detect_language(content)
+        
+        result = {}
+        
+        if content_type == 'text':
+            # Simple text translation
+            result['translated'] = multi_language.translate(
+                content,
+                target_language,
+                source_language
+            )
+            
+        elif content_type == 'itinerary':
+            # Translate full itinerary
+            result['translated'] = multi_language.translate_itinerary(
+                content,  # Should be a list of itinerary items
+                target_language
+            )
+            
+        elif content_type == 'ui':
+            # Get UI strings in target language
+            result['ui_strings'] = multi_language.localize_ui(target_language)
+            result['tips'] = multi_language.get_language_specific_tips(
+                data.get('city', 'general'),
+                target_language
+            )
+        
+        result['source_language'] = source_language
+        result['target_language'] = target_language
+        result['language_info'] = multi_language.supported_languages.get(target_language)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        print(f"❌ Translation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@ai_companion_bp.route('/intelligent_planning', methods=['POST'])
+def intelligent_trip_planning():
+    """Combined intelligent planning with weather, crowds, and language support"""
+    try:
+        data = request.get_json()
+        city = data.get('city', 'Milano')
+        lat = data.get('latitude', 45.4642)
+        lon = data.get('longitude', 9.1900)
+        language = data.get('language', 'it')
+        preferences = data.get('preferences', {})
+        
+        print(f"🧠 Intelligent planning for {city} in {language}")
+        
+        # Get weather intelligence
+        weather = weather_intelligence.get_current_weather(lat, lon)
+        weather_severity, trigger_plan_b, weather_reasons = weather_intelligence.analyze_weather_conditions(weather)
+        
+        # Get basic itinerary (reuse existing logic)
+        # This would normally call your existing itinerary generation
+        
+        response = {
+            'city': city,
+            'language': language,
+            'intelligence': {
+                'weather': {
+                    'current': weather,
+                    'severity': weather_severity,
+                    'auto_plan_b': trigger_plan_b,
+                    'reasons': weather_reasons
+                },
+                'crowd_optimization': True,
+                'language_support': True
+            },
+            'recommendations': []
+        }
+        
+        # Add weather-based recommendations
+        if trigger_plan_b:
+            response['recommendations'].append({
+                'type': 'weather',
+                'priority': 'high',
+                'message': multi_language.translate(
+                    f"Weather alert: {weather_severity}. Indoor activities recommended.",
+                    language,
+                    'en'
+                ),
+                'action': 'activate_plan_b'
+            })
+        
+        # Add crowd recommendations
+        from datetime import datetime
+        hour = datetime.now().hour
+        if hour in [11, 12, 14, 15, 16]:  # Peak hours
+            response['recommendations'].append({
+                'type': 'crowd',
+                'priority': 'medium',
+                'message': multi_language.translate(
+                    "Peak hours detected. Consider visiting less popular attractions first.",
+                    language,
+                    'en'
+                ),
+                'action': 'optimize_order'
+            })
+        
+        # Add language-specific tips
+        tips = multi_language.get_language_specific_tips(city, language)
+        response['local_tips'] = tips
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"❌ Intelligent planning error: {e}")
+        return jsonify({'error': str(e)}), 500
