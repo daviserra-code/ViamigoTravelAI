@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🧠 AI COMPANION ROUTES - Real AI-powered travel intelligence
-Genuine GPT-5 AI for Piano B, Scoperte Intelligenti, Diario di Viaggio
+Genuine AI for Piano B, Scoperte Intelligenti, Diario di Viaggio
 """
 
 from flask import Blueprint, request, jsonify
@@ -13,6 +13,7 @@ import json
 from openai import OpenAI
 import os
 from typing import Dict, List
+from api_error_handler import resilient_api_call, with_cache, cache_openai, cache_scrapingdog
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
