@@ -22,8 +22,8 @@ class ApifyTravelIntegration:
         
     def is_available(self) -> bool:
         """Verifica se Apify è configurato e disponibile"""
-        available = self.client is not None and self.api_token is not None
-        print(f"🔍 Apify is_available check: client={self.client is not None}, token={bool(self.api_token)}, result={available}")
+        available = self.client is not None and self.api_token is not None and len(self.api_token) > 10
+        print(f"🔍 Apify is_available check: client={self.client is not None}, token_exists={bool(self.api_token)}, token_length={len(self.api_token) if self.api_token else 0}, result={available}")
         return available
         
     def get_cached_places(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
@@ -104,13 +104,19 @@ class ApifyTravelIntegration:
             }
             
             print(f"🚀 CALLING APIFY with query: {search_query}")
+            print(f"🔧 APIFY INPUT: {run_input}")
             
             # Usa il Google Maps Scraper di Apify
             run = self.client.actor("compass/crawler-google-places").call(run_input=run_input)
             print(f"📡 APIFY RUN STARTED: {run.get('id', 'unknown')}")
+            print(f"📡 APIFY RUN STATUS: {run}")
             
             dataset_items = list(self.client.dataset(run["defaultDatasetId"]).iterate_items())
             print(f"📊 APIFY RETURNED: {len(dataset_items)} raw items")
+            
+            # Debug first few items
+            for i, item in enumerate(dataset_items[:2]):
+                print(f"📊 APIFY ITEM {i}: {item.get('title', 'Unknown')} at {item.get('latitude', 'no-lat')}, {item.get('longitude', 'no-lon')}")
             
             places = []
             for item in dataset_items:

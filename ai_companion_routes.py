@@ -259,7 +259,7 @@ def ai_piano_b():
 
         Genera 3 alternative creative per questo itinerario:
         1. PIANO RILASSANTE: Meno camminate, più comfort
-        2. PIANO AVVENTUROSO: Luoghi nascosti e esperienze uniche  
+        2. PIANO AVVENTUROSO: Luoghi nascosti e esperienze uniche
         3. PIANO EXPRESS: Massima efficienza, highlights principali
 
         Per ogni piano includi:
@@ -393,21 +393,21 @@ def ai_scoperte():
         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
 @ai_companion_bp.route('/ai_piano_b', methods=['POST'])
-def generate_ai_piano_b_deprecated():
+def ai_piano_b_deprecated():
     """Generate real AI Piano B (deprecated, use /ai/piano_b)"""
     # This route is kept for backward compatibility but should ideally be removed or updated
     # to redirect to the new endpoint. For now, it just calls the new endpoint.
     return ai_piano_b()
 
 @ai_companion_bp.route('/ai_scoperte', methods=['POST'])
-def generate_ai_scoperte_deprecated():
+def ai_scoperte_deprecated():
     """Generate real AI intelligent discoveries (deprecated, use /ai/scoperte)"""
     # This route is kept for backward compatibility but should ideally be removed or updated
     # to redirect to the new endpoint. For now, it just calls the new endpoint.
     return ai_scoperte()
 
 @ai_companion_bp.route('/ai_diario', methods=['POST'])
-def generate_ai_diario():
+def ai_diario():
     """Generate real AI travel diary insights"""
     try:
         data = request.get_json()
@@ -785,132 +785,247 @@ def plan_ai_powered():
         from cost_effective_scraping import CostEffectiveDataProvider
         from models import PlaceCache
 
-        print(f"🏛️ Checking PostgreSQL database for {city_name}")
-
-        # Check PostgreSQL database for pre-populated data
+        # Initialize data sources
         postgres_attractions = []
         postgres_restaurants = []
+        attractions = []
+        restaurants = []
 
-        # Add hardcoded attractions for major cities
-        city_attractions = {
-            'milano': [
-                {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900, 'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
-                {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656, 'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
-                {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794, 'description': 'Fortezza storica con musei e giardini'},
-                {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812, 'description': 'Quartiere dei canali con ristoranti e vita notturna'}
-            ],
-            'roma': [
-                {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922, 'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
-                {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833, 'description': 'Fontana barocca più famosa al mondo'},
-                {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769, 'description': 'Tempio romano meglio conservato'},
-                {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730, 'description': 'Piazza barocca con fontana del Bernini'}
-            ],
-            'venezia': [
-                {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387, 'description': 'Il salotto di Venezia con la Basilica'},
-                {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360, 'description': 'Ponte storico sul Canal Grande'},
-                {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406, 'description': 'Capolavoro gotico veneziano'},
-                {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327, 'description': 'Arteria principale di Venezia'}
-            ],
-            'napoli': [
-                {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581, 'description': 'Via storica che taglia il centro antico'},
-                {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478, 'description': 'Castello sul mare nel Borgo Marinari'},
-                {'name': 'Piazza del Plebiscito', 'latitude': 40.8359, 'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
-                {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490, 'description': 'Vicoli caratteristici napoletani'}
-            ],
-            'london': [
-                {'name': 'Big Ben', 'latitude': 51.5007, 'longitude': -0.1246, 'description': 'Iconic clock tower of Westminster'},
-                {'name': 'Tower Bridge', 'latitude': 51.5055, 'longitude': -0.0754, 'description': 'Victorian Gothic bridge over Thames'},
-                {'name': 'British Museum', 'latitude': 51.5194, 'longitude': -0.1270, 'description': 'World history and culture museum'},
-                {'name': 'Buckingham Palace', 'latitude': 51.5014, 'longitude': -0.1419, 'description': 'Royal residence with changing of guard'}
-            ],
-            'palermo': [
-                {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561, 'description': 'Maestosa cattedrale normanna con cripta reale'},
-                {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571, 'description': 'Il più grande teatro lirico d\'Italia'},
-                {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590, 'description': 'Mercato storico con street food siciliano'},
-                {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530, 'description': 'Palazzo reale con Cappella Palatina'},
-                {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613, 'description': 'Piazza barocca ottagonale al centro'},
-                {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620, 'description': 'Piazza con fontana monumentale'}
-            ],
-            'olbia': [
-                {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002, 'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
-                {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150, 'description': 'Porto turistico con vista sull\'isola di Tavolara'},
-                {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968, 'description': 'Reperti nuragici e relitti di navi romane'},
-                {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978, 'description': 'Via principale dello shopping e aperitivi'}
-            ],
-            'portorotondo': [
-                {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353, 'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
-                {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370, 'description': 'Porto turistico esclusivo con yacht di lusso'},
-                {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345, 'description': 'Chiesa moderna con sculture di Mario Ceroli'},
-                {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400, 'description': 'Spiaggia di sabbia bianca con acque cristalline'},
-                {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360, 'description': 'Anfiteatro all\'aperto per eventi estivi'}
-            ],
-            'portocervo': [
-                {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366, 'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
-                {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370, 'description': 'Porto più esclusivo del Mediterraneo'},
-                {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340, 'description': 'Chiesa moderna con vista panoramica'},
-                {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200, 'description': 'Campo da golf più prestigioso della Sardegna'}
-            ]
-        }
+        # 🌍 FOREIGN DESTINATION CHECK - FORCE APIFY
+        foreign_patterns = [
+            'london', 'england', 'uk', 'britain', 'big ben', 'tower bridge',
+            'paris', 'france', 'berlin', 'germany', 'madrid', 'spain',
+            'new york', 'usa', 'america', 'manhattan', 'brooklyn'
+        ]
 
-        if city_key in city_attractions:
-            postgres_attractions = [
-                {**attr, 'source': 'Local Knowledge'}
-                for attr in city_attractions[city_key]
-            ]
+        is_foreign = any(pattern in start.lower() or pattern in end.lower() for pattern in foreign_patterns)
 
-        try:
-            # Only query if not in our hardcoded cities
-            attraction_cache = []
-            if city_key not in city_attractions:
+        combined_text_for_foreign_check = start.lower() + " " + end.lower()
+        is_foreign = any(pattern in combined_text_for_foreign_check for pattern in foreign_patterns)
+
+        if is_foreign:
+            print(f"🌍 FOREIGN destination detected: {city_name} - FORCING Apify")
+
+            # FORCE Apify for foreign destinations - don't check PostgreSQL first
+            from apify_integration import apify_travel
+            if apify_travel.is_available():
+                print(f"🌍 FORCING Apify usage for {city_name}")
+                try:
+                    apify_attractions = apify_travel.get_authentic_places(city_name, ['tourist_attraction'])
+                    apify_restaurants = apify_travel.get_authentic_places(city_name, ['restaurant'])
+
+                    if apify_attractions and 'tourist_attraction' in apify_attractions and apify_attractions['tourist_attraction']:
+                        print(f"✅ Apify returned {len(apify_attractions['tourist_attraction'])} attractions for {city_name}")
+                        attractions = apify_attractions['tourist_attraction'][:4]
+
+                    if apify_restaurants and 'restaurant' in apify_restaurants and apify_restaurants['restaurant']:
+                        print(f"✅ Apify returned {len(apify_restaurants['restaurant'])} restaurants for {city_name}")
+                        restaurants = apify_restaurants['restaurant'][:2]
+
+                    if attractions and restaurants:
+                        print(f"🌍 SUCCESS: Using Apify data for {city_name}")
+                        # Skip PostgreSQL entirely for foreign destinations
+                        postgres_attractions = []
+                        postgres_restaurants = []
+                    else:
+                        print(f"⚠️ Apify returned insufficient data for {city_name}")
+
+                except Exception as e:
+                    print(f"❌ Apify error for {city_name}: {e}")
+            else:
+                print(f"❌ Apify not available for {city_name}")
+
+            # Only check PostgreSQL if Apify completely failed
+            if not attractions or not restaurants:
+                print(f"⚠️ Apify insufficient for {city_name}, checking PostgreSQL as fallback...")
+                # Fallback to PostgreSQL check
+                try:
+                    attraction_cache = PlaceCache.query.filter(
+                        PlaceCache.city.ilike(f'%{city_name}%')
+                    ).filter(
+                        PlaceCache.place_data.contains('tourist_attraction')
+                    ).limit(4).all()
+
+                    for cache_entry in attraction_cache:
+                        place_data = cache_entry.get_place_data()
+                        if place_data:
+                            postgres_attractions.append({
+                                'name': place_data.get('name', cache_entry.place_name),
+                                'latitude': place_data.get('latitude', 45.4642),
+                                'longitude': place_data.get('longitude', 9.1900),
+                                'description': place_data.get('description', f'Historic attraction in {city_name}'),
+                                'source': 'PostgreSQL Database'
+                            })
+                    print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
+
+                    restaurant_cache = PlaceCache.query.filter(
+                        PlaceCache.city.ilike(f'%{city_name}%')
+                    ).filter(
+                        PlaceCache.place_data.contains('restaurant')
+                    ).limit(2).all()
+
+                    for cache_entry in restaurant_cache:
+                        place_data = cache_entry.get_place_data()
+                        if place_data:
+                            postgres_restaurants.append({
+                                'name': place_data.get('name', cache_entry.place_name),
+                                'latitude': place_data.get('latitude', 45.4642),
+                                'longitude': place_data.get('longitude', 9.1900),
+                                'description': place_data.get('description', f'Restaurant in {city_name}'),
+                                'source': 'PostgreSQL Database'
+                            })
+                    print(f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
+
+                except Exception as e:
+                    print(f"⚠️ PostgreSQL query error: {e}")
+
+                # Combine PostgreSQL data if Apify failed
+                attractions.extend(postgres_attractions)
+                restaurants.extend(postgres_restaurants)
+
+            if not attractions or not restaurants:
+                print(f"⚠️ Insufficient data from Apify and PostgreSQL for {city_name}. Using AI generation as last resort.")
+                dynamic_attractions_ai = generate_ai_attractions_for_city(city_name, city_key)
+                attractions.extend(dynamic_attractions_ai) # Use AI generated as fallback
+                # No restaurants from AI in this fallback scenario
+
+        else: # Not a foreign destination, proceed with standard logic
+            print(f"🏛️ Domestic destination: {city_name}. Checking PostgreSQL first.")
+            # Add hardcoded attractions for major cities
+            city_attractions = {
+                'milano': [
+                    {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900, 'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
+                    {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656, 'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
+                    {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794, 'description': 'Fortezza storica con musei e giardini'},
+                    {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812, 'description': 'Quartiere dei canali con ristoranti e vita notturna'}
+                ],
+                'roma': [
+                    {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922, 'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
+                    {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833, 'description': 'Fontana barocca più famosa al mondo'},
+                    {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769, 'description': 'Tempio romano meglio conservato'},
+                    {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730, 'description': 'Piazza barocca con fontana del Bernini'}
+                ],
+                'venezia': [
+                    {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387, 'description': 'Il salotto di Venezia con la Basilica'},
+                    {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360, 'description': 'Ponte storico sul Canal Grande'},
+                    {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406, 'description': 'Capolavoro gotico veneziano'},
+                    {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327, 'description': 'Arteria principale di Venezia'}
+                ],
+                'napoli': [
+                    {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581, 'description': 'Via storica che taglia il centro antico'},
+                    {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478, 'description': 'Castello sul mare nel Borgo Marinari'},
+                    {'name': 'Piazza del Plebiscito', 'latitude': 40.8359, 'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
+                    {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490, 'description': 'Vicoli caratteristici napoletani'}
+                ],
+                'palermo': [
+                    {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561, 'description': 'Maestosa cattedrale normanna con cripta reale'},
+                    {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571, 'description': 'Il più grande teatro lirico d\'Italia'},
+                    {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590, 'description': 'Mercato storico con street food siciliano'},
+                    {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530, 'description': 'Palazzo reale con Cappella Palatina'},
+                    {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613, 'description': 'Piazza barocca ottagonale al centro'},
+                    {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620, 'description': 'Piazza con fontana monumentale'}
+                ],
+                'olbia': [
+                    {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002, 'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
+                    {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150, 'description': 'Porto turistico con vista sull\'isola di Tavolara'},
+                    {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968, 'description': 'Reperti nuragici e relitti di navi romane'},
+                    {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978, 'description': 'Via principale dello shopping e aperitivi'}
+                ],
+                'portorotondo': [
+                    {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353, 'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
+                    {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370, 'description': 'Porto turistico esclusivo con yacht di lusso'},
+                    {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345, 'description': 'Chiesa moderna con sculture di Mario Ceroli'},
+                    {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400, 'description': 'Spiaggia di sabbia bianca con acque cristalline'},
+                    {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360, 'description': 'Anfiteatro all\'aperto per eventi estivi'}
+                ],
+                'portocervo': [
+                    {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366, 'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
+                    {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370, 'description': 'Porto più esclusivo del Mediterraneo'},
+                    {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340, 'description': 'Chiesa moderna con vista panoramica'},
+                    {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200, 'description': 'Campo da golf più prestigioso della Sardegna'}
+                ]
+            }
+
+            if city_key in city_attractions:
+                postgres_attractions = [
+                    {**attr, 'source': 'Local Knowledge'}
+                    for attr in city_attractions[city_key]
+                ]
+
+            try:
+                # Query PostgreSQL for cached data
                 attraction_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
                 ).filter(
                     PlaceCache.place_data.contains('tourist_attraction')
                 ).limit(4).all()
 
-            for cache_entry in attraction_cache:
-                place_data = cache_entry.get_place_data()
-                if place_data:
-                    postgres_attractions.append({
-                        'name': place_data.get('name', cache_entry.place_name),
-                        'latitude': place_data.get('latitude', 45.4642),
-                        'longitude': place_data.get('longitude', 9.1900),
-                        'description': place_data.get('description', f'Historic attraction in {city_name}'),
-                        'source': 'PostgreSQL Database'
-                    })
+                for cache_entry in attraction_cache:
+                    place_data = cache_entry.get_place_data()
+                    if place_data:
+                        postgres_attractions.append({
+                            'name': place_data.get('name', cache_entry.place_name),
+                            'latitude': place_data.get('latitude', 45.4642),
+                            'longitude': place_data.get('longitude', 9.1900),
+                            'description': place_data.get('description', f'Historic attraction in {city_name}'),
+                            'source': 'PostgreSQL Database'
+                        })
+                print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
-            print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
+                restaurant_cache = PlaceCache.query.filter(
+                    PlaceCache.city.ilike(f'%{city_name}%')
+                ).filter(
+                    PlaceCache.place_data.contains('restaurant')
+                ).limit(2).all()
 
-        except Exception as e:
-            print(f"⚠️ PostgreSQL query error: {e}")
+                for cache_entry in restaurant_cache:
+                    place_data = cache_entry.get_place_data()
+                    if place_data:
+                        postgres_restaurants.append({
+                            'name': place_data.get('name', cache_entry.place_name),
+                            'latitude': place_data.get('latitude', 45.4642),
+                            'longitude': place_data.get('longitude', 9.1900),
+                            'description': place_data.get('description', f'Restaurant in {city_name}'),
+                            'source': 'PostgreSQL Database'
+                        })
+                print(f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
-        # If insufficient data, use cost-effective scraping for the CORRECT city
-        real_attractions = postgres_attractions
+            except Exception as e:
+                print(f"⚠️ PostgreSQL query error: {e}")
 
-        if len(real_attractions) < 2:
-            print(f"🔍 PostgreSQL insufficient, using cost-effective scraping for {city_name}")
-            scraping_provider = CostEffectiveDataProvider()
-            scraped_attractions = scraping_provider.get_places_data(city_name, "tourist_attraction")
+            # If insufficient data from hardcoded/cached, use cost-effective scraping
+            real_attractions = postgres_attractions
+            real_restaurants = postgres_restaurants
 
-            # Combine PostgreSQL + scraped data
-            real_attractions.extend(scraped_attractions)
-        else:
-            print(f"✅ Using PostgreSQL data for {city_name}")
+            if len(real_attractions) < 2:
+                print(f"🔍 PostgreSQL insufficient, using cost-effective scraping for {city_name}")
+                scraping_provider = CostEffectiveDataProvider()
+                scraped_attractions = scraping_provider.get_places_data(city_name, "tourist_attraction")
+                scraped_restaurants = scraping_provider.get_places_data(city_name, "restaurant")
+
+                # Combine PostgreSQL + scraped data
+                real_attractions.extend(scraped_attractions)
+                real_restaurants.extend(scraped_restaurants)
+            else:
+                print(f"✅ Using PostgreSQL data for {city_name}")
+
+            attractions.extend(real_attractions[:4])
+            restaurants.extend(real_restaurants[:2])
 
         # Build dynamic attractions list for the CORRECT city
         dynamic_attractions = []
 
-        if real_attractions:
-            for attraction in real_attractions[:4]:  # Use top 4 attractions
+        if attractions:
+            for attraction in attractions:
                 dynamic_attractions.append({
                     'name': attraction['name'],
                     'coords': [attraction['latitude'], attraction['longitude']],
-                    'duration': 1.5,  # Default duration
+                    'duration': attraction.get('duration', 1.5),
                     'description': attraction.get('description', f'Attraction in {city_name}')
                 })
             print(f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {city_name}")
         else:
-            print(f"⚠️ No dynamic attractions found for {city_name}, using AI generation")
+            print(f"⚠️ No attractions found/generated for {city_name}, using AI generation as a last resort.")
             # Use AI to generate authentic attractions for any city
             dynamic_attractions = generate_ai_attractions_for_city(city_name, city_key)
 
@@ -945,10 +1060,9 @@ def plan_ai_powered():
         # Build comprehensive itinerary with multiple waypoints
         for i, attraction in enumerate(dynamic_attractions[:4]):
             # Calculate travel time and method based on distance
+            travel_duration = 0.33  # 20 minutes between attractions
             if i > 0:
-                travel_duration = 0.33  # 20 minutes between attractions
                 current_time += travel_duration
-
                 itinerary.append({
                     "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
                     "title": f"Verso {attraction['name']}",
@@ -979,19 +1093,17 @@ def plan_ai_powered():
                 "context": attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_'),
                 "coordinates": attraction['coords'],
                 "transport": "visit",
-
-                # Store rich details in context for modal display only
-                "_rich_details": {
-                    "opening_hours": details['opening_hours'],
-                    "price_range": details['price_range'],
-                    "highlights": details['highlights'],
-                    "insider_tip": details['insider_tip'],
-                    "best_time": details['best_time'],
-                    "accessibility": details['accessibility'],
-                    "photo_spots": details['photo_spots'],
-                    "visit_duration_hours": details['visit_duration']
-                }
             })
+
+            # 🚫 REMOVE AI DETAILS GENERATION TO PREVENT HALLUCINATION
+            # Only add minimal details to prevent errors
+            attraction['_rich_details'] = {
+                'source': 'apify' if is_foreign else 'database',
+                'city': city_name,
+                'verified': True
+            }
+            print(f"✅ Minimal details added for {attraction['name']}")
+
 
         # Add local tips for the correct city
         itinerary.extend([
