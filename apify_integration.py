@@ -76,8 +76,10 @@ class ApifyTravelIntegration:
     @with_cache(cache_apify, lambda self, city, category, max_results: f"apify_gmaps_{city}_{category}_{max_results}")
     def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 10) -> List[Dict]:
         """Cerca luoghi su Google Maps tramite Apify"""
+        print(f"🔍 APIFY SEARCH CALLED: city='{city}', category='{category}', available={self.is_available()}")
+        
         if not self.is_available():
-            print("⚠️ Apify non configurato - usando fallback")
+            print(f"❌ APIFY NOT AVAILABLE: client={self.client is not None}, token={bool(self.api_token)}")
             return []
             
         try:
@@ -101,9 +103,14 @@ class ApifyTravelIntegration:
                 "language": "it"
             }
             
+            print(f"🚀 CALLING APIFY with query: {search_query}")
+            
             # Usa il Google Maps Scraper di Apify
             run = self.client.actor("compass/crawler-google-places").call(run_input=run_input)
+            print(f"📡 APIFY RUN STARTED: {run.get('id', 'unknown')}")
+            
             dataset_items = list(self.client.dataset(run["defaultDatasetId"]).iterate_items())
+            print(f"📊 APIFY RETURNED: {len(dataset_items)} raw items")
             
             places = []
             for item in dataset_items:

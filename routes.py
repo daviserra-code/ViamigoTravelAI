@@ -351,23 +351,69 @@ def api_plan_trip():
         # Mock profilo per demo - interessi personalizzati
         user_interests = ['storia', 'arte', 'cibo', 'natura']
 
-        # 🌍 PRIORITÀ: Usa Apify per destinazioni estere
+        # 🌍 PRIORITÀ ASSOLUTA: Usa SEMPRE Apify per destinazioni estere
         from apify_integration import apify_travel
 
-        # Verifica se è destinazione estera che richiede Apify
-        foreign_cities = ['usa washington d', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid']
-        is_foreign = any(foreign_key in city.lower() for foreign_key in foreign_cities)
+        # Lista completa destinazioni estere che DEVONO usare Apify
+        foreign_cities = [
+            'usa washington d', 'japan tokyo', 'germany berlin',
+            'england london', 'france paris', 'spain madrid',
+            'london', 'paris', 'madrid', 'berlin', 'tokyo'  # Varianti dirette
+        ]
 
-        # 🔍 DEBUG: Forza riconoscimento London
-        if 'london' in city.lower() or any('london' in location.lower() for location in [start, end]):
-            city = 'england london'
-            is_foreign = True
-            print(f"🇬🇧 FORZATO riconoscimento London: city='{city}', is_foreign={is_foreign}")
+        # 🔍 RICONOSCIMENTO ESTERO: Verifica start, end E city
+        is_foreign = False
+        detected_foreign_city = None
 
-        if is_foreign and apify_travel.is_available():
-            print(f"🌍 Usando Apify per destinazione estera: {city}")
-            itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+        # Check in city parameter
+        for foreign_key in foreign_cities:
+            if foreign_key in city.lower():
+                is_foreign = True
+                detected_foreign_city = foreign_key
+                break
+
+        # Check in start/end locations
+        if not is_foreign:
+            for location in [start, end]:
+                for foreign_key in foreign_cities:
+                    if foreign_key in location.lower():
+                        is_foreign = True
+                        detected_foreign_city = foreign_key
+                        # Map to full foreign city code
+                        if foreign_key == 'london':
+                            city = 'england london'
+                        elif foreign_key == 'paris':
+                            city = 'france paris'
+                        elif foreign_key == 'madrid':
+                            city = 'spain madrid'
+                        elif foreign_key == 'berlin':
+                            city = 'germany berlin'
+                        elif foreign_key == 'tokyo':
+                            city = 'japan tokyo'
+                        else:
+                            city = foreign_key
+                        break
+                if is_foreign:
+                    break
+
+        print(f"🔍 FOREIGN CHECK: is_foreign={is_foreign}, detected='{detected_foreign_city}', final_city='{city}'")
+        print(f"🔍 APIFY STATUS: available={apify_travel.is_available()}, token={bool(apify_travel.api_token)}")
+
+        # 🌍 FORCE APIFY for foreign destinations
+        if is_foreign:
+            if apify_travel.is_available():
+                print(f"🌍 USING APIFY for foreign destination: {city}")
+                itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+                print(f"🌍 APIFY returned {len(itinerary) if itinerary else 0} waypoints")
+            else:
+                print(f"❌ APIFY NOT AVAILABLE for {city} - missing token or client")
+                # Force fallback with foreign flag
+                from dynamic_routing import dynamic_router
+                itinerary = dynamic_router.generate_personalized_itinerary(
+                    start, end, city, duration, user_interests
+                )
         else:
+            print(f"🇮🇹 DOMESTIC destination: {city} - using dynamic routing")
             # Fallback al routing dinamico personalizzato
             from dynamic_routing import dynamic_router
             itinerary = dynamic_router.generate_personalized_itinerary(
