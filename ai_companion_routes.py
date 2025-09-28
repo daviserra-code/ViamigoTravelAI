@@ -17,11 +17,13 @@ from api_error_handler import resilient_api_call, with_cache, cache_openai, cach
 from weather_intelligence import weather_intelligence
 from crowd_prediction import crowd_predictor
 from multi_language_support import multi_language
+import requests # Import requests for making HTTP calls
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
 # Initialize OpenAI with fast timeout
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+openai_api_key = os.environ.get("OPENAI_API_KEY") # Ensure this is available
 
 class AICompanionEngine:
     def __init__(self):
@@ -228,83 +230,181 @@ Sii perspicace e intelligente nell'analisi comportamentale.
 # Global AI engine
 ai_engine = AICompanionEngine()
 
-@ai_companion_bp.route('/ai_piano_b', methods=['POST'])
-def generate_ai_piano_b():
-    """Generate real AI Piano B"""
+@ai_companion_bp.route('/ai/piano_b', methods=['POST'])
+@resilient_api_call('openai', timeout=60, fallback_data={
+    'alternative_plans': [
+        {
+            'title': 'Piano Rilassante',
+            'description': 'Itinerario con meno camminate e più comfort',
+            'stops': ['Caffè panoramico', 'Museo con visita guidata', 'Ristorante tradizionale'],
+            'estimated_time': '4 ore',
+            'estimated_cost': '€50-70'
+        }
+    ]
+})
+def ai_piano_b():
+    """Generate intelligent Plan B suggestions"""
     try:
         data = request.get_json()
-        itinerary = data.get('itinerary', [])
-        context = data.get('context', 'travel planning')
-        emergency_type = data.get('emergency_type', 'weather')
+        current_plan = data.get('current_plan', [])
+        city = data.get('city', 'Milano')
 
-        print(f"🧠 Generating AI Piano B for {emergency_type}")
+        print(f"🧠 Generating Piano B for {city} with {len(current_plan)} current stops")
 
-        # Use thread pool for fast AI generation
-        future = ai_engine.executor.submit(
-            ai_engine.generate_piano_b,
-            itinerary,
-            context,
-            emergency_type
+        prompt = f"""
+        PIANO B INTELLIGENTE - {city}
+
+        Piano attuale:
+        {json.dumps(current_plan, indent=2)}
+
+        Genera 3 alternative creative per questo itinerario:
+        1. PIANO RILASSANTE: Meno camminate, più comfort
+        2. PIANO AVVENTUROSO: Luoghi nascosti e esperienze uniche  
+        3. PIANO EXPRESS: Massima efficienza, highlights principali
+
+        Per ogni piano includi:
+        - Titolo piano
+        - 3-4 tappe specifiche con orari
+        - Perché è migliore del piano originale
+        - Costo stimato
+        - Tempo totale
+
+        Rispondi in JSON valido con array "alternative_plans".
+        """
+
+        # Call OpenAI with enhanced error handling
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {openai_api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'gpt-4',  # Will upgrade to gpt-5 when available
+                'messages': [{'role': 'user', 'content': prompt}],
+                'max_tokens': 2000,
+                'temperature': 0.8
+            },
+            timeout=60  # Increased timeout for GPT-4
         )
 
-        # Wait with timeout
-        try:
-            result = future.result(timeout=8)
-            return jsonify({
-                'status': 'ai_success',
-                'piano_b': result,
-                'generation_time': 'real-time AI',
-                'ai_powered': True
-            })
-        except Exception as e:
-            print(f"⚠️ AI Piano B timeout: {e}")
-            return jsonify({
-                'status': 'ai_fallback',
-                'piano_b': ai_engine.generate_piano_b(itinerary, context, emergency_type),
-                'generation_time': 'fallback mode',
-                'ai_powered': False
-            })
+        response.raise_for_status() # Raise an exception for bad status codes
+        result = response.json()
 
+        # Extract and parse the relevant part of the response
+        # Assuming the AI returns a JSON object with 'choices' like OpenAI API
+        if 'choices' in result and result['choices']:
+            content = result['choices'][0]['message']['content']
+            # The content is expected to be a JSON string
+            return jsonify(json.loads(content))
+        else:
+            # Handle cases where the response structure is unexpected
+            return jsonify({'error': 'Unexpected response structure from OpenAI'}), 500
+
+    except requests.exceptions.Timeout:
+        print("⚠️ OpenAI API call timed out.")
+        # The resilient_api_call decorator will handle this and return fallback_data
+        raise # Re-raise to let the decorator catch it
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ OpenAI API request failed: {e}")
+        # The resilient_api_call decorator will handle this
+        raise
     except Exception as e:
-        return jsonify({'error': f'AI Piano B error: {str(e)}'}), 500
+        print(f"❌ An unexpected error occurred in ai_piano_b: {e}")
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+
+@ai_companion_bp.route('/ai/scoperte', methods=['POST'])
+@resilient_api_call('openai', timeout=60, fallback_data={
+    'discoveries': [
+        {
+            'type': 'Gemma Nascosta',
+            'name': 'Cortile storico nascosto',
+            'description': 'Un angolo segreto della città',
+            'why_special': 'Raramente visitato dai turisti',
+            'cost': 'Gratuito'
+        }
+    ]
+})
+def ai_scoperte():
+    """Generate intelligent discoveries"""
+    try:
+        data = request.get_json()
+        user_interests = data.get('interests', ['arte', 'cibo'])
+        city = data.get('city', 'Milano')
+        current_location = data.get('current_location', '')
+
+        print(f"🔍 Generating discoveries for {city} based on interests: {user_interests}")
+
+        prompt = f"""
+        SCOPERTE INTELLIGENTI - {city}
+
+        Interessi utente: {', '.join(user_interests)}
+        Posizione attuale: {current_location}
+
+        Trova 5 scoperte autentiche vicine:
+        1. GEMMA NASCOSTA: Luogo poco turistico ma affascinante
+        2. ESPERIENZA LOCALE: Attività che fanno solo i locals
+        3. CURIOSITÀ STORICA: Fatto interessante sul posto
+        4. FOTO PERFETTA: Spot Instagram poco conosciuto
+        5. ASSAGGIO AUTENTICO: Cibo/drink tipico del quartiere
+
+        Per ogni scoperta includi:
+        - Nome e descrizione (max 100 caratteri)
+        - Perché è speciale
+        - Come raggiungerla
+        - Costo/gratuito
+        - Orario migliore
+
+        Rispondi in JSON valido con array "discoveries".
+        """
+
+        # Call OpenAI with enhanced error handling
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {openai_api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'gpt-4',
+                'messages': [{'role': 'user', 'content': prompt}],
+                'max_tokens': 1500,
+                'temperature': 0.9
+            },
+            timeout=60  # Increased timeout
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if 'choices' in result and result['choices']:
+            content = result['choices'][0]['message']['content']
+            return jsonify(json.loads(content))
+        else:
+            return jsonify({'error': 'Unexpected response structure from OpenAI'}), 500
+
+    except requests.exceptions.Timeout:
+        print("⚠️ OpenAI API call timed out.")
+        raise
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ OpenAI API request failed: {e}")
+        raise
+    except Exception as e:
+        print(f"❌ An unexpected error occurred in ai_scoperte: {e}")
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+
+@ai_companion_bp.route('/ai_piano_b', methods=['POST'])
+def generate_ai_piano_b_deprecated():
+    """Generate real AI Piano B (deprecated, use /ai/piano_b)"""
+    # This route is kept for backward compatibility but should ideally be removed or updated
+    # to redirect to the new endpoint. For now, it just calls the new endpoint.
+    return ai_piano_b()
 
 @ai_companion_bp.route('/ai_scoperte', methods=['POST'])
-def generate_ai_scoperte():
-    """Generate real AI intelligent discoveries"""
-    try:
-        data = request.get_json()
-        location = data.get('location', 'unknown')
-        time_context = data.get('time_context', 'morning')
-        user_profile = data.get('user_profile')
-
-        print(f"🧠 Generating AI Scoperte for {location} at {time_context}")
-
-        future = ai_engine.executor.submit(
-            ai_engine.generate_scoperte_intelligenti,
-            location,
-            time_context,
-            user_profile
-        )
-
-        try:
-            result = future.result(timeout=8)
-            return jsonify({
-                'status': 'ai_success',
-                'scoperte': result,
-                'generation_time': 'real-time AI',
-                'ai_powered': True
-            })
-        except Exception as e:
-            print(f"⚠️ AI Scoperte timeout: {e}")
-            return jsonify({
-                'status': 'ai_fallback',
-                'scoperte': ai_engine.generate_scoperte_intelligenti(location, time_context, user_profile),
-                'generation_time': 'fallback mode',
-                'ai_powered': False
-            })
-
-    except Exception as e:
-        return jsonify({'error': f'AI Scoperte error: {str(e)}'}), 500
+def generate_ai_scoperte_deprecated():
+    """Generate real AI intelligent discoveries (deprecated, use /ai/scoperte)"""
+    # This route is kept for backward compatibility but should ideally be removed or updated
+    # to redirect to the new endpoint. For now, it just calls the new endpoint.
+    return ai_scoperte()
 
 @ai_companion_bp.route('/ai_diario', methods=['POST'])
 def generate_ai_diario():
@@ -391,12 +491,12 @@ def get_dynamic_city_coordinates(city_name: str):
     # Never default to Rome - try harder to get real coordinates
     if city_name.lower() in city_coords:
         return city_coords[city_name.lower()]
-    
+
     # Try OpenStreetMap Nominatim one more time with better query
     try:
         import requests
         url = "https://nominatim.openstreetmap.org/search"
-        
+
         # Try with country hint
         for country in ['Italy', 'Italia', 'France', 'Spain', 'Portugal', 'Greece']:
             params = {
@@ -405,7 +505,7 @@ def get_dynamic_city_coordinates(city_name: str):
                 'limit': 1,
                 'addressdetails': 1
             }
-            
+
             response = requests.get(url, params=params, timeout=3, headers={'User-Agent': 'Viamigo/1.0'})
             if response.ok and response.json():
                 data = response.json()[0]
@@ -414,13 +514,13 @@ def get_dynamic_city_coordinates(city_name: str):
                 return coords
     except:
         pass
-    
+
     # Last resort - use AI to get approximate coordinates
     try:
         from openai import OpenAI
         import json
         import os
-        
+
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         response = client.chat.completions.create(
             model="gpt-4-turbo",
@@ -431,7 +531,7 @@ def get_dynamic_city_coordinates(city_name: str):
             response_format={"type": "json_object"},
             temperature=0
         )
-        
+
         coords_data = json.loads(response.choices[0].message.content)
         return [coords_data['lat'], coords_data['lon']]
     except:
@@ -458,12 +558,12 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         import os
         from openai import OpenAI
         import json
-        
+
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        
+
         # Get coordinates first
         coords = get_dynamic_city_coordinates(city_name)
-        
+
         prompt = f"""Generate 4 authentic tourist attractions for {city_name}.
         Return a JSON array with exactly 4 attractions in this format:
         [
@@ -475,14 +575,14 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
                 "duration": 1.5
             }}
         ]
-        
+
         Important:
         - Use REAL attractions that actually exist in {city_name}
         - Vary the coordinates slightly around the city center
         - Include mix of historical sites, cultural attractions, and local highlights
         - Descriptions should be authentic and informative
         """
-        
+
         response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
@@ -492,13 +592,13 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
             response_format={"type": "json_object"},
             temperature=0.7
         )
-        
+
         attractions_data = json.loads(response.choices[0].message.content)
         if 'attractions' in attractions_data:
             attractions_data = attractions_data['attractions']
         elif not isinstance(attractions_data, list):
             attractions_data = [attractions_data]
-            
+
         # Convert to our format
         dynamic_attractions = []
         for attr in attractions_data[:4]:
@@ -511,10 +611,10 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
                 'duration': attr.get('duration', 1.5),
                 'description': attr.get('description', f'Attrazione autentica di {city_name}')
             })
-        
+
         print(f"✅ AI generated {len(dynamic_attractions)} attractions for {city_name}")
         return dynamic_attractions
-        
+
     except Exception as e:
         print(f"⚠️ AI generation failed: {e}, using fallback")
         # Fallback with basic city center
@@ -532,10 +632,10 @@ def cache_attractions_to_db(city_name: str, attractions):
         from models import PlaceCache
         from flask_app import db
         import json
-        
+
         for attraction in attractions:
             cache_key = f"{city_name.lower()}_{attraction['name'].lower().replace(' ', '_')}"
-            
+
             # Check if already exists
             existing = PlaceCache.query.filter_by(cache_key=cache_key).first()
             if not existing:
@@ -547,7 +647,7 @@ def cache_attractions_to_db(city_name: str, attractions):
                     'category': 'tourist_attraction',
                     'duration': attraction.get('duration', 1.5)
                 }
-                
+
                 new_cache = PlaceCache(
                     cache_key=cache_key,
                     place_name=attraction['name'],
@@ -557,10 +657,10 @@ def cache_attractions_to_db(city_name: str, attractions):
                     priority_level='ai_generated'
                 )
                 db.session.add(new_cache)
-        
+
         db.session.commit()
         print(f"✅ Cached {len(attractions)} attractions for {city_name}")
-        
+
     except Exception as e:
         print(f"⚠️ Failed to cache attractions: {e}")
 
@@ -646,7 +746,7 @@ def plan_ai_powered():
                 # Capitalize properly for display
                 city_display = extracted_city.capitalize()
                 return extracted_city, city_display
-            
+
             # If no city found, try to extract from the input
             # Split by spaces and check last word as potential city
             words = location_lower.split()
@@ -751,13 +851,13 @@ def plan_ai_powered():
                 {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200, 'description': 'Campo da golf più prestigioso della Sardegna'}
             ]
         }
-        
+
         if city_key in city_attractions:
             postgres_attractions = [
-                {**attr, 'source': 'Local Knowledge'} 
+                {**attr, 'source': 'Local Knowledge'}
                 for attr in city_attractions[city_key]
             ]
-            
+
         try:
             # Only query if not in our hardcoded cities
             attraction_cache = []
@@ -813,7 +913,7 @@ def plan_ai_powered():
             print(f"⚠️ No dynamic attractions found for {city_name}, using AI generation")
             # Use AI to generate authentic attractions for any city
             dynamic_attractions = generate_ai_attractions_for_city(city_name, city_key)
-            
+
             # Cache the generated attractions for future use
             if dynamic_attractions:
                 cache_attractions_to_db(city_name, dynamic_attractions)
@@ -934,32 +1034,32 @@ def get_weather_intelligence():
         lat = data.get('latitude', 45.4642)  # Default Milan
         lon = data.get('longitude', 9.1900)
         language = data.get('language', 'it')
-        
+
         # Get current weather
         weather = weather_intelligence.get_current_weather(lat, lon)
-        
+
         # Analyze conditions
         severity, trigger_plan_b, reasons = weather_intelligence.analyze_weather_conditions(weather)
-        
+
         # Get forecast
         forecast = weather_intelligence.get_forecast(lat, lon, hours=24)
-        
+
         # Get weather-appropriate suggestions
         suggestions = weather_intelligence.suggest_weather_appropriate_activities(
-            weather, 
+            weather,
             data.get('activity_type', 'general')
         )
-        
+
         # Translate if needed
         if language != 'en':
             weather['description'] = multi_language.translate(weather['description'], language, 'en')
             reasons = [multi_language.translate(r, language, 'en') for r in reasons]
-            
+
             # Translate suggestions
             for key in suggestions:
                 if isinstance(suggestions[key], list):
                     suggestions[key] = [multi_language.translate(s, language, 'en') for s in suggestions[key]]
-        
+
         response = {
             'current_weather': weather,
             'severity': severity,
@@ -969,15 +1069,15 @@ def get_weather_intelligence():
             'suggestions': suggestions,
             'timestamp': weather['timestamp']
         }
-        
+
         # Auto-trigger Plan B if severe weather
         if trigger_plan_b:
             print(f"⚠️ Weather Alert: Auto-triggering Plan B due to {severity} weather")
             response['plan_b_auto_triggered'] = True
             response['plan_b_reason'] = f"Weather conditions: {', '.join(reasons)}"
-        
+
         return jsonify(response)
-        
+
     except Exception as e:
         print(f"❌ Weather intelligence error: {e}")
         return jsonify({'error': str(e)}), 500
@@ -991,9 +1091,9 @@ def predict_crowds():
         places = data.get('places', [])
         language = data.get('language', 'it')
         optimize_itinerary = data.get('optimize', False)
-        
+
         predictions = []
-        
+
         for place in places:
             # Predict crowd level
             prediction = crowd_predictor.predict_crowd_level(
@@ -1001,7 +1101,7 @@ def predict_crowds():
                 place.get('type', 'general'),
                 None  # Current time by default
             )
-            
+
             # Get AI insights if available
             if place.get('name') and place.get('city'):
                 ai_insights = crowd_predictor.get_ai_crowd_insights(
@@ -1010,26 +1110,26 @@ def predict_crowds():
                 )
                 if ai_insights:
                     prediction['ai_insights'] = ai_insights
-            
+
             # Translate if needed
             if language != 'en':
                 prediction['description'] = multi_language.translate(
-                    prediction['description'], 
-                    language, 
+                    prediction['description'],
+                    language,
                     'en'
                 )
                 prediction['recommendations'] = [
-                    multi_language.translate(r, language, 'en') 
+                    multi_language.translate(r, language, 'en')
                     for r in prediction['recommendations']
                 ]
-            
+
             predictions.append(prediction)
-        
+
         response = {
             'predictions': predictions,
             'overall_recommendation': None
         }
-        
+
         # Optimize itinerary if requested
         if optimize_itinerary and len(places) > 1:
             from datetime import datetime
@@ -1039,16 +1139,16 @@ def predict_crowds():
             )
             response['optimized_itinerary'] = optimized
             response['overall_recommendation'] = "Itinerary optimized to avoid crowds"
-            
+
             if language != 'it':
                 response['overall_recommendation'] = multi_language.translate(
                     response['overall_recommendation'],
                     language,
                     'it'
                 )
-        
+
         return jsonify(response)
-        
+
     except Exception as e:
         print(f"❌ Crowd prediction error: {e}")
         return jsonify({'error': str(e)}), 500
@@ -1063,13 +1163,13 @@ def translate_content():
         target_language = data.get('target_language', 'en')
         source_language = data.get('source_language', None)
         content_type = data.get('content_type', 'text')  # text, itinerary, ui
-        
+
         # Auto-detect source language if not provided
         if not source_language:
             source_language = multi_language.detect_language(content)
-        
+
         result = {}
-        
+
         if content_type == 'text':
             # Simple text translation
             result['translated'] = multi_language.translate(
@@ -1077,14 +1177,14 @@ def translate_content():
                 target_language,
                 source_language
             )
-            
+
         elif content_type == 'itinerary':
             # Translate full itinerary
             result['translated'] = multi_language.translate_itinerary(
                 content,  # Should be a list of itinerary items
                 target_language
             )
-            
+
         elif content_type == 'ui':
             # Get UI strings in target language
             result['ui_strings'] = multi_language.localize_ui(target_language)
@@ -1092,13 +1192,13 @@ def translate_content():
                 data.get('city', 'general'),
                 target_language
             )
-        
+
         result['source_language'] = source_language
         result['target_language'] = target_language
         result['language_info'] = multi_language.supported_languages.get(target_language)
-        
+
         return jsonify(result)
-        
+
     except Exception as e:
         print(f"❌ Translation error: {e}")
         return jsonify({'error': str(e)}), 500
@@ -1114,16 +1214,16 @@ def intelligent_trip_planning():
         lon = data.get('longitude', 9.1900)
         language = data.get('language', 'it')
         preferences = data.get('preferences', {})
-        
+
         print(f"🧠 Intelligent planning for {city} in {language}")
-        
+
         # Get weather intelligence
         weather = weather_intelligence.get_current_weather(lat, lon)
         weather_severity, trigger_plan_b, weather_reasons = weather_intelligence.analyze_weather_conditions(weather)
-        
+
         # Get basic itinerary (reuse existing logic)
         # This would normally call your existing itinerary generation
-        
+
         response = {
             'city': city,
             'language': language,
@@ -1139,7 +1239,7 @@ def intelligent_trip_planning():
             },
             'recommendations': []
         }
-        
+
         # Add weather-based recommendations
         if trigger_plan_b:
             response['recommendations'].append({
@@ -1152,7 +1252,7 @@ def intelligent_trip_planning():
                 ),
                 'action': 'activate_plan_b'
             })
-        
+
         # Add crowd recommendations
         from datetime import datetime
         hour = datetime.now().hour
@@ -1167,13 +1267,13 @@ def intelligent_trip_planning():
                 ),
                 'action': 'optimize_order'
             })
-        
+
         # Add language-specific tips
         tips = multi_language.get_language_specific_tips(city, language)
         response['local_tips'] = tips
-        
+
         return jsonify(response)
-        
+
     except Exception as e:
         print(f"❌ Intelligent planning error: {e}")
         return jsonify({'error': str(e)}), 500

@@ -10,6 +10,7 @@ from apify_client import ApifyClient
 from cost_effective_scraping import CostEffectiveDataProvider
 from models import db, PlaceCache
 from datetime import datetime, timedelta
+from api_error_handler import resilient_api_call, with_cache, cache_apify
 
 class ApifyTravelIntegration:
     """Sistema di integrazione Apify per dati turistici reali"""
@@ -69,6 +70,8 @@ class ApifyTravelIntegration:
             print(f"⚠️ Errore cache per {city}: {e}")
             db.session.rollback()
             
+    @resilient_api_call('apify', timeout=45, fallback_data=[])
+    @with_cache(cache_apify, lambda self, city, category, max_results: f"apify_gmaps_{city}_{category}_{max_results}")
     def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 10) -> List[Dict]:
         """Cerca luoghi su Google Maps tramite Apify"""
         if not self.is_available():

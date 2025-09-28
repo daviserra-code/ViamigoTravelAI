@@ -66,8 +66,6 @@ def apify_status():
         ]
     })
 
-
-
 # Make session permanent
 @app.before_request
 def make_session_permanent():
@@ -401,7 +399,6 @@ def api_plan_trip():
                 'is_foreign_destination': is_foreign
             }
         })
-
 
     except Exception as e:
         return jsonify({
@@ -1080,20 +1077,18 @@ def get_local_place_details(context):
             },
             'porto_cervo_olbia': {
                 'title': 'Porto Cervo Marina',
-                'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali. Uno dei porti turistici più prestigiosi del Mediterraneo.',
+                'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali.',
                 'details': [
                     {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
-                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'},
-                    {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'},
-                    {'label': 'Eventi', 'value': 'Regata della Sardegna estiva'},
-                    {'label': 'Stagione peak', 'value': 'Luglio-Agosto (alta società)'}
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'}, 
+                    {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'}
                 ],
                 'tip': '💡 **Consiglio**: Visita durante il tramonto per l\'atmosfera più magica. I locali aprono dal tardo pomeriggio.',
                 'image_url': None
             },
             'cala_di_volpe_costa': {
                 'title': 'Cala di Volpe',
-                'summary': 'Spiaggia iconica della Costa Smeralda con acque cristalline color smeraldo e sabbia bianchissima. Una delle spiagge più fotografate al mondo.',
+                'summary': 'Spiaggia iconica della Costa Smeralda con acque cristalline e sabbia bianchissima.',
                 'details': [
                     {'label': 'Caratteristica', 'value': 'Spiaggia paradisiaca sabbia bianca'},
                     {'label': 'Mare', 'value': 'Acque cristalline turchesi'},
@@ -1106,7 +1101,7 @@ def get_local_place_details(context):
             },
             'baia_sardinia_costa': {
                 'title': 'Baia Sardinia',
-                'summary': 'Elegante resort costiero della Costa Smeralda con vista panoramica sul mare turchese e macchia mediterranea incontaminata.',
+                'summary': 'Elegante resort costiero con vista panoramica sul mare turchese.',
                 'details': [
                     {'label': 'Caratteristica', 'value': 'Resort elegante vista mare'},
                     {'label': 'Spiaggia', 'value': 'Baia dorata protetta dai venti'},
@@ -1473,7 +1468,7 @@ def get_local_place_details(context):
                     {'label': 'Costruzione', 'value': 'IX-XIV secolo (romanico-gotico)'},
                     {'label': 'Facciata', 'value': 'Marmo bianco e nero a strisce orizzontali'},
                     {'label': 'Bomba 1941', 'value': 'Proiettile navale britannico inesploso (visibile)'},
-                    {'label': 'Tesoro', 'value': 'Santo Graal leggendario, reliquie preziose'},
+                    {'label': 'Tesoro', 'value': 'Sacro Catino (Sacro Graal), reliquie preziose'},
                     {'label': 'Portale', 'value': 'Leoni stilofori medievali'},
                     {'label': 'Curiosità', 'value': 'Miracolo della bomba che non esplose'}
                 ],
@@ -2643,6 +2638,45 @@ def admin_profiles():
     </body>
     </html>
     ''', profiles=profiles)
+
+# === NEW SYSTEM HEALTH ROUTE ===
+@app.route('/api/system/health')
+@login_required
+def system_health():
+    """Get system health status including all API services"""
+    from api_error_handler import api_error_handler
+
+    try:
+        health_data = api_error_handler.get_system_health()
+
+        # Add cache statistics
+        from api_error_handler import cache_openai, cache_scrapingdog, cache_nominatim, cache_apify
+
+        health_data['cache_stats'] = {
+            'openai': cache_openai.get_stats(),
+            'scrapingdog': cache_scrapingdog.get_stats(),
+            'nominatim': cache_nominatim.get_stats(),
+            'apify': cache_apify.get_stats()
+        }
+
+        # Add Apify integration status
+        from apify_integration import apify_travel
+        health_data['integrations'] = {
+            'apify': {
+                'available': apify_travel.is_available(),
+                'api_token_configured': bool(apify_travel.api_token)
+            }
+        }
+
+        return jsonify(health_data)
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Health check failed: {str(e)}',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
