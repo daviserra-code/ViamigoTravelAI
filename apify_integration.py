@@ -22,7 +22,9 @@ class ApifyTravelIntegration:
         
     def is_available(self) -> bool:
         """Verifica se Apify è configurato e disponibile"""
-        return self.client is not None and self.api_token is not None
+        available = self.client is not None and self.api_token is not None
+        print(f"🔍 Apify is_available check: client={self.client is not None}, token={bool(self.api_token)}, result={available}")
+        return available
         
     def get_cached_places(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
         """Recupera luoghi dal cache locale"""
@@ -219,7 +221,8 @@ class ApifyTravelIntegration:
         
     def generate_authentic_waypoints(self, start: str, end: str, city: str) -> List[Dict]:
         """Genera waypoints autentici usando dati Apify"""
-        print(f"🌍 Generazione waypoints autentici per {city} ({start} → {end})")
+        print(f"🌍 APIFY CHIAMATO: Generazione waypoints autentici per {city} ({start} → {end})")
+        print(f"🌍 APIFY STATUS: Available={self.is_available()}, Token={bool(self.api_token)}")
         
         # 🌍 TRADUZIONE: Codici paese_città → Nomi città reali per Google Maps
         city_translations = {

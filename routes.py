@@ -53,7 +53,7 @@ except Exception as e:
 def apify_status():
     """Check Apify integration status"""
     from apify_integration import apify_travel
-    
+
     return jsonify({
         'apify_available': apify_travel.is_available(),
         'api_token_configured': bool(apify_travel.api_token),
@@ -61,7 +61,7 @@ def apify_status():
         'cache_enabled': True,
         'supported_sources': ['google_maps', 'tripadvisor'],
         'foreign_destinations': [
-            'usa washington d', 'japan tokyo', 'germany berlin', 
+            'usa washington d', 'japan tokyo', 'germany berlin',
             'england london', 'france paris', 'spain madrid'
         ]
     })
@@ -353,11 +353,11 @@ def api_plan_trip():
 
         # 🌍 PRIORITÀ: Usa Apify per destinazioni estere
         from apify_integration import apify_travel
-        
+
         # Verifica se è destinazione estera che richiede Apify
         foreign_cities = ['usa washington d', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid']
         is_foreign = any(foreign_key in city.lower() for foreign_key in foreign_cities)
-        
+
         if is_foreign and apify_travel.is_available():
             print(f"🌍 Usando Apify per destinazione estera: {city}")
             itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
@@ -467,7 +467,7 @@ def detect_city_from_locations(start, end):
             # Estrai città dai dati OSM
             city_candidates = [
                 address.get('city'),
-                address.get('town'), 
+                address.get('town'),
                 address.get('village'),
                 address.get('municipality'),
                 address.get('county')
@@ -762,7 +762,7 @@ def generate_genova_itinerary(start, end):
             }
         ]
 
-    # ITINERARIO ACQUARIO - DESTINAZIONE SPECIFICA  
+    # ITINERARIO ACQUARIO - DESTINAZIONE SPECIFICA
     elif 'acquario' in end_lower or 'porto antico' in end_lower:
         return [
             {
@@ -1080,7 +1080,7 @@ def get_local_place_details(context):
                 'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali.',
                 'details': [
                     {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
-                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'}, 
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'},
                     {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'}
                 ],
                 'tip': '💡 **Consiglio**: Visita durante il tramonto per l\'atmosfera più magica. I locali aprono dal tardo pomeriggio.',
@@ -1126,11 +1126,11 @@ def get_local_place_details(context):
                 'image_url': None
             },
             'porto_cervo': {
-                'title': 'Porto Cervo Marina', 
+                'title': 'Porto Cervo Marina',
                 'summary': 'Il cuore esclusivo della Costa Smeralda con marina di lusso e boutique internazionali.',
                 'details': [
                     {'label': 'Caratteristica', 'value': 'Marina di lusso esclusivo'},
-                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'}, 
+                    {'label': 'Shopping', 'value': 'Boutique Prada, Gucci, Louis Vuitton'},
                     {'label': 'Ristoranti', 'value': 'Cucina gourmet con vista mare'}
                 ],
                 'tip': '💡 Visita durante il tramonto per l\'atmosfera più magica.',
@@ -1363,7 +1363,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre accessibile (visite guidate su prenotazione)',
                 'cost': 'Gratuito'
             },
-            # TORINO
+            # === TORINO ===
             'via_roma_torino': {
                 'title': 'Via Roma, Torino',
                 'summary': 'La via pedonale più elegante di Torino, creata nel 1930s. I suoi portici neoclassici ospitano boutique di lusso e caffè storici.',
@@ -1436,7 +1436,7 @@ def get_local_place_details(context):
                     {'label': 'Attività', 'value': 'Jogging, ciclismo, pic-nic'}
                 ]
             },
-            # GENOVA
+            # === GENOVA ===
             'piazza_de_ferrari': {
                 'title': 'Piazza De Ferrari, Genova',
                 'summary': 'Il salotto di Genova, circondata da palazzi storici e dominata dalla grande fontana centrale. Cuore del centro storico medievale più esteso d\'Europa.',
@@ -1557,7 +1557,7 @@ def get_local_place_details(context):
                 ],
                 'tip': '🎨 La Card Musei di Genova (€12-20) permette l\'accesso a tutti i musei civici.'
             },
-            # FIRENZE
+            # === FIRENZE ===
             'piazza_del_duomo_firenze': {
                 'title': 'Piazza del Duomo, Firenze',
                 'summary': 'Il cuore religioso di Firenze con la magnifica Cattedrale di Santa Maria del Fiore, la cupola del Brunelleschi e il Battistero di San Giovanni. Capolavoro del Rinascimento fiorentino.',
@@ -1622,7 +1622,7 @@ def get_local_place_details(context):
                     'url': 'https://www.santacroceopera.it'
                 }
             },
-            # NAPOLI
+            # === NAPOLI ===
             'piazza_plebiscito_napoli': {
                 'title': 'Piazza del Plebiscito, Napoli',
                 'summary': 'La piazza più grande e maestosa di Napoli, circondata dalla Basilica di San Francesco di Paola e dal Palazzo Reale. Cuore della Napoli borbonica.',
@@ -1665,7 +1665,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre accessibile, chiese vari orari',
                 'cost': 'Passeggiata gratuita'
             },
-            # BOLOGNA  
+            # === BOLOGNA ===
             'piazza_maggiore_bologna': {
                 'title': 'Piazza Maggiore, Bologna',
                 'summary': 'Il cuore medievale di Bologna, chiamata "il salotto" dai bolognesi. Circondata da palazzi storici e dominata dalla Basilica di San Petronio.',
@@ -1694,7 +1694,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Tutti i giorni 9:30-19:00 (estate), 9:30-17:00 (inverno)',
                 'cost': '€5 salita Torre Asinelli'
             },
-            # PALERMO
+            # === PALERMO ===
             'cattedrale_palermo': {
                 'title': 'Cattedrale di Palermo',
                 'summary': 'Capolavoro dell\'arte arabo-normanna Patrimonio UNESCO. Sintesi unica di culture musulmana, bizantina e latina.',
@@ -1727,7 +1727,7 @@ def get_local_place_details(context):
                     'url': 'https://www.federicosecondo.org'
                 }
             },
-            # VENEZIA
+            # === VENEZIA ===
             'piazza_san_marco_venezia': {
                 'title': 'Piazza San Marco, Venezia',
                 'summary': 'L\'unica "piazza" di Venezia (le altre sono "campi"), chiamata da Napoleone "il salotto più elegante d\'Europa". Cuore politico e religioso della Serenissima.',
@@ -1774,7 +1774,7 @@ def get_local_place_details(context):
                     'url': 'https://www.visitmuve.it'
                 }
             },
-            # PISA
+            # === PISA ===
             'piazza_miracoli_pisa': {
                 'title': 'Piazza dei Miracoli, Pisa',
                 'summary': 'Patrimonio UNESCO dal 1987, chiamata "dei Miracoli" da D\'Annunzio. Complesso romanico pisano unico al mondo con Torre Pendente, Duomo, Battistero e Camposanto.',
@@ -1826,7 +1826,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre accessibile, Scuola Normale: visite guidate su prenotazione',
                 'cost': 'Piazza gratuita, visite Scuola Normale €5'
             },
-            # CAGLIARI
+            # === CAGLIARI ===
             'castello_cagliari': {
                 'title': 'Castello di Cagliari',
                 'summary': 'Quartiere storico fortificato di origine pisana (XIII secolo), cuore del potere sardo-aragonese. Panorama mozzafiato sul Golfo degli Angeli.',
@@ -1869,7 +1869,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre accessibile, illuminazione notturna',
                 'cost': 'Accesso gratuito'
             },
-            # PERUGIA
+            # === PERUGIA ===
             'corso_vannucci_perugia': {
                 'title': 'Corso Vannucci, Perugia',
                 'summary': 'Salotto di Perugia e passeggiata principale della città medievale. Palazzo dei Priori, Galleria Nazionale dell\'Umbria e caffè storici.',
@@ -1898,6 +1898,411 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre visibile e accessibile',
                 'cost': 'Visione gratuita'
             },
+            'stazione_termini': {
+                'title': 'Stazione Roma Termini',
+                'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',
+                'details': [
+                    {'label': 'Inaugurazione', 'value': '20 dicembre 1950'},
+                    {'label': 'Binari', 'value': '29 binari'},
+                    {'label': 'Metro', 'value': 'Linea A (rossa) e B (blu)'},
+                    {'label': 'Passeggeri/anno', 'value': '150+ milioni'},
+                    {'label': 'Servizi', 'value': 'Biglietteria automatica, sala d\'attesa, ristoranti, negozi'},
+                    {'label': 'Bagagli', 'value': 'Deposito bagagli disponibile'},
+                    {'label': 'WiFi', 'value': 'Gratuito per 1 ora'}
+                ],
+                'timetable': [
+                    {'direction': 'Metro A - Battistini', 'times': 'Ogni 3-6 min (5:30-23:30)'},
+                    {'direction': 'Metro B - Laurentina', 'times': 'Ogni 4-7 min (5:30-23:30)'}
+                ],
+                'actionLink': {
+                    'text': 'Orari Trenitalia in tempo reale',
+                    'url': 'https://www.trenitalia.com'
+                }
+            },
+            'piazza_spagna': {
+                'title': 'Piazza di Spagna',
+                'summary': 'Una delle piazze più iconiche di Roma, famosa per la maestosa Scalinata di Trinità dei Monti e per essere il cuore dello shopping di lusso romano. La scalinata collega la piazza con la chiesa francese in cima.',
+                'details': [
+                    {'label': 'Gradini scalinata', 'value': '135 scalini in travertino'},
+                    {'label': 'Costruzione', 'value': '1723-1726'},
+                    {'label': 'Architetto', 'value': 'Francesco de Sanctis'},
+                    {'label': 'Fontana', 'value': 'Fontana della Barcaccia (Bernini, 1629)'},
+                    {'label': 'Shopping', 'value': 'Via Condotti, Via del Babuino'},
+                    {'label': 'Curiosità', 'value': 'Vietato sedersi sui gradini (multa €250)'},
+                    {'label': 'Metro', 'value': 'Spagna (Linea A)'}
+                ],
+                'timetable': [
+                    {'direction': 'Chiesa Trinità dei Monti', 'times': 'Mar-Dom 10:00-19:00'},
+                    {'direction': 'Keats- Shelley Museum', 'times': 'Lun-Sab 10:00-18:00'}
+                ]
+            },
+            'fontana_trevi': {
+                'title': 'Fontana di Trevi',
+                'summary': 'La fontana barocca più spettacolare al mondo, immortalata in "La Dolce Vita" di Fellini. La tradizione dice che lanciando una moneta con la mano destra sopra la spalla sinistra si tornerà a Roma.',
+                'details': [
+                    {'label': 'Altezza', 'value': '26.3 metri'},
+                    {'label': 'Larghezza', 'value': '49.15 metri'},
+                    {'label': 'Architetto', 'value': 'Nicola Salvi'},
+                    {'label': 'Completamento', 'value': '1762 (30 anni di lavori)'},
+                    {'label': 'Stile', 'value': 'Barocco Romano'},
+                    {'label': 'Figura centrale', 'value': 'Nettuno (Oceano)'},
+                    {'label': 'Monete raccolte', 'value': '€1.4 milioni/anno (dati alla Caritas)'},
+                    {'label': 'Curiosità', 'value': 'Due monete = nuova storia d\'amore'},
+                    {'label': 'Miglior orario', 'value': 'Alba (6:00-7:00) per evitare folle'}
+                ],
+                'timetable': [
+                    {'direction': 'Accessibile', 'times': '24h/7gg (illuminazione notturna)'},
+                    {'direction': 'Pulizia fontana', 'times': 'Ogni lunedì mattina 7:00-9:00'}
+                ]
+            },
+            'pantheon': {
+                'title': 'Pantheon',
+                'summary': 'Il tempio romano meglio conservato al mondo, considerato una meraviglia architettonica. La sua cupola fu la più grande per 1.300 anni fino a Brunelleschi. Oggi è basilica cristiana e mausoleo reale.',
+                'details': [
+                    {'label': 'Costruzione originale', 'value': '27 a.C. (Marco Agrippa)'},
+                    {'label': 'Ricostruzione', 'value': '118-128 d.C. (Imperatore Adriano)'},
+                    {'label': 'Diametro cupola', 'value': '43.30 metri (= altezza interna)'},
+                    {'label': 'Oculus', 'value': '8.2 metri di diametro (unica fonte di luce)'},
+                    {'label': 'Materiale', 'value': 'Calcestruzzo romano con pomice'},
+                    {'label': 'Sepolture illustri', 'value': 'Raffaello Sanzio, Re Vittorio Emanuele II'},
+                    {'label': 'Ingresso', 'value': 'Gratuito (prenotazione consigliata)'},
+                    {'label': 'Curiosità', 'value': 'Il pavimento ha pendenze per far defluire la pioggia'}
+                ],
+                'timetable': [
+                    {'direction': 'Lun-Sab', 'times': '9:00-19:00 (ultimo ingresso 18:45)'},
+                    {'direction': 'Domenica', 'times': '9:00-18:00 (ultimo ingresso 17:45)'},
+                    {'direction': 'Messe', 'times': 'Sabato 17:00, Domenica 10:30'}
+                ],
+                'actionLink': {
+                    'text': 'Prenota visita guidata',
+                    'url': 'https://pantheonroma.com'
+                }
+            },
+            'piazza_navona': {
+                'title': 'Piazza Navona',
+                'summary': 'Il gioiello del barocco romano, costruita sulle rovine dello Stadio di Domiziano. Teatro della rivalità artistica tra Bernini e Borromini, oggi è il salotto elegante di Roma con i suoi caffè storici.',
+                'details': [
+                    {'label': 'Forma originale', 'value': 'Stadio di Domiziano (86 d.C., 30.000 spettatori)'},
+                    {'label': 'Trasformazione', 'value': 'XV secolo - da stadio a piazza'},
+                    {'label': 'Lunghezza', 'value': '276 metri'},
+                    {'label': 'Fontana centrale', 'value': 'Fontana dei Quattro Fiumi (Bernini, 1651)'},
+                    {'label': 'Fontana sud', 'value': 'Fontana del Moro (Bernini)'},
+                    {'label': 'Fontana nord', 'value': 'Fontana del Nettuno'},
+                    {'label': 'Chiesa', 'value': 'Sant\'Agnese in Agone (Borromini)'},
+                    {'label': 'Leggenda', 'value': 'Statua del Nilo copre gli occhi per non vedere la chiesa'},
+                    {'label': 'Mercatino', 'value': 'Befana (6 gennaio) e Natale'}
+                ],
+                'timetable': [
+                    {'direction': 'Caffè storici', 'times': 'Caffè Domiziano, Tre Scalini (7:00-1:00)'},
+                    {'direction': 'Artisti di strada', 'times': 'Tutti i giorni 10:00-24:00'},
+                    {'direction': 'Chiesa S. Agnese', 'times': 'Mar-Dom 9:30-12:30, 15:30-19:00'}
+                ],
+                'actionLink': {
+                    'text': 'Storia dello Stadio di Domiziano',
+                    'url': 'https://stadiodomiziano.com'
+                }
+            },
+            # === LONDON ===
+            'big_ben': {
+                'title': 'Big Ben',
+                'summary': 'The iconic clock tower of Westminster Palace, officially called Elizabeth Tower. One of London\'s most recognizable landmarks and symbol of British democracy.',
+                'details': [
+                    {'label': 'Official Name', 'value': 'Elizabeth Tower (renamed 2012 for Queen\'s Diamond Jubilee)'},
+                    {'label': 'Height', 'value': '96 meters (316 feet)'},
+                    {'label': 'Construction', 'value': '1843-1859 (architect: Augustus Pugin)'},
+                    {'label': 'Bell', 'value': 'Big Ben bell weighs 13.76 tonnes'},
+                    {'label': 'Clock Face', 'value': '4 faces, each 7 meters in diameter'},
+                    {'label': 'Tours', 'value': 'UK residents only, advance booking required'},
+                    {'label': 'Metro', 'value': 'Westminster Station (Circle, District, Jubilee lines)'},
+                    {'label': 'Best Views', 'value': 'Westminster Bridge, Parliament Square'}
+                ],
+                'opening_hours': 'External viewing 24/7, tours by appointment only',
+                'cost': 'External viewing free, guided tours £15-25'
+            },
+            'tower_bridge': {
+                'title': 'Tower Bridge',
+                'summary': 'Victorian Gothic bascule and suspension bridge crossing the Thames. Famous for its twin towers and glass floor walkways offering spectacular views over London.',
+                'details': [
+                    {'label': 'Construction', 'value': '1886-1894 (architect: Horace Jones)'},
+                    {'label': 'Bridge Lifts', 'value': 'Approximately 1000 times per year'},
+                    {'label': 'Glass Floor', 'value': '42 meters above the Thames'},
+                    {'label': 'Engine Rooms', 'value': 'Victorian steam engines (now on display)'},
+                    {'label': 'Exhibition', 'value': 'Tower Bridge Exhibition with history displays'},
+                    {'label': 'Walking Distance', 'value': '5 minutes to Tower of London'},
+                    {'label': 'Metro', 'value': 'Tower Hill Station (Circle, District lines)'},
+                    {'label': 'Photography', 'value': 'Best shots from south bank at sunset'}
+                ],
+                'opening_hours': 'Daily 9:30-18:00 (last entry 17:00)',
+                'cost': '£12.30 adults, £5.90 children, free under 5'
+            },
+            'british_museum': {
+                'title': 'British Museum',
+                'summary': 'World\'s oldest national public museum housing 8 million artifacts spanning human history and culture from ancient civilizations to modern times.',
+                'details': [
+                    {'label': 'Founded', 'value': '1753 (opened to public 1759)'},
+                    {'label': 'Great Court', 'value': 'Europe\'s largest covered square (Queen Elizabeth II Great Court)'},
+                    {'label': 'Famous Artifacts', 'value': 'Rosetta Stone, Egyptian mummies, Parthenon sculptures'},
+                    {'label': 'Collections', 'value': '8 million objects, 80,000 on display'},
+                    {'label': 'Reading Room', 'value': 'Historic Round Reading Room (now information center)'},
+                    {'label': 'Free Highlights Tour', 'value': 'Daily 11:00, 14:00, 15:00 (90 minutes)'},
+                    {'label': 'Metro', 'value': 'Russell Square, Holborn, Tottenham Court Road'},
+                    {'label': 'Dining', 'value': 'Great Court Restaurant, Museum Tavern nearby'}
+                ],
+                'opening_hours': 'Daily 10:00-17:00, Friday until 20:30',
+                'cost': 'Free admission, special exhibitions £10-20'
+            },
+            'buckingham_palace': {
+                'title': 'Buckingham Palace',
+                'summary': 'Official London residence of the British monarch since 1837. Famous for Changing of the Guard ceremony and State Rooms open to public in summer.',
+                'details': [
+                    {'label': 'Rooms', 'value': '775 rooms including 19 State Rooms'},
+                    {'label': 'Changing of Guard', 'value': 'Wednesday, Saturday, Sunday 11:00 (Apr-Jul daily)'},
+                    {'label': 'State Rooms', 'value': 'Open July-September (advance booking essential)'},
+                    {'label': 'Royal Mews', 'value': 'Working stables with royal carriages'},
+                    {'label': 'Garden', 'value': '16 hectares, largest private garden in London'},
+                    {'label': 'Balcony', 'value': 'Famous royal appearances during celebrations'},
+                    {'label': 'Metro', 'value': 'Victoria, Green Park, Hyde Park Corner'},
+                    {'label': 'Photography', 'value': 'Front gates, Victoria Memorial for best shots'}
+                ],
+                'opening_hours': 'State Rooms: Jul-Sep 9:30-19:30, Royal Mews year-round',
+                'cost': 'State Rooms £30, Royal Mews £13, combined ticket £39'
+            },
+            'piccadilly_circuslondon_london': {
+                'title': 'Piccadilly Circus',
+                'summary': 'Bustling junction and public space in West End, famous for neon advertising displays, Eros statue and gateway to London\'s theatre district.',
+                'details': [
+                    {'label': 'Nickname', 'value': '"Times Square of London"'},
+                    {'label': 'Eros Statue', 'value': 'Shaftesbury Memorial Fountain (1893)'},
+                    {'label': 'Advertising', 'value': 'Historic curved LED displays since 1908'},
+                    {'label': 'Theatres', 'value': 'Gateway to West End theatre district'},
+                    {'label': 'Shopping', 'value': 'Regent Street, Oxford Street nearby'},
+                    {'label': 'Restaurants', 'value': 'Every cuisine imaginable within walking distance'},
+                    {'label': 'Metro', 'value': 'Piccadilly Circus Station (Piccadilly, Bakerloo lines)'},
+                    {'label': 'Best Time', 'value': 'Evening for illuminated signs, daytime for shopping'}
+                ],
+                'opening_hours': 'Public space - accessible 24/7',
+                'cost': 'Free to visit and photograph'
+            },
+            'walk_to_tower_bridge': {
+                'title': 'Thames Walk to Tower Bridge',
+                'summary': 'Scenic riverside walk from Westminster area to Tower Bridge along the South Bank, passing London Eye, Tate Modern, and Borough Market.',
+                'details': [
+                    {'label': 'Distance', 'value': '2.5km (1.5 miles) pleasant riverside walk'},
+                    {'label': 'Duration', 'value': '20-30 minutes at leisurely pace'},
+                    {'label': 'Route Highlights', 'value': 'London Eye, Tate Modern, Globe Theatre, Borough Market'},
+                    {'label': 'Path Type', 'value': 'Paved Thames Path with river views'},
+                    {'label': 'Photo Opportunities', 'value': 'London skyline, HMS Belfast, City Hall'},
+                    {'label': 'Weather Protection', 'value': 'Mostly outdoor - bring umbrella if needed'},
+                    {'label': 'Accessibility', 'value': 'Fully wheelchair accessible'},
+                    {'label': 'Refreshments', 'value': 'Numerous cafes and pubs along the route'}
+                ],
+                'opening_hours': 'Thames Path accessible 24/7',
+                'cost': 'Free walking route'
+            },
+            'walk_to_british_museum': {
+                'title': 'Central London Walk to British Museum',
+                'summary': 'Cultural walk through Bloomsbury district passing garden squares, Georgian architecture, and literary landmarks to reach the world-famous museum.',
+                'details': [
+                    {'label': 'Distance', 'value': '1.2km through historic Bloomsbury'},
+                    {'label': 'Duration', 'value': '15-20 minutes through cultural quarter'},
+                    {'label': 'Neighborhood', 'value': 'Bloomsbury - literary and academic heart of London'},
+                    {'label': 'Architecture', 'value': 'Georgian terraces, garden squares, historic pubs'},
+                    {'label': 'Literary Sites', 'value': 'Charles Dickens Museum, Virginia Woolf locations'},
+                    {'label': 'University Area', 'value': 'University College London campus nearby'},
+                    {'label': 'Shopping', 'value': 'Independent bookshops, vintage stores'},
+                    {'label': 'Dining', 'value': 'Traditional pubs, international cuisine'}
+                ],
+                'opening_hours': 'Public streets accessible 24/7',
+                'cost': 'Free walking route'
+            },
+            'walk_to_buckingham_palace': {
+                'title': 'Royal Walk to Buckingham Palace',
+                'summary': 'Regal procession through Green Park and past royal landmarks, following the route used for state occasions and royal ceremonies.',
+                'details': [
+                    {'label': 'Distance', 'value': '1km through royal parks and monuments'},
+                    {'label': 'Duration', 'value': '12-15 minutes through Green Park'},
+                    {'label': 'Route', 'value': 'Via Green Park, Wellington Arch, Constitution Hill'},
+                    {'label': 'Royal Parks', 'value': 'Green Park - one of London\'s Royal Parks'},
+                    {'label': 'Monuments', 'value': 'Wellington Arch, Canada Gate, Victoria Memorial'},
+                    {'label': 'Wildlife', 'value': 'Pelicans in St. James\'s Park (if route extended)'},
+                    {'label': 'Royal Protocol', 'value': 'Same route used for state processions'},
+                    {'label': 'Photo Spots', 'value': 'Wellington Arch, approaching palace facade'}
+                ],
+                'opening_hours': 'Green Park: 5:00-midnight',
+                'cost': 'Free walking through royal parks'
+            },
+            # LONDON
+            'piazza_san_marco_venezia': {
+                'title': 'Piazza San Marco, Venezia',
+                'summary': 'L\'unica "piazza" di Venezia (le altre sono "campi"), chiamata da Napoleone "il salotto più elegante d\'Europa". Cuore politico e religioso della Serenissima.',
+                'details': [
+                    {'label': 'Basilica San Marco', 'value': 'Capolavoro bizantino (1063), Pala d\'Oro'},
+                    {'label': 'Palazzo Ducale', 'value': 'Residenza del Doge, Ponte dei Sospiri'},
+                    {'label': 'Campanile', 'value': '98.6m, "el paron de casa" (il padrone di casa)'},
+                    {'label': 'Procuratie', 'value': 'Palazzi porticati, oggi musei e caffè storici'},
+                    {'label': 'Acqua alta', 'value': 'Passerelle in legno durante le maree eccezionali'},
+                    {'label': 'Caffè Florian', 'value': 'Dal 1720, caffè più antico al mondo'}
+                ],
+                'opening_hours': 'Sempre accessibile, Basilica: 9:30-17:00',
+                'cost': 'Piazza gratuita, Basilica €3, Palazzo Ducale €25'
+            },
+            'ponte_di_rialto_venezia': {
+                'title': 'Ponte di Rialto, Venezia',
+                'summary': 'Il più famoso e antico dei quattro ponti che attraversano il Canal Grande. Capolavoro rinascimentale con botteghe integrate nella struttura.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1588-1591 (Antonio da Ponte)'},
+                    {'label': 'Struttura', 'value': 'Arco unico 28m luce, 24 botteghe'},
+                    {'label': 'Storia', 'value': 'Sostituisce ponti di legno crollati'},
+                    {'label': 'Mercato di Rialto', 'value': '1000 anni, pesce fresco ogni mattina'},
+                    {'label': 'Vista panoramica', 'value': 'Canal Grande, palazzi storici'},
+                    {'label': 'Curiosità', 'value': 'Progetto vincente contro Michelangelo e Palladio'}
+                ],
+                'opening_hours': 'Sempre accessibile, mercato: 7:30-12:00',
+                'cost': 'Attraversamento gratuito'
+            },
+            'ca_rezzonico_venezia': {
+                'title': 'Ca\' Rezzonico, Venezia',
+                'summary': 'Palazzo barocco del XVIII secolo, sede del Museo del Settecento Veneziano. Affreschi di Tiepolo e vita aristocratica della Serenissima.',
+                'details': [
+                    {'label': 'Architetto', 'value': 'Baldassarre Longhena (1667)'},
+                    {'label': 'Affreschi Tiepolo', 'value': 'Salone da ballo, Allegoria nuziale'},
+                    {'label': 'Collezione', 'value': 'Mobili, dipinti, costumi del Settecento'},
+                    {'label': 'Robert Browning', 'value': 'Poeta inglese, morì qui nel 1889'},
+                    {'label': 'Canal Grande', 'value': 'Vista privilegiata dalla terrazza'},
+                    {'label': 'Biglietto', 'value': '€10 adulti, €7.50 ridotto'}
+                ],
+                'opening_hours': 'Mer-Lun 10:00-18:00 (chiuso martedì)',
+                'cost': '€10 adulti, gratuito <6 anni',
+                'actionLink': {
+                    'text': 'Musei di Venezia',
+                    'url': 'https://www.visitmuve.it'
+                }
+            },
+            # === PISA ===
+            'piazza_miracoli_pisa': {
+                'title': 'Piazza dei Miracoli, Pisa',
+                'summary': 'Patrimonio UNESCO dal 1987, chiamata "dei Miracoli" da D\'Annunzio. Complesso romanico pisano unico al mondo con Torre Pendente, Duomo, Battistero e Camposanto.',
+                'details': [
+                    {'label': 'Patrimonio UNESCO', 'value': '1987 - "Piazza del Duomo"'},
+                    {'label': 'Duomo', 'value': 'Santa Maria Assunta (1063-1118), prototipo romanico pisano'},
+                    {'label': 'Torre Pendente', 'value': '56m altezza, inclinazione 3.97°, 294 gradini'},
+                    {'label': 'Battistero', 'value': 'Più grande d\'Italia (1152-1363), diametro 34.13m'},
+                    {'label': 'Camposanto', 'value': 'Terra Santa dalle Crociate, affreschi del Trionfo della Morte'},
+                    {'label': 'Biglietto unico', 'value': '€25 per tutti i monumenti, Torre €18 separato'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-17:00 (inverno)',
+                'cost': 'Campo gratuito, monumenti €5-18',
+                'actionLink': {
+                    'text': 'Prenota Torre di Pisa',
+                    'url': 'https://www.opapisa.it'
+                }
+            },
+            'torre_pisa': {
+                'title': 'Torre di Pisa',
+                'summary': 'Il campanile più famoso al mondo, simbolo dell\'ingegneria medievale. La pendenza è dovuta al cedimento del terreno durante la costruzione nel XII secolo.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1173-1372 (quasi 200 anni)'},
+                    {'label': 'Architetti', 'value': 'Bonanno Pisano e Gherardo din Gherardo'},
+                    {'label': 'Altezza', 'value': '56.67m lato alto, 55.86m lato basso'},
+                    {'label': 'Piani', 'value': '8 piani, 294 gradini in marmo'},
+                    {'label': 'Pendenza massima', 'value': '5.5° nel 1990, stabilizzata a 3.97°'},
+                    {'label': 'Consolidamento', 'value': 'Progetto 1990-2001, torre sicura per 300 anni'},
+                    {'label': 'Visita', 'value': '30 minuti, massimo 45 persone per turno'}
+                ],
+                'opening_hours': 'Tutti i giorni 9:00-20:00 (estate), 10:00-17:00 (inverno)',
+                'cost': '€18 adulti, prenotazione obbligatoria',
+                'actionLink': {
+                    'text': 'Prenota salita Torre',
+                    'url': 'https://www.opapisa.it/en/tickets/'
+                }
+            },
+            'piazza_cavalieri_pisa': {
+                'title': 'Piazza dei Cavalieri, Pisa',
+                'summary': 'Centro del potere mediceo e sede della prestigiosa Scuola Normale Superiore. Progettata da Vasari come simbolo del dominio fiorentino su Pisa.',
+                'details': [
+                    {'label': 'Progetto Vasari', 'value': '1558-1562, riqualificazione mediceo'},
+                    {'label': 'Palazzo della Carovana', 'value': 'Sede Scuola Normale Superiore (1810)'},
+                    {'label': 'Torre della Muda', 'value': 'Prigione del Conte Ugolino (Dante, Inferno XXXIII)'},
+                    {'label': 'Scuola Normale', 'value': 'Fondata da Napoleone, eccellenza universitaria'},
+                    {'label': 'Chiesa Santo Stefano', 'value': 'Cavalieri di Santo Stefano, ordine mediceo'},
+                    {'label': 'Palazzo dell\'Orologio', 'value': 'Unione di due torri medievali'}
+                ],
+                'opening_hours': 'Sempre accessibile, Scuola Normale: visite guidate su prenotazione',
+                'cost': 'Piazza gratuita, visite Scuola Normale €5'
+            },
+            # === CAGLIARI ===
+            'castello_cagliari': {
+                'title': 'Castello di Cagliari',
+                'summary': 'Quartiere storico fortificato di origine pisana (XIII secolo), cuore del potere sardo-aragonese. Panorama mozzafiato sul Golfo degli Angeli.',
+                'details': [
+                    {'label': 'Fondazione', 'value': 'XIII secolo, dominazione pisana'},
+                    {'label': 'Mura medievali', 'value': 'Torri pisane: San Pancrazio, Elefante'},
+                    {'label': 'Palazzo Regio', 'value': 'Residenza dei Viceré spagnoli e sabaudi'},
+                    {'label': 'Panorama', 'value': 'Vista 360° su Golfo, Molentargius, Sella del Diavolo'},
+                    {'label': 'Citadella dei Musei', 'value': 'Museo Archeologico, Pinacoteca'},
+                    {'label': 'Via Lamarmora', 'value': 'Passeggiata panoramica sulle mura'}
+                ],
+                'opening_hours': 'Sempre accessibile, musei: Mar-Dom 9:00-20:00',
+                'cost': 'Accesso gratuito, musei €5-10'
+            },
+            'cattedrale_cagliari': {
+                'title': 'Cattedrale di Santa Maria, Cagliari',
+                'summary': 'Duomo barocco (XVII secolo) costruito su cattedrale pisana. Conserva il pulpito di Guglielmo da Pisa e cripta con martiri sardi.',
+                'details': [
+                    {'label': 'Costruzione', 'value': 'XIII secolo pisana, rifacimento barocco XVII sec'},
+                    {'label': 'Pulpito Guglielmo', 'value': 'Capolavoro romanico (1159-1162)'},
+                    {'label': 'Cripta dei Martiri', 'value': '179 nicchie, martiri sardi paleocristiani'},
+                    {'label': 'Cappella del Braccio', 'value': 'Reliquia Santa Cecilia'},
+                    {'label': 'Tesoro', 'value': 'Oggetti sacri sardo-aragonesi'},
+                    {'label': 'Campanile', 'value': 'Torre medievale, campane storiche'}
+                ],
+                'opening_hours': 'Lun-Sab 8:00-12:30, 16:30-20:00, Dom 8:00-13:00, 16:30-20:00',
+                'cost': 'Ingresso gratuito, cripta €3'
+            },
+            'bastione_saint_remy_cagliari': {
+                'title': 'Bastione di Saint Remy, Cagliari',
+                'summary': 'Terrazza panoramica liberty (1896-1902) simbolo della Cagliari moderna. Vista spettacolare su città, porto e Golfo degli Angeli.',
+                'details': [
+                    {'label': 'Costruzione', 'value': '1896-1902, stile liberty'},
+                    {'label': 'Architetto', 'value': 'Giuseppe Costa, ingegnere militare'},
+                    {'label': 'Passeggiata Coperta', 'value': 'Terrazza panoramica, 300m lunghezza'},
+                    {'label': 'Scalinata', 'value': 'Accesso monumentale dal Largo Carlo Felice'},
+                    {'label': 'Vista panoramica', 'value': 'Porto, Golfo, Sella del Diavolo, entroterra'},
+                    {'label': 'Eventi culturali', 'value': 'Concerti, mostre, spettacoli estivi'}
+                ],
+                'opening_hours': 'Sempre accessibile, illuminazione notturna',
+                'cost': 'Accesso gratuito'
+            },
+            # === PERUGIA ===
+            'corso_vannucci_perugia': {
+                'title': 'Corso Vannucci, Perugia',
+                'summary': 'Salotto di Perugia e passeggiata principale della città medievale. Palazzo dei Priori, Galleria Nazionale dell\'Umbria e caffè storici.',
+                'details': [
+                    {'label': 'Palazzo dei Priori', 'value': 'XIII-XV secolo, sede comunale medievale'},
+                    {'label': 'Galleria Nazionale', 'value': 'Pinacoteca con Perugino, Pinturicchio'},
+                    {'label': 'Collegio del Cambio', 'value': 'Affreschi del Perugino (1496-1500)'},
+                    {'label': 'Caffè Sandri', 'value': 'Storico (1860), dolci tipici perugini'},
+                    {'label': 'Loggia di Braccio', 'value': 'Rinascimento umbro (XV secolo)'},
+                    {'label': 'Vista panoramica', 'value': 'Colline umbre, Valle del Tevere'}
+                ],
+                'opening_hours': 'Sempre accessibile, musei: Mar-Dom 8:30-19:30',
+                'cost': 'Passeggiata gratuita, Galleria €8'
+            },
+            'fontana_maggiore_perugia': {
+                'title': 'Fontana Maggiore, Perugia',
+                'summary': 'Capolavoro scultoreo di Nicola e Giovanni Pisano (1278). Simbolo della Perugia medievale e dell\'indipendenza comunale.',
+                'details': [
+                    {'label': 'Architetti', 'value': 'Nicola e Giovanni Pisano (1275-1278)'},
+                    {'label': 'Struttura', 'value': 'Due vasche marmoree poligonali sovrapposte'},
+                    {'label': 'Iconografia', 'value': '50 rilievi: mesi, segni zodiacali, arti liberali'},
+                    {'label': 'Acquedotto', 'value': 'Alimentata dalle sorgenti del Monte Pacciano'},
+                    {'label': 'Restauri', 'value': 'Ultimo intervento 1996-1999'},
+                    {'label': 'Simbolismo', 'value': 'Indipendenza comunale, sapienza medievale'}
+                ],
+                'opening_hours': 'Sempre visibile e accessibile',
+                'cost': 'Visione gratuita'
+            },
+            # === ROMA ===
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
                 'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',
@@ -2090,7 +2495,7 @@ def api_save_preferences():
 
 # === CRUD ROUTES PER USER PROFILE ===
 
-@app.route('/demo-dashboard')  
+@app.route('/demo-dashboard')
 def demo_dashboard():
     """Demo di accesso per mostrare l'integrazione profilo"""
     return redirect('/profile')
@@ -2209,7 +2614,7 @@ def view_profile():
     ''', auth_user=auth_user)
 
 @app.route('/profile/create', methods=['GET', 'POST'])
-@login_required  
+@login_required
 def create_profile():
     """Pagina creazione profilo semplificata"""
     from flask_login import current_user as auth_user
@@ -2355,7 +2760,7 @@ def edit_profile():
     """Pagina modifica profilo semplificata"""
     from flask_login import current_user as auth_user
 
-    # Redirect a profilo principale per ora  
+    # Redirect a profilo principale per ora
     return redirect('/profile')
 
     if request.method == 'POST':
