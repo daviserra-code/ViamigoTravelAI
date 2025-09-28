@@ -48,6 +48,26 @@ try:
 except Exception as e:
     print(f"Replit auth not available: {e}")
 
+@app.route('/api/apify/status')
+@login_required
+def apify_status():
+    """Check Apify integration status"""
+    from apify_integration import apify_travel
+    
+    return jsonify({
+        'apify_available': apify_travel.is_available(),
+        'api_token_configured': bool(apify_travel.api_token),
+        'client_initialized': apify_travel.client is not None,
+        'cache_enabled': True,
+        'supported_sources': ['google_maps', 'tripadvisor'],
+        'foreign_destinations': [
+            'usa washington d', 'japan tokyo', 'germany berlin', 
+            'england london', 'france paris', 'spain madrid'
+        ]
+    })
+
+
+
 # Make session permanent
 @app.before_request
 def make_session_permanent():
@@ -333,11 +353,22 @@ def api_plan_trip():
         # Mock profilo per demo - interessi personalizzati
         user_interests = ['storia', 'arte', 'cibo', 'natura']
 
-        # Prova prima il routing dinamico personalizzato
-        from dynamic_routing import dynamic_router
-        itinerary = dynamic_router.generate_personalized_itinerary(
-            start, end, city, duration, user_interests
-        )
+        # 🌍 PRIORITÀ: Usa Apify per destinazioni estere
+        from apify_integration import apify_travel
+        
+        # Verifica se è destinazione estera che richiede Apify
+        foreign_cities = ['usa washington d', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid']
+        is_foreign = any(foreign_key in city.lower() for foreign_key in foreign_cities)
+        
+        if is_foreign and apify_travel.is_available():
+            print(f"🌍 Usando Apify per destinazione estera: {city}")
+            itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+        else:
+            # Fallback al routing dinamico personalizzato
+            from dynamic_routing import dynamic_router
+            itinerary = dynamic_router.generate_personalized_itinerary(
+                start, end, city, duration, user_interests
+            )
 
         # Se il routing dinamico fallisce, usa template specifici
         if not itinerary or len(itinerary) < 3:
@@ -362,10 +393,12 @@ def api_plan_trip():
             'itinerary': itinerary,
             'routing_info': {
                 'city': city,
-                'routing_type': 'dynamic_personalized',
+                'routing_type': 'apify_authentic' if is_foreign and apify_travel.is_available() else 'dynamic_personalized',
                 'generated_for': f"{start} → {end}",
                 'realistic_routing': True,
-                'walking_routes': True
+                'walking_routes': True,
+                'apify_available': apify_travel.is_available(),
+                'is_foreign_destination': is_foreign
             }
         })
 
