@@ -271,4 +271,107 @@ def ai_diary():
             }
         }), 500
 
+@advanced_bp.route('/plan_route_advanced', methods=['POST'])
+def plan_route_advanced():
+    """
+    Plans a route between two points, incorporating external APIs for foreign destinations
+    and local data for domestic ones.
+    """
+    try:
+        data = request.get_json()
+        start = data.get('start', '')
+        end = data.get('end', '')
+        transport_mode = data.get('transport_mode', 'driving')
+        city = data.get('city', '') # City context for local searches
+
+        print(f"🗺️ Planning route: {start} to {end} via {transport_mode} in {city}")
+
+        # 🌍 DESTINAZIONI ESTERE - Usa Apify per dati autentici
+        foreign_destinations = {
+            'usa washington d': {'country': 'USA', 'center': [38.9072, -77.0369]},
+            'japan tokyo': {'country': 'Japan', 'center': [35.6762, 139.6503]},
+            'germany berlin': {'country': 'Germany', 'center': [52.5200, 13.4050]},
+            'england london': {'country': 'UK', 'center': [51.5074, -0.1278]},
+            'london': {'country': 'UK', 'center': [51.5074, -0.1278]},  # Add direct London mapping
+            'france paris': {'country': 'France', 'center': [48.8566, 2.3522]},
+            'spain madrid': {'country': 'Spain', 'center': [40.4168, -3.7038]}
+        }
+
+        # Mock function to simulate city detection
+        def detect_city_advanced(start_loc, end_loc):
+            print(f"Simulating city detection for: start='{start_loc}', end='{end_loc}'")
+            # In a real scenario, this would involve more sophisticated geocoding or API calls.
+            # For this example, we'll make some basic assumptions.
+            if 'london' in start_loc.lower() or 'london' in end_loc.lower():
+                return 'london'
+            elif 'paris' in start_loc.lower() or 'paris' in end_loc.lower():
+                return 'france paris'
+            elif 'madrid' in start_loc.lower() or 'madrid' in end_loc.lower():
+                return 'spain madrid'
+            elif 'berlin' in start_loc.lower() or 'berlin' in end_loc.lower():
+                return 'germany berlin'
+            elif 'tokyo' in start_loc.lower() or 'tokyo' in end_loc.lower():
+                return 'japan tokyo'
+            elif 'washington' in start_loc.lower() or 'washington' in end_loc.lower():
+                return 'usa washington d'
+            else:
+                return city if city else 'milano centro' # Fallback to provided city or default
+
+        # 🔍 Auto-detect city for foreign destinations
+        detected_city = detect_city_advanced(start, end)
+
+        # 🇬🇧 SPECIAL: Force London detection
+        if any('london' in loc.lower() for loc in [start, end]) or 'london' in detected_city.lower():
+            detected_city = 'london'
+            print(f"🇬🇧 FORCED London detection from: start='{start}', end='{end}'")
+
+        # Map detected cities to foreign destinations
+        if detected_city in foreign_destinations:
+            destination_info = foreign_destinations[detected_city]
+            country = destination_info['country']
+            center_coords = destination_info['center']
+
+            print(f"🌍 Detected foreign destination: {detected_city} ({country}). Using Apify simulation.")
+            # In a real application, you would call an Apify scraper here.
+            # For now, we'll return mock data.
+            return jsonify({
+                "status": "success",
+                "route_details": {
+                    "type": "foreign",
+                    "destination_country": country,
+                    "message": f"Using Apify data for {detected_city}. Route planning will use its coordinates.",
+                    "coordinates": center_coords,
+                    "start_location": start,
+                    "end_location": end,
+                    "transport_mode": transport_mode,
+                    "estimated_time": "1-2 hours (Simulated)"
+                }
+            })
+        else:
+            # Use local data or routing service for domestic destinations
+            print(f"🏠 Detected local destination or city context: {city or detected_city}. Using local data.")
+            # Here you would integrate with a local routing service or use local place data.
+            # For example, if 'city' is 'Milano', you might query a local database for points of interest.
+            return jsonify({
+                "status": "success",
+                "route_details": {
+                    "type": "local",
+                    "message": f"Route planning within {city or detected_city}. Using local data.",
+                    "start_location": start,
+                    "end_location": end,
+                    "transport_mode": transport_mode,
+                    "estimated_time": "30-60 minutes (Simulated)"
+                }
+            })
+
+    except Exception as e:
+        print(f"❌ Error planning route: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "fallback_route": {
+                "message": "Could not plan route. Please try again or use manual navigation."
+            }
+        }), 500
+
 print("🚀 Advanced Routes caricato - Piano B, Scoperte Intelligenti, Diario AI attivi!")

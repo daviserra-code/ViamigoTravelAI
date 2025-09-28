@@ -358,6 +358,12 @@ def api_plan_trip():
         foreign_cities = ['usa washington d', 'japan tokyo', 'germany berlin', 'england london', 'france paris', 'spain madrid']
         is_foreign = any(foreign_key in city.lower() for foreign_key in foreign_cities)
 
+        # 🔍 DEBUG: Forza riconoscimento London
+        if 'london' in city.lower() or any('london' in location.lower() for location in [start, end]):
+            city = 'england london'
+            is_foreign = True
+            print(f"🇬🇧 FORZATO riconoscimento London: city='{city}', is_foreign={is_foreign}")
+
         if is_foreign and apify_travel.is_available():
             print(f"🌍 Usando Apify per destinazione estera: {city}")
             itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
@@ -1898,6 +1904,7 @@ def get_local_place_details(context):
                 'opening_hours': 'Sempre visibile e accessibile',
                 'cost': 'Visione gratuita'
             },
+            # === ROMA ===
             'stazione_termini': {
                 'title': 'Stazione Roma Termini',
                 'summary': 'La stazione ferroviaria principale di Roma, hub centrale per treni regionali, nazionali e metropolitana. Costruita negli anni \'50, serve oltre 150 milioni di passeggeri all\'anno.',
