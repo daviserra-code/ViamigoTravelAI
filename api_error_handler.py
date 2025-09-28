@@ -172,22 +172,38 @@ class APIErrorHandler:
         return self._get_intelligent_fallback(service_name, fallback_data, last_exception)
     
     def _execute_with_timeout(self, func: Callable, timeout: int):
-        """Execute function with timeout"""
-        import signal
+        """Execute function with timeout using threading instead of signal"""
+        import threading
+        import queue
         
-        def timeout_handler(signum, frame):
+        result_queue = queue.Queue()
+        exception_queue = queue.Queue()
+        
+        def worker():
+            try:
+                result = func()
+                result_queue.put(result)
+            except Exception as e:
+                exception_queue.put(e)
+        
+        thread = threading.Thread(target=worker)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout)
+        
+        if thread.is_alive():
+            # Thread is still running, timeout occurred
             raise TimeoutError(f"Function execution timed out after {timeout} seconds")
         
-        # Set up timeout
-        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(timeout)
+        # Check for exceptions
+        if not exception_queue.empty():
+            raise exception_queue.get()
         
-        try:
-            result = func()
-            signal.alarm(0)  # Cancel timeout
-            return result
-        finally:
-            signal.signal(signal.SIGALRM, old_handler)
+        # Get result
+        if not result_queue.empty():
+            return result_queue.get()
+        else:
+            raise RuntimeError("Function completed but no result returned")
     
     def _get_intelligent_fallback(self, service_name: str, fallback_data: Optional[Any], 
                                 error: Exception) -> Dict:

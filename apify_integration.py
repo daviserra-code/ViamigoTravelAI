@@ -35,7 +35,12 @@ class ApifyTravelIntegration:
             
             if cached and cached.created_at > datetime.now() - self.cache_duration:
                 print(f"✅ Cache hit per {city} - dati trovati")
-                return [json.loads(cached.place_data)]
+                place_data = json.loads(cached.place_data)
+                # Ensure we return a list, even if cached data is a single item
+                if isinstance(place_data, list):
+                    return place_data
+                else:
+                    return [place_data]
             return []
         except Exception as e:
             print(f"⚠️ Errore cache lookup: {e}")
@@ -120,35 +125,54 @@ class ApifyTravelIntegration:
             
             places = []
             for item in dataset_items:
-                # 🔍 DEBUG: Vediamo che dati arrivano da Apify
-                lat = item.get('latitude') or item.get('lat')
-                lng = item.get('longitude') or item.get('lng') or item.get('lon')
-                
-                # Prova anche coordinate alternative nei dati Apify
-                if not lat or not lng:
-                    # Cerca location data nei metadata
-                    location = item.get('location', {})
-                    lat = lat or location.get('lat') or location.get('latitude')
-                    lng = lng or location.get('lng') or location.get('longitude')
-                
-                place = {
-                    'name': item.get('title', 'Unknown'),
-                    'description': item.get('reviewsCount', 0) and f"Rating {item.get('totalScore', 'N/A')} ({item.get('reviewsCount')} reviews)" or "Luogo di interesse",
-                    'latitude': lat,
-                    'longitude': lng,
-                    'rating': item.get('totalScore'),
-                    'address': item.get('address'),
-                    'category': item.get('categoryName', category),
-                    'website': item.get('website'),
-                    'phone': item.get('phone'),
-                    'source': 'google_maps'
-                }
-                
-                # ✅ FILTRO PIU' PERMISSIVO: accetta anche coordinate parziali
-                if lat is not None and lng is not None and lat != 0 and lng != 0:
-                    places.append(place)
-                else:
-                    print(f"⚠️ Scartato {item.get('title', 'Unknown')} - coordinate mancanti: lat={lat}, lng={lng}")
+                try:
+                    # 🔍 DEBUG: Vediamo che dati arrivano da Apify
+                    lat = item.get('latitude') or item.get('lat')
+                    lng = item.get('longitude') or item.get('lng') or item.get('lon')
+                    
+                    # Prova anche coordinate alternative nei dati Apify
+                    if not lat or not lng:
+                        # Cerca location data nei metadata
+                        location = item.get('location', {})
+                        lat = lat or location.get('lat') or location.get('latitude')
+                        lng = lng or location.get('lng') or location.get('longitude')
+                    
+                    # Convert to float if they're strings
+                    try:
+                        lat = float(lat) if lat is not None else None
+                        lng = float(lng) if lng is not None else None
+                    except (ValueError, TypeError):
+                        lat = lng = None
+                    
+                    # Build description safely
+                    description = "Luogo di interesse"
+                    if item.get('reviewsCount', 0) and item.get('totalScore'):
+                        description = f"Rating {item.get('totalScore', 'N/A')} ({item.get('reviewsCount')} reviews)"
+                    elif item.get('address'):
+                        description = f"Luogo a {item.get('address')}"
+                    
+                    place = {
+                        'name': item.get('title') or item.get('name') or 'Unknown Location',
+                        'description': description,
+                        'latitude': lat,
+                        'longitude': lng,
+                        'rating': item.get('totalScore'),
+                        'address': item.get('address', ''),
+                        'category': item.get('categoryName', category),
+                        'website': item.get('website', ''),
+                        'phone': item.get('phone', ''),
+                        'source': 'google_maps'
+                    }
+                    
+                    # ✅ FILTRO PIU' PERMISSIVO: accetta anche coordinate parziali
+                    if lat is not None and lng is not None and lat != 0 and lng != 0:
+                        places.append(place)
+                    else:
+                        print(f"⚠️ Scartato {place['name']} - coordinate mancanti: lat={lat}, lng={lng}")
+                        
+                except Exception as item_error:
+                    print(f"⚠️ Errore processing item: {item_error}, item: {item}")
+                    continue
             
             print(f"✅ Google Maps: {len(places)} luoghi trovati per {city}")
             return places

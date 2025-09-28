@@ -594,23 +594,45 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         )
 
         attractions_data = json.loads(response.choices[0].message.content)
-        if 'attractions' in attractions_data:
-            attractions_data = attractions_data['attractions']
-        elif not isinstance(attractions_data, list):
-            attractions_data = [attractions_data]
+        
+        # Handle different response formats from OpenAI
+        if isinstance(attractions_data, dict):
+            if 'attractions' in attractions_data:
+                attractions_list = attractions_data['attractions']
+            elif 'places' in attractions_data:
+                attractions_list = attractions_data['places']
+            else:
+                # Single attraction in dict format
+                attractions_list = [attractions_data]
+        elif isinstance(attractions_data, list):
+            attractions_list = attractions_data
+        else:
+            print(f"⚠️ Unexpected AI response format: {type(attractions_data)}")
+            attractions_list = []
 
         # Convert to our format
         dynamic_attractions = []
-        for attr in attractions_data[:4]:
-            dynamic_attractions.append({
-                'name': attr.get('name', f'Attrazione {city_name}'),
-                'coords': [
-                    attr.get('latitude', coords[0] + (len(dynamic_attractions) * 0.01)),
-                    attr.get('longitude', coords[1] + (len(dynamic_attractions) * 0.01))
-                ],
-                'duration': attr.get('duration', 1.5),
-                'description': attr.get('description', f'Attrazione autentica di {city_name}')
-            })
+        for i, attr in enumerate(attractions_list[:4]):
+            if isinstance(attr, dict):
+                # Safely extract coordinates with fallbacks
+                lat = attr.get('latitude', attr.get('lat', coords[0] + (i * 0.01)))
+                lng = attr.get('longitude', attr.get('lng', coords[1] + (i * 0.01)))
+                
+                try:
+                    lat = float(lat)
+                    lng = float(lng)
+                except (ValueError, TypeError):
+                    lat = coords[0] + (i * 0.01)
+                    lng = coords[1] + (i * 0.01)
+                
+                dynamic_attractions.append({
+                    'name': attr.get('name', f'Attrazione {city_name} {i+1}'),
+                    'coords': [lat, lng],
+                    'duration': attr.get('duration', 1.5),
+                    'description': attr.get('description', f'Attrazione autentica di {city_name}')
+                })
+            else:
+                print(f"⚠️ Skipping invalid attraction data: {attr}")
 
         print(f"✅ AI generated {len(dynamic_attractions)} attractions for {city_name}")
         return dynamic_attractions
@@ -1017,12 +1039,29 @@ def plan_ai_powered():
 
         if attractions:
             for attraction in attractions:
-                dynamic_attractions.append({
-                    'name': attraction['name'],
-                    'coords': [attraction['latitude'], attraction['longitude']],
-                    'duration': attraction.get('duration', 1.5),
-                    'description': attraction.get('description', f'Attraction in {city_name}')
-                })
+                # Handle both dict and list formats safely
+                if isinstance(attraction, dict):
+                    name = attraction.get('name', 'Unknown Attraction')
+                    lat = attraction.get('latitude', 0)
+                    lng = attraction.get('longitude', 0)
+                    duration = attraction.get('duration', 1.5)
+                    description = attraction.get('description', f'Attraction in {city_name}')
+                    
+                    # Ensure coordinates are valid numbers
+                    try:
+                        lat = float(lat) if lat is not None else 0
+                        lng = float(lng) if lng is not None else 0
+                    except (ValueError, TypeError):
+                        lat = lng = 0
+                    
+                    dynamic_attractions.append({
+                        'name': name,
+                        'coords': [lat, lng],
+                        'duration': duration,
+                        'description': description
+                    })
+                else:
+                    print(f"⚠️ Skipping invalid attraction format: {attraction}")
             print(f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {city_name}")
         else:
             print(f"⚠️ No attractions found/generated for {city_name}, using AI generation as a last resort.")
