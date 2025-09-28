@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify
 import json
 
@@ -8,27 +7,27 @@ def normalize_context_key(context):
     """Normalize context keys to match database entries"""
     # Remove common suffixes and prefixes
     normalized = context.lower()
-    
+
     # Remove city suffixes like "_genova", ",_genova_genova"
     normalized = normalized.replace(',_genova_genova', '')
     normalized = normalized.replace('_genova_genova', '')
     normalized = normalized.replace('_genova', '')
-    
+
     # Replace double underscores with single
     normalized = normalized.replace('__', '_')
-    
+
     # Remove trailing underscores
     normalized = normalized.strip('_')
-    
+
     return normalized
 
 def generate_dynamic_details(context, city):
     """Generate dynamic details for any city using AI or local knowledge"""
     import os
-    
+
     # Clean up the context to get the place name
     place_name = context.replace('_', ' ').replace(city, '').strip()
-    
+
     # Roma attractions
     if city == 'roma' or city == 'rome':
         roma_places = {
@@ -63,7 +62,7 @@ def generate_dynamic_details(context, city):
         for key, details in roma_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-    
+
     # Venezia attractions
     elif city == 'venezia' or city == 'venice':
         venezia_places = {
@@ -97,7 +96,7 @@ def generate_dynamic_details(context, city):
         for key, details in venezia_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-    
+
     # Napoli attractions
     elif city == 'napoli' or city == 'naples':
         napoli_places = {
@@ -118,24 +117,27 @@ def generate_dynamic_details(context, city):
         for key, details in napoli_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-    
+
     # London attractions
     elif city == 'london':
         london_places = {
-            'big ben': {
+            'big_ben': {
                 'title': 'Big Ben, London',
-                'summary': 'Iconic clock tower at Westminster Palace.',
+                'summary': 'Iconic clock tower at Westminster Palace, officially called Elizabeth Tower. Symbol of British democracy and one of London\'s most recognizable landmarks.',
                 'details': [
-                    {'label': 'Height', 'value': '96 meters'},
-                    {'label': 'Built', 'value': '1859'},
-                    {'label': 'Bell', 'value': '13.76 tonnes'},
-                    {'label': 'Tube', 'value': 'Westminster station'}
+                    {'label': 'Official name', 'value': 'Elizabeth Tower (renamed 2012)'},
+                    {'label': 'Height', 'value': '96 meters (316 feet)'},
+                    {'label': 'Built', 'value': '1843-1859 (Augustus Pugin)'},
+                    {'label': 'Bell weight', 'value': '13.76 tonnes'},
+                    {'label': 'Clock faces', 'value': '4 faces, 7 meters diameter each'},
+                    {'label': 'Tube station', 'value': 'Westminster (Circle, District, Jubilee)'},
+                    {'label': 'Best views', 'value': 'Westminster Bridge, Parliament Square'}
                 ],
-                'tip': 'Best photos from Westminster Bridge',
-                'opening_hours': 'External viewing only',
-                'cost': 'Free to view'
+                'tip': '🏛️ **Insider tip**: Best photos from Westminster Bridge at sunset. Tours only available to UK residents with advance booking.',
+                'opening_hours': 'External viewing 24/7, tours by appointment only',
+                'cost': 'External viewing free, guided tours £15-25'
             },
-            'tower bridge': {
+            'tower_bridge': {
                 'title': 'Tower Bridge, London',
                 'summary': 'Victorian Gothic bridge with glass walkways.',
                 'details': [
@@ -147,12 +149,40 @@ def generate_dynamic_details(context, city):
                 'tip': 'Visit engine rooms for history',
                 'opening_hours': '9:30-18:00',
                 'cost': '£11.40 adults'
-            }
+            },
+            'piccadilly_circus': {
+                'title': 'Piccadilly Circus, London',
+                'summary': 'Bustling junction in West End, famous for neon advertising displays and Eros statue. Gateway to London\'s theatre district.',
+                'details': [
+                    {'label': 'Nickname', 'value': '"Times Square of London"'},
+                    {'label': 'Eros statue', 'value': 'Shaftesbury Memorial Fountain (1893)'},
+                    {'label': 'Advertising', 'value': 'Historic curved LED displays since 1908'},
+                    {'label': 'Theatres', 'value': 'Gateway to West End theatre district'},
+                    {'label': 'Shopping', 'value': 'Regent Street, Oxford Street nearby'},
+                    {'label': 'Tube station', 'value': 'Piccadilly Circus (Piccadilly, Bakerloo)'}
+                ],
+                'tip': '🎭 **Best experience**: Evening for illuminated signs, perfect starting point for West End shows.',
+                'opening_hours': 'Public space - accessible 24/7',
+                'cost': 'Free to visit and photograph'
+            },
+            'piccadilly_circuslondon_london': {
+                'title': 'Piccadilly Circus, London', 
+                'summary': 'Bustling junction in West End, famous for neon advertising displays and Eros statue.',
+                'details': [
+                    {'label': 'Nickname', 'value': '"Times Square of London"'},
+                    {'label': 'Eros statue', 'value': 'Shaftesbury Memorial Fountain (1893)'},
+                    {'label': 'Advertising', 'value': 'Historic curved LED displays since 1908'},
+                    {'label': 'Tube station', 'value': 'Piccadilly Circus (Piccadilly, Bakerloo)'}
+                ],
+                'tip': '🎭 Evening for illuminated signs, perfect for West End shows.',
+                'opening_hours': 'Public space - accessible 24/7',
+                'cost': 'Free'
+            },
         }
         for key, details in london_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-    
+
     # For Milano, create specific details
     elif city == 'milano':
         milano_places = {
@@ -198,12 +228,12 @@ def generate_dynamic_details(context, city):
                 'cost': 'Varia per camera'
             }
         }
-        
+
         # Search for matching place
         for key, details in milano_places.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-        
+
         # Add more Milano places dynamically
         milano_generic = {
             'navigli': {
@@ -233,12 +263,12 @@ def generate_dynamic_details(context, city):
                 'cost': 'Cortili gratis, Musei €5'
             }
         }
-        
+
         # Try generic Milano places
         for key, details in milano_generic.items():
             if key in place_name.lower() or key in context.lower():
                 return details
-    
+
     # Generic fallback for Milano attractions
     if city == 'milano':
         return {
@@ -254,7 +284,7 @@ def generate_dynamic_details(context, city):
             'opening_hours': 'Consultare orari ufficiali',
             'cost': 'Verificare tariffe aggiornate'
         }
-    
+
     # Generic fallback for any city
     return {
         'title': f'{place_name.title()}, {city.title()}',
@@ -275,20 +305,16 @@ def get_details():
     try:
         data = request.get_json()
         context = data.get('context', '')
-        
-        # Try to extract city information from context
-        city_detected = 'genova'  # Default fallback
+
+        # Detect city from context - enhanced detection with proper London handling
         context_lower = context.lower()
-        
-        # Detect city from context - check specific attractions first
-        if 'big_ben' in context_lower or 'tower_bridge' in context_lower or 'british_museum' in context_lower or 'buckingham' in context_lower:
+        city_detected = 'genova'  # Default fallback
+
+        # London detection with various patterns
+        if ('london' in context_lower or 'piccadilly' in context_lower or 
+            'westminster' in context_lower or 'soho' in context_lower or
+            'big_ben' in context_lower or 'tower_bridge' in context_lower):
             city_detected = 'london'
-        elif 'colosseo' in context_lower or 'trevi' in context_lower or 'pantheon' in context_lower:
-            city_detected = 'roma'
-        elif 'san_marco' in context_lower or 'rialto' in context_lower or 'ducale' in context_lower and 'venezia' in context_lower:
-            city_detected = 'venezia'
-        elif 'spaccanapoli' in context_lower or 'castel_dell' in context_lower:
-            city_detected = 'napoli'
         elif 'milano' in context_lower or 'milan' in context_lower:
             city_detected = 'milano'
         elif 'roma' in context_lower or 'rome' in context_lower:
@@ -299,20 +325,18 @@ def get_details():
             city_detected = 'napoli'
         elif 'firenze' in context_lower or 'florence' in context_lower:
             city_detected = 'firenze'
-        elif 'london' in context_lower:
-            city_detected = 'london'
         elif 'new_york' in context_lower or 'nyc' in context_lower:
             city_detected = 'new_york'
         elif 'paris' in context_lower:
             city_detected = 'paris'
-        
+
         # Try dynamic generation first for non-Genova cities
         if city_detected != 'genova':
             # Generate dynamic details for other cities
             dynamic_details = generate_dynamic_details(context, city_detected)
             if dynamic_details:
                 return jsonify(dynamic_details)
-        
+
         # Database of comprehensive details for Genova attractions
         details_database = {
             # Handle various context formats from frontend
@@ -539,17 +563,17 @@ def get_details():
                 'imageUrl': '/static/images/osteria_borgo.jpg'
             }
         }
-        
+
         # Normalize context key by removing suffixes and variations
         normalized_context = normalize_context_key(context)
-        
+
         # Try to find details for the context (try multiple variations)
         detail_data = None
-        
+
         print(f"🔍 Searching for context: '{context}'")
         print(f"🔍 Normalized context: '{normalized_context}'")
         print(f"🔍 Available keys: {list(details_database.keys())[:10]}...")  # Show first 10 keys
-        
+
         # Try exact match first
         if context in details_database:
             detail_data = details_database[context]
@@ -568,7 +592,7 @@ def get_details():
                     detail_data = details_database[key]
                     print(f"✅ Partial match found: '{key}' matches '{context}'")
                     break
-            
+
             # If still not found, try substring matching
             if not detail_data:
                 for key in details_database.keys():
@@ -576,7 +600,7 @@ def get_details():
                         detail_data = details_database[key]
                         print(f"✅ Substring match found: '{key}' for '{context}'")
                         break
-        
+
         if detail_data:
             print(f"✅ Found details for {context}")
             # Return details directly, not nested under 'details' key
@@ -590,7 +614,7 @@ def get_details():
                 'details': [],
                 'tip': 'I dettagli specifici verranno aggiunti presto.'
             }), 404
-            
+
     except Exception as e:
         print(f"❌ Error getting details: {e}")
         return jsonify({'error': 'Details not available'}), 500

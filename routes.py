@@ -365,7 +365,7 @@ def api_plan_trip():
         is_foreign = False
         detected_foreign_city = None
 
-        # Check in city parameter
+        # Check in city parameter first
         for foreign_key in foreign_cities:
             if foreign_key in city.lower():
                 is_foreign = True
@@ -374,27 +374,38 @@ def api_plan_trip():
 
         # Check in start/end locations
         if not is_foreign:
-            for location in [start, end]:
+            combined_location_text = f"{start} {end}".lower()
+            
+            # Direct city name detection
+            if 'london' in combined_location_text or 'piccadilly' in combined_location_text or 'westminster' in combined_location_text or 'soho' in combined_location_text:
+                is_foreign = True
+                detected_foreign_city = 'london'
+                city = 'london'  # Use simple 'london' for better translation
+            elif 'paris' in combined_location_text or 'champs' in combined_location_text or 'eiffel' in combined_location_text:
+                is_foreign = True
+                detected_foreign_city = 'paris'
+                city = 'paris'
+            elif 'new york' in combined_location_text or 'manhattan' in combined_location_text or 'brooklyn' in combined_location_text:
+                is_foreign = True
+                detected_foreign_city = 'new york'
+                city = 'new york'
+            elif 'berlin' in combined_location_text or 'brandenburg' in combined_location_text:
+                is_foreign = True
+                detected_foreign_city = 'berlin'
+                city = 'berlin'
+            elif 'tokyo' in combined_location_text or 'shibuya' in combined_location_text:
+                is_foreign = True
+                detected_foreign_city = 'tokyo'
+                city = 'tokyo'
+            
+            # Fallback to original foreign_cities check
+            if not is_foreign:
                 for foreign_key in foreign_cities:
-                    if foreign_key in location.lower():
+                    if foreign_key in combined_location_text:
                         is_foreign = True
                         detected_foreign_city = foreign_key
-                        # Map to full foreign city code
-                        if foreign_key == 'london':
-                            city = 'england london'
-                        elif foreign_key == 'paris':
-                            city = 'france paris'
-                        elif foreign_key == 'madrid':
-                            city = 'spain madrid'
-                        elif foreign_key == 'berlin':
-                            city = 'germany berlin'
-                        elif foreign_key == 'tokyo':
-                            city = 'japan tokyo'
-                        else:
-                            city = foreign_key
+                        city = foreign_key
                         break
-                if is_foreign:
-                    break
 
         print(f"🔍 FOREIGN CHECK: is_foreign={is_foreign}, detected='{detected_foreign_city}', final_city='{city}'")
         print(f"🔍 APIFY STATUS: available={apify_travel.is_available()}, token={bool(apify_travel.api_token)}")

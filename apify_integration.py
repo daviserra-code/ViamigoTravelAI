@@ -34,13 +34,17 @@ class ApifyTravelIntegration:
             cached = PlaceCache.query.filter_by(cache_key=cache_key).first()
             
             if cached and cached.created_at > datetime.now() - self.cache_duration:
-                print(f"✅ Cache hit per {city} - dati trovati")
                 place_data = json.loads(cached.place_data)
-                # Ensure we return a list, even if cached data is a single item
-                if isinstance(place_data, list):
+                # Check if we have sufficient data
+                if isinstance(place_data, list) and len(place_data) >= 3:
+                    print(f"✅ Cache hit per {city} - {len(place_data)} luoghi trovati")
                     return place_data
                 else:
-                    return [place_data]
+                    print(f"⚠️ Cache insufficient per {city} - solo {len(place_data) if isinstance(place_data, list) else 1} luoghi, refreshing...")
+                    # Delete insufficient cache
+                    PlaceCache.query.filter_by(cache_key=cache_key).delete()
+                    db.session.commit()
+                    return []
             return []
         except Exception as e:
             print(f"⚠️ Errore cache lookup: {e}")
@@ -79,7 +83,7 @@ class ApifyTravelIntegration:
             
     @resilient_api_call('apify', timeout=45, fallback_data=[])
     @with_cache(cache_apify, lambda self, city, category, max_results: f"apify_gmaps_{city}_{category}_{max_results}")
-    def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 10) -> List[Dict]:
+    def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 15) -> List[Dict]:
         """Cerca luoghi su Google Maps tramite Apify"""
         print(f"🔍 APIFY SEARCH CALLED: city='{city}', category='{category}', available={self.is_available()}")
         
@@ -90,22 +94,33 @@ class ApifyTravelIntegration:
         try:
             # 🌍 TRADUZIONE: Assicura che i codici paese_città siano tradotti
             city_translations = {
-                'usa washington d': 'Washington DC',
-                'japan tokyo': 'Tokyo',
-                'germany berlin': 'Berlin',
-                'england london': 'London', 
-                'france paris': 'Paris',
-                'spain madrid': 'Madrid'
+                'usa washington d': 'Washington DC, USA',
+                'japan tokyo': 'Tokyo, Japan',
+                'germany berlin': 'Berlin, Germany',
+                'england london': 'London, UK', 
+                'france paris': 'Paris, France',
+                'spain madrid': 'Madrid, Spain',
+                'london': 'London, UK',
+                'washington dc': 'Washington DC, USA'
             }
             
             translated_city = city_translations.get(city.lower(), city)
-            search_query = f"{category} in {translated_city}"
+            
+            # Better search queries for different categories
+            if category == 'tourist_attraction':
+                search_query = f"top attractions {translated_city}"
+            elif category == 'restaurant':
+                search_query = f"best restaurants {translated_city}"
+            else:
+                search_query = f"{category} in {translated_city}"
+                
             print(f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
             
             run_input = {
                 "searchStringsArray": [search_query],
-                "maxCrawledPlaces": max_results,
-                "language": "it"
+                "maxCrawledPlaces": max(max_results, 20),  # Ensure we get enough results
+                "language": "en",  # Use English for better international results
+                "forceEng": True
             }
             
             print(f"🚀 CALLING APIFY with query: {search_query}")
@@ -229,10 +244,20 @@ class ApifyTravelIntegration:
             
         result = {}
         
+        # Force refresh for London if we detect insufficient data
+        if city.lower() in ['london', 'england london']:
+            print(f"🔄 Force refresh for {city} - clearing old cache")
+            try:
+                from models import PlaceCache
+                PlaceCache.query.filter(PlaceCache.city.ilike(f'%{city}%')).delete()
+                db.session.commit()
+            except Exception as e:
+                print(f"⚠️ Cache clear error: {e}")
+        
         for category in categories:
             # 1. Prova cache prima
             cached_places = self.get_cached_places(city, category)
-            if cached_places:
+            if cached_places and len(cached_places) >= 3:  # Ensure sufficient data
                 result[category] = cached_places
                 continue
                 
