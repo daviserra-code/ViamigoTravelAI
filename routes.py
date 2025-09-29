@@ -410,11 +410,35 @@ def api_plan_trip():
         print(f"🔍 FOREIGN CHECK: is_foreign={is_foreign}, detected='{detected_foreign_city}', final_city='{city}'")
         print(f"🔍 APIFY STATUS: available={apify_travel.is_available()}, token={bool(apify_travel.api_token)}")
 
-        # 🌍 FORCE APIFY for foreign destinations
+        # 🌍 FORCE APIFY for foreign destinations (with fast timeout for London)
         if is_foreign:
             if apify_travel.is_available():
                 print(f"🌍 USING APIFY for foreign destination: {city}")
-                itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+                
+                # For London, try cache first and use faster fallback
+                if city.lower() == 'london':
+                    from apify_integration import apify_travel
+                    cached_attractions = apify_travel.get_cached_places('london', 'tourist_attraction')
+                    if cached_attractions and len(cached_attractions) >= 2:
+                        print(f"🚀 Using cached London data to avoid slow Apify")
+                        itinerary = generate_london_itinerary_from_cache(start, end, cached_attractions)
+                    else:
+                        # Try Apify with shorter timeout for London
+                        try:
+                            import signal
+                            def timeout_handler(signum, frame):
+                                raise TimeoutError("Apify timeout")
+                            signal.signal(signal.SIGALRM, timeout_handler)
+                            signal.alarm(15)  # 15 second timeout
+                            
+                            itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+                            signal.alarm(0)  # Cancel timeout
+                        except (TimeoutError, Exception) as e:
+                            print(f"⚠️ Apify timeout for London, using fallback: {e}")
+                            itinerary = generate_london_fallback_itinerary(start, end)
+                else:
+                    itinerary = apify_travel.generate_authentic_waypoints(start, end, city)
+                    
                 print(f"🌍 APIFY returned {len(itinerary) if itinerary else 0} waypoints")
             else:
                 print(f"❌ APIFY NOT AVAILABLE for {city} - missing token or client")
@@ -979,6 +1003,100 @@ def generate_genova_itinerary(start, end):
                 'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
             }
         ]
+
+def generate_london_itinerary_from_cache(start, end, cached_attractions):
+    """Generate London itinerary from cached data"""
+    london_coords = [51.5074, -0.1278]  # Central London
+    
+    itinerary = [
+        {
+            'time': '09:00',
+            'title': start,
+            'description': f'Starting point: {start}',
+            'coordinates': london_coords,
+            'context': start.lower().replace(' ', '_').replace(',', ''),
+            'transport': 'start',
+            'type': 'activity'
+        }
+    ]
+    
+    # Add attractions from cache
+    current_time = 9.5
+    for i, attraction in enumerate(cached_attractions[:3]):
+        time_slot = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
+        coords = [attraction.get('latitude', london_coords[0]), attraction.get('longitude', london_coords[1])]
+        
+        itinerary.append({
+            'time': f"{time_slot} - {int(current_time + 1.5):02d}:{int(((current_time + 1.5) % 1) * 60):02d}",
+            'title': attraction.get('name', f'London Attraction {i+1}'),
+            'description': attraction.get('description', 'Historic London attraction'),
+            'coordinates': coords,
+            'context': attraction.get('name', f'attraction_{i}').lower().replace(' ', '_'),
+            'transport': 'visit',
+            'type': 'activity'
+        })
+        current_time += 2
+    
+    # Add endpoint
+    itinerary.append({
+        'time': f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
+        'title': end,
+        'description': f'Final destination: {end}',
+        'coordinates': london_coords,
+        'context': end.lower().replace(' ', '_').replace(',', ''),
+        'transport': 'walking',
+        'type': 'activity'
+    })
+    
+    return itinerary
+
+def generate_london_fallback_itinerary(start, end):
+    """Fast London fallback when Apify fails"""
+    london_attractions = [
+        {'name': 'Big Ben', 'coords': [51.4994, -0.1245], 'context': 'big_ben'},
+        {'name': 'London Eye', 'coords': [51.5033, -0.1195], 'context': 'london_eye'},
+        {'name': 'Tower Bridge', 'coords': [51.5055, -0.0754], 'context': 'tower_bridge'},
+        {'name': 'Buckingham Palace', 'coords': [51.5014, -0.1419], 'context': 'buckingham_palace'}
+    ]
+    
+    return [
+        {
+            'time': '09:00',
+            'title': start,
+            'description': f'Starting point in London: {start}',
+            'coordinates': [51.5074, -0.1278],
+            'context': start.lower().replace(' ', '_').replace(',', ''),
+            'transport': 'start',
+            'type': 'activity'
+        },
+        {
+            'time': '10:00 - 11:30',
+            'title': 'Big Ben & Westminster',
+            'description': 'Iconic clock tower and Houses of Parliament',
+            'coordinates': [51.4994, -0.1245],
+            'context': 'big_ben',
+            'transport': 'visit',
+            'type': 'activity'
+        },
+        {
+            'time': '12:00 - 13:30',
+            'title': 'London Eye',
+            'description': 'Giant observation wheel with panoramic city views',
+            'coordinates': [51.5033, -0.1195],
+            'context': 'london_eye',
+            'transport': 'visit',
+            'type': 'activity'
+        },
+        {
+            'time': '14:00',
+            'title': end,
+            'description': f'Final destination: {end}',
+            'coordinates': [51.5074, -0.1278],
+            'context': end.lower().replace(' ', '_').replace(',', ''),
+            'transport': 'walking',
+            'type': 'activity'
+        }
+    ]
 
 def generate_generic_itinerary(start, end):
     """Genera itinerario generico per città non riconosciute"""

@@ -165,6 +165,66 @@ def generate_dynamic_details(context, city):
                 'opening_hours': 'Public space - accessible 24/7',
                 'cost': 'Free to visit and photograph'
             },
+            'piccadilly_circuslondon': {
+                'title': 'Piccadilly Circus, London',
+                'summary': 'Iconic junction in London\'s West End, famous for its bright advertising displays and the Eros statue.',
+                'details': [
+                    {'label': 'Location', 'value': 'Westminster, Central London'},
+                    {'label': 'Famous for', 'value': 'Curved LED advertising displays'},
+                    {'label': 'Statue', 'value': 'Shaftesbury Memorial (Eros) - 1893'},
+                    {'label': 'Transport', 'value': 'Piccadilly Circus tube station'},
+                    {'label': 'Nearby', 'value': 'Oxford Street, Regent Street shopping'},
+                    {'label': 'Best time', 'value': 'Evening when lights are brightest'}
+                ],
+                'tip': '🌟 Best photos at dusk when the neon signs light up against the twilight sky',
+                'opening_hours': 'Always accessible - public space',
+                'cost': 'Free'
+            },
+            'tower_of_london': {
+                'title': 'Tower of London',
+                'summary': 'Historic fortress and UNESCO World Heritage Site, home to the Crown Jewels and 1000 years of royal history.',
+                'details': [
+                    {'label': 'Built', 'value': '1066 by William the Conqueror'},
+                    {'label': 'Famous for', 'value': 'Crown Jewels, Yeoman Warders (Beefeaters)'},
+                    {'label': 'Ravens', 'value': '6 ravens live here (legend says if they leave, kingdom falls)'},
+                    {'label': 'Executions', 'value': 'Anne Boleyn, Catherine Howard executed here'},
+                    {'label': 'Tube', 'value': 'Tower Hill station (Circle/District lines)'},
+                    {'label': 'Duration', 'value': '3-4 hours recommended'}
+                ],
+                'tip': '👑 Book online to skip queues. See Crown Jewels first before crowds arrive.',
+                'opening_hours': 'Tue-Sat 9:00-17:30, Sun-Mon 10:00-17:30',
+                'cost': '£33.60 adults, £16.80 children'
+            },
+            'london_eye': {
+                'title': 'London Eye',
+                'summary': 'Giant observation wheel on South Bank offering spectacular 360° views across London.',
+                'details': [
+                    {'label': 'Height', 'value': '135 meters (443 feet)'},
+                    {'label': 'Opened', 'value': '2000 - originally temporary for millennium'},
+                    {'label': 'Capsules', 'value': '32 capsules, each holds 25 people'},
+                    {'label': 'Duration', 'value': '30-minute slow rotation'},
+                    {'label': 'Views', 'value': 'Big Ben, St Paul\'s, Shard on clear days'},
+                    {'label': 'Transport', 'value': 'Waterloo station (5-minute walk)'}
+                ],
+                'tip': '🌅 Book sunset slots for magical views. Fast Track tickets available to skip queues.',
+                'opening_hours': 'Daily 11:00-18:00 (varies by season)',
+                'cost': '£32+ adults (prices vary by time/season)'
+            },
+            'westminster': {
+                'title': 'Westminster, London',
+                'summary': 'Political heart of London with Houses of Parliament, Big Ben, and Westminster Abbey.',
+                'details': [
+                    {'label': 'Parliament', 'value': 'Houses of Parliament with Big Ben tower'},
+                    {'label': 'Westminster Abbey', 'value': 'Coronation church for 1000 years'},
+                    {'label': 'Downing Street', 'value': 'PM\'s residence (No. 10) - 5 min walk'},
+                    {'label': 'Transport', 'value': 'Westminster tube (Circle/District/Jubilee)'},
+                    {'label': 'River Thames', 'value': 'Westminster Bridge for classic photos'},
+                    {'label': 'History', 'value': 'UNESCO World Heritage Site'}
+                ],
+                'tip': '📸 Westminster Bridge offers the classic Big Ben photo angle',
+                'opening_hours': 'Public areas always accessible',
+                'cost': 'Free to walk around'
+            }
             'piccadilly_circuslondon_london': {
                 'title': 'Piccadilly Circus, London', 
                 'summary': 'Bustling junction in West End, famous for neon advertising displays and Eros statue.',

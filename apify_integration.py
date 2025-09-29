@@ -27,21 +27,29 @@ class ApifyTravelIntegration:
         return available
         
     def get_cached_places(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
-        """Recupera luoghi dal cache locale"""
+        """Recupera luoghi dal cache locale con cache più aggressivo per Londra"""
         try:
             # Usa cache_key invece di city + category separati
             cache_key = f"{city.lower()}_{category}"
             cached = PlaceCache.query.filter_by(cache_key=cache_key).first()
             
-            if cached and cached.created_at > datetime.now() - self.cache_duration:
+            # Per Londra, usa cache più lungo (24 ore) per evitare chiamate Apify lente
+            cache_duration = timedelta(hours=24) if city.lower() == 'london' else self.cache_duration
+            
+            if cached and cached.created_at > datetime.now() - cache_duration:
                 place_data = json.loads(cached.place_data)
-                # Check if we have sufficient data
-                if isinstance(place_data, list) and len(place_data) >= 3:
-                    print(f"✅ Cache hit per {city} - {len(place_data)} luoghi trovati")
+                # Check if we have sufficient data - riduci threshold per Londra
+                min_places = 2 if city.lower() == 'london' else 3
+                if isinstance(place_data, list) and len(place_data) >= min_places:
+                    print(f"✅ Cache hit per {city} - {len(place_data)} luoghi trovati (cache {cache_duration})")
                     return place_data
                 else:
-                    print(f"⚠️ Cache insufficient per {city} - solo {len(place_data) if isinstance(place_data, list) else 1} luoghi, refreshing...")
-                    # Delete insufficient cache
+                    print(f"⚠️ Cache insufficient per {city} - solo {len(place_data) if isinstance(place_data, list) else 1} luoghi")
+                    # Per Londra, mantieni cache anche se insufficiente per evitare Apify lento
+                    if city.lower() == 'london' and isinstance(place_data, list) and len(place_data) > 0:
+                        print(f"🚀 Using existing London cache to avoid slow Apify call")
+                        return place_data
+                    # Delete insufficient cache per altre città
                     PlaceCache.query.filter_by(cache_key=cache_key).delete()
                     db.session.commit()
                     return []

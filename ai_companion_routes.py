@@ -32,14 +32,37 @@ class AICompanionEngine:
     def generate_piano_b(self, current_itinerary, context, emergency_type="weather"):
         """Real AI Piano B generation with fast timeout"""
         try:
-            prompt = f"""
-Sei un AI travel companion intelligente. Genera un Piano B dinamico per questo itinerario:
+            # Extract city from context to avoid hallucination
+            city_name = "Unknown City"
+            if current_itinerary and len(current_itinerary) > 0:
+                first_stop = current_itinerary[0].get('title', '')
+                if 'london' in first_stop.lower():
+                    city_name = "London"
+                elif 'paris' in first_stop.lower():
+                    city_name = "Paris"
+                elif 'rome' in first_stop.lower() or 'roma' in first_stop.lower():
+                    city_name = "Rome"
+                elif 'milan' in first_stop.lower() or 'milano' in first_stop.lower():
+                    city_name = "Milan"
+                else:
+                    # Try to extract from context
+                    for stop in current_itinerary[:3]:
+                        title = stop.get('title', '').lower()
+                        if any(city in title for city in ['london', 'paris', 'rome', 'milan', 'berlin', 'madrid']):
+                            city_name = title.split(',')[-1].strip().title() if ',' in title else "Current Location"
+                            break
 
+            prompt = f"""
+Sei un AI travel companion intelligente per {city_name}. Genera un Piano B dinamico per questo itinerario:
+
+Città: {city_name}
 Itinerario corrente: {json.dumps(current_itinerary[:3], indent=2)}
 Contesto: {context}
 Emergenza: {emergency_type}
 
-Crea un JSON con alternative realistiche e intelligenti:
+IMPORTANTE: Tutte le alternative devono essere specifiche per {city_name}, NON per altre città.
+
+Crea un JSON con alternative realistiche e intelligenti per {city_name}:
 {{
     "emergency_type": "{emergency_type}",
     "ai_analysis": "Analisi intelligente della situazione",
