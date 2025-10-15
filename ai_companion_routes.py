@@ -893,15 +893,15 @@ def plan_ai_powered():
             location_lower = location_text.lower()
 
             # PRIORITY 1: Check for explicit city suffix (e.g., ",torino" or "_torino")
+            # NOTE: Exclude 'roma' here because it matches "via roma" street names
             import re
             city_suffix_match = re.search(
-                r'[,_\s](torino|milano|roma|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
+                r'[,_\s](torino|milano|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
             if city_suffix_match:
                 city_found = city_suffix_match.group(1)
                 city_mappings_reverse = {
                     'torino': ('torino', 'Torino'),
                     'milano': ('milano', 'Milano'),
-                    'roma': ('roma', 'Roma'),
                     'genova': ('genova', 'Genova'),
                     'venezia': ('venezia', 'Venezia'),
                     'firenze': ('firenze', 'Firenze'),
@@ -912,6 +912,12 @@ def plan_ai_powered():
                 }
                 if city_found in city_mappings_reverse:
                     return city_mappings_reverse[city_found]
+
+            # PRIORITY 1.5: Special check for Roma with strict comma/underscore boundary
+            # Only match if ",roma" or "_roma" (not "via roma" which would have space)
+            roma_match = re.search(r'[,_](roma|rome)\b', location_lower)
+            if roma_match:
+                return ('roma', 'Roma')
 
             # PRIORITY 2: Check landmark patterns (but not "roma" alone to avoid "via roma")
             for city_name, (city_key, city_display) in city_mappings.items():
