@@ -1042,7 +1042,7 @@ def plan_ai_powered():
                     attraction_cache = PlaceCache.query.filter(
                         PlaceCache.city.ilike(f'%{city_name}%')
                     ).filter(
-                        PlaceCache.place_data.contains('tourist_attraction')
+                        PlaceCache.place_data.contains({'type': 'attraction'})
                     ).limit(4).all()
 
                     for cache_entry in attraction_cache:
@@ -1061,7 +1061,7 @@ def plan_ai_powered():
                     restaurant_cache = PlaceCache.query.filter(
                         PlaceCache.city.ilike(f'%{city_name}%')
                     ).filter(
-                        PlaceCache.place_data.contains('restaurant')
+                        PlaceCache.place_data.contains({'type': 'restaurant'})
                     ).limit(2).all()
 
                     for cache_entry in restaurant_cache:
@@ -1197,7 +1197,7 @@ def plan_ai_powered():
                 attraction_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
                 ).filter(
-                    PlaceCache.place_data.contains('tourist_attraction')
+                    PlaceCache.place_data.contains({'type': 'attraction'})
                 ).limit(4).all()
 
                 for cache_entry in attraction_cache:
@@ -1216,7 +1216,7 @@ def plan_ai_powered():
                 restaurant_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
                 ).filter(
-                    PlaceCache.place_data.contains('restaurant')
+                    PlaceCache.place_data.contains({'type': 'restaurant'})
                 ).limit(2).all()
 
                 for cache_entry in restaurant_cache:
