@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, device-scale=1.0">
+    <title>Viamigo - Admin Scraping Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .status-healthy { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-error { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-violet-400 to-purple-600 bg-clip-text text-transparent">
+                🚀 Proactive Scraping Dashboard
+            </h1>
+            <p class="text-gray-400 mt-2">Monitor and manage your Apify scraping system</p>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Database Status</p>
+                        <p id="db-status" class="text-2xl font-bold status-healthy">Healthy</p>
+                    </div>
+                    <div class="text-4xl">✅</div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Cities</p>
+                        <p id="total-cities" class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="text-4xl">🌍</div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Places</p>
+                        <p id="total-places" class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="text-4xl">📍</div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Avg Cache Age</p>
+                        <p id="avg-age" class="text-2xl font-bold">0 days</p>
+                    </div>
+                    <div class="text-4xl">⏱️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+            <h2 class="text-xl font-bold mb-4">Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="runScraping(5)" class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    🚀 Run Scraping (5 cities)
+                </button>
+                <button onclick="runScraping(10)" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    🔥 Run Scraping (10 cities)
+                </button>
+                <button onclick="refreshStatus()" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    🔄 Refresh Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Coverage Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-bold mb-4">Top Cities by Coverage</h2>
+                <canvas id="coverageChart"></canvas>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-bold mb-4">Recent Activity Log</h2>
+                <div id="activity-log" class="space-y-2 max-h-96 overflow-y-auto">
+                    <p class="text-gray-400 text-sm">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cities Needing Refresh -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+            <h2 class="text-xl font-bold mb-4">Cities Needing Refresh</h2>
+            <div id="refresh-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="text-gray-400">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div id="recommendations" class="bg-yellow-900/20 border border-yellow-700 rounded-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-bold mb-4 text-yellow-400">⚠️ Recommendations</h2>
+            <ul id="recommendations-list" class="list-disc list-inside space-y-2 text-yellow-200">
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        let coverageChart = null;
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/admin/scraping/status');
+                const data = await response.json();
+
+                // Update status cards
+                document.getElementById('db-status').textContent = data.status || 'Unknown';
+                document.getElementById('db-status').className = `text-2xl font-bold status-${data.status === 'healthy' ? 'healthy' : 'warning'}`;
+                
+                document.getElementById('total-cities').textContent = data.stats?.total_cities || 0;
+                document.getElementById('total-places').textContent = data.stats?.total_places || 0;
+                document.getElementById('avg-age').textContent = `${Math.round(data.stats?.average_age_days || 0)} days`;
+
+                // Show recommendations
+                if (data.recommendations && data.recommendations.length > 0) {
+                    const recDiv = document.getElementById('recommendations');
+                    const recList = document.getElementById('recommendations-list');
+                    recDiv.classList.remove('hidden');
+                    recList.innerHTML = data.recommendations.map(r => `<li>${r}</li>`).join('');
+                } else {
+                    document.getElementById('recommendations').classList.add('hidden');
+                }
+
+                // Load coverage data
+                loadCoverage();
+                
+                logActivity('✅ Status loaded successfully');
+            } catch (error) {
+                console.error('Error loading status:', error);
+                logActivity('❌ Error loading status: ' + error.message, true);
+            }
+        }
+
+        async function loadCoverage() {
+            try {
+                const response = await fetch('/admin/scraping/coverage');
+                const data = await response.json();
+
+                // Prepare chart data
+                const cities = Object.keys(data.coverage_by_city || {}).slice(0, 10);
+                const places = cities.map(city => data.coverage_by_city[city].places);
+
+                // Update chart
+                if (coverageChart) {
+                    coverageChart.destroy();
+                }
+
+                const ctx = document.getElementById('coverageChart').getContext('2d');
+                coverageChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: cities,
+                        datasets: [{
+                            label: 'Places Cached',
+                            data: places,
+                            backgroundColor: 'rgba(139, 92, 246, 0.5)',
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#e5e7eb' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            },
+                            x: {
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading coverage:', error);
+            }
+        }
+
+        async function runScraping(maxScrapes) {
+            logActivity(`🚀 Starting scraping run (${maxScrapes} cities)...`);
+            
+            try {
+                const response = await fetch('/admin/scraping/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        max_scrapes: maxScrapes,
+                        prioritize_users: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    logActivity(`❌ Scraping failed: ${data.error}`, true);
+                } else {
+                    logActivity(`✅ Scraping complete: ${data.successful}/${data.total_attempted} successful`);
+                    
+                    // Refresh status after scraping
+                    setTimeout(loadStatus, 2000);
+                }
+
+            } catch (error) {
+                console.error('Error running scraping:', error);
+                logActivity('❌ Error running scraping: ' + error.message, true);
+            }
+        }
+
+        function refreshStatus() {
+            logActivity('🔄 Refreshing status...');
+            loadStatus();
+        }
+
+        function logActivity(message, isError = false) {
+            const log = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `text-sm ${isError ? 'text-red-400' : 'text-gray-300'}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            // Add to top of log
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Load status on page load
+        window.addEventListener('load', () => {
+            loadStatus();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadStatus, 30000);
+        });
+    </script>
+</body>
+</html>
