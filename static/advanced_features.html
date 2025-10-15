@@ -347,7 +347,133 @@
         }, 5000);
 
         // === GESTIONE TRIGGER CONTESTUALI ===
+        // Initialize page with correct city
+        initializeCityContent();
         handleContextualTriggers();
+        
+        function initializeCityContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const location = urlParams.get('location');
+            
+            if (location) {
+                const locationLower = location.toLowerCase();
+                
+                // Detect city from location parameter
+                let cityData = detectCityFromLocation(locationLower);
+                
+                if (cityData) {
+                    console.log(`🏛️ Detected city: ${cityData.displayName} from location: ${location}`);
+                    updatePageContent(cityData);
+                }
+            }
+        }
+        
+        function detectCityFromLocation(locationText) {
+            // City detection with proper priority
+            const cityMappings = [
+                // Priority 1: Explicit city suffixes
+                { patterns: ['_torino', ',torino', 'torino'], displayName: 'Torino', key: 'torino' },
+                { patterns: ['_milano', ',milano', 'milano'], displayName: 'Milano', key: 'milano' },
+                { patterns: ['_genova', ',genova', 'genova'], displayName: 'Genova', key: 'genova' },
+                { patterns: ['_roma', ',roma'], displayName: 'Roma', key: 'roma' },  // Strict check for Roma
+                { patterns: ['_venezia', ',venezia', 'venezia'], displayName: 'Venezia', key: 'venezia' },
+                { patterns: ['_firenze', ',firenze', 'firenze'], displayName: 'Firenze', key: 'firenze' },
+                { patterns: ['_napoli', ',napoli', 'napoli'], displayName: 'Napoli', key: 'napoli' },
+                { patterns: ['_palermo', ',palermo', 'palermo'], displayName: 'Palermo', key: 'palermo' },
+                { patterns: ['_london', ',london', 'london'], displayName: 'London', key: 'london' },
+            ];
+            
+            for (const city of cityMappings) {
+                for (const pattern of city.patterns) {
+                    if (locationText.includes(pattern)) {
+                        return city;
+                    }
+                }
+            }
+            
+            return null; // No city detected
+        }
+        
+        function updatePageContent(cityData) {
+            // Update title
+            const title = document.getElementById('itinerary-title');
+            if (title) {
+                title.textContent = `Itinerario intelligente a ${cityData.displayName}`;
+            }
+            
+            // Update timeline with city-specific content
+            updateTimelineForCity(cityData);
+            
+            // Update discovery card
+            updateDiscoveryForCity(cityData);
+        }
+        
+        function updateTimelineForCity(cityData) {
+            const cityAttractions = {
+                'torino': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Mole Antonelliana', description: 'Museo del Cinema. Vista panoramica su Torino e le Alpi.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Museo Egizio', description: 'Secondo museo egizio più importante al mondo dopo il Cairo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Piazza Castello', description: 'Cuore storico di Torino con Palazzo Reale e Palazzo Madama.' }
+                ],
+                'milano': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Duomo di Milano', description: 'Magnifica cattedrale gotica. Terrazza panoramica inclusa.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Galleria Vittorio Emanuele II', description: 'Storica galleria commerciale del 1865, il salotto di Milano.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Castello Sforzesco', description: 'Fortezza storica con musei e giardini.' }
+                ],
+                'genova': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Palazzo Ducale', description: 'Mostra su Van Gogh. Orario di punta - possibile affollamento.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Via Garibaldi', description: 'Palazzi dei Rolli UNESCO - passeggiata tra i palazzi storici.' },
+                    { time: '17:30 - 18:00', title: 'Aperitivo culturale', description: 'Rilassati in uno dei bar storici del centro storico.' }
+                ],
+                'roma': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Colosseo', description: 'Anfiteatro Flavio, simbolo di Roma antica.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Fontana di Trevi', description: 'Fontana barocca più famosa al mondo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Pantheon', description: 'Tempio romano meglio conservato, architettura straordinaria.' }
+                ],
+                'venezia': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Piazza San Marco', description: 'Il salotto di Venezia con la Basilica e il Campanile.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Ponte di Rialto', description: 'Ponte storico sul Canal Grande, icona veneziana.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Palazzo Ducale', description: 'Capolavoro gotico veneziano, sede del potere.' }
+                ]
+            };
+            
+            const attractions = cityAttractions[cityData.key] || cityAttractions['genova'];
+            const timeline = document.getElementById('smart-timeline');
+            
+            if (timeline) {
+                timeline.innerHTML = attractions.map((attr, index) => `
+                    <div class="timeline-item relative pb-8">
+                        <div class="dot bg-${index === 0 ? 'violet' : 'gray'}-500"></div>
+                        <p class="text-xs text-gray-400 mb-1">${attr.time}</p>
+                        <h3 class="font-semibold text-white">${attr.title}</h3>
+                        <p class="text-sm text-gray-300">${attr.description}</p>
+                        ${index === 0 ? `
+                            <button onclick="triggerPlanB()" class="mt-3 text-xs text-amber-400 font-semibold flex items-center space-x-1 bg-amber-400/10 px-3 py-2 rounded-full hover:bg-amber-400/20 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>C'è un imprevisto? Piano B intelligente</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function updateDiscoveryForCity(cityData) {
+            const discoveries = {
+                'torino': 'Sei a 2 minuti da "Caffè Al Bicerin", storico caffè torinese. Corrisponde al tuo interesse \'Cultura locale\'.',
+                'milano': 'Sei a 5 minuti da "Luini", famosa per i panzerotti dal 1949. Corrisponde al tuo interesse \'Cibo locale\'.',
+                'genova': 'Sei a 2 minuti da "Pestobene", bottega storica. Corrisponde al tuo interesse \'Cibo locale\'.',
+                'roma': 'Sei a 3 minuti da "Tazza d\'Oro", caffè storico dal 1946. Corrisponde al tuo interesse \'Cultura locale\'.',
+                'venezia': 'Sei a 4 minuti da "Caffè Florian", caffè più antico d\'Italia (1720). Corrisponde al tuo interesse \'Storia\'.'
+            };
+            
+            const discoveryText = document.getElementById('discovery-text');
+            if (discoveryText) {
+                discoveryText.textContent = discoveries[cityData.key] || discoveries['genova'];
+            }
+        }
         
         function handleContextualTriggers() {
             const urlParams = new URLSearchParams(window.location.search);

@@ -1057,7 +1057,7 @@ def plan_ai_powered():
                             })
                             if len(postgres_attractions) >= 4:
                                 break
-                    
+
                     print(
                         f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
@@ -1074,7 +1074,7 @@ def plan_ai_powered():
                             })
                             if len(postgres_restaurants) >= 2:
                                 break
-                    
+
                     print(
                         f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
@@ -1184,6 +1184,20 @@ def plan_ai_powered():
                         'description': 'Chiesa moderna con vista panoramica'},
                     {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200,
                         'description': 'Campo da golf più prestigioso della Sardegna'}
+                ],
+                'genova': [
+                    {'name': 'Palazzo Ducale', 'latitude': 44.4076, 'longitude': 8.9336,
+                        'description': 'Centro culturale storico di Genova, mostre ed eventi'},
+                    {'name': 'Via Garibaldi e Palazzi dei Rolli', 'latitude': 44.4089, 'longitude': 8.9321,
+                        'description': 'Strada UNESCO con palazzi nobiliari rinascimentali'},
+                    {'name': 'Acquario di Genova', 'latitude': 44.4109, 'longitude': 8.9326,
+                        'description': 'Acquario più grande d\'Europa al Porto Antico'},
+                    {'name': 'Piazza De Ferrari', 'latitude': 44.4074, 'longitude': 8.9343,
+                        'description': 'Piazza centrale con fontana monumentale'},
+                    {'name': 'Cattedrale di San Lorenzo', 'latitude': 44.4069, 'longitude': 8.9303,
+                        'description': 'Duomo di Genova in stile romanico-gotico'},
+                    {'name': 'Boccadasse', 'latitude': 44.3924, 'longitude': 8.9959,
+                        'description': 'Antico borgo marinaro con case colorate'}
                 ]
             }
 
@@ -1212,7 +1226,7 @@ def plan_ai_powered():
                         })
                         if len(postgres_attractions) >= 4:
                             break
-                
+
                 print(
                     f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
@@ -1229,7 +1243,7 @@ def plan_ai_powered():
                         })
                         if len(postgres_restaurants) >= 2:
                             break
-                
+
                 print(
                     f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
