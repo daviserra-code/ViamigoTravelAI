@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.log
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# DevContainer
+.devcontainer/
+
+# Replit state
+.local/
+
+# ChromaDB
+chromadb_data/
+
+# Cookies and session files
+cookies.txt
+*cookies.txt
+session_cookies.txt
+
+# Test files
+test_*.jpg
+test_*.png
+
+# Temporary files
+*.tmp
+.DS_Store

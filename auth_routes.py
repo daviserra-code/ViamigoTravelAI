@@ -1,3 +1,4 @@
+from flask_app import db
 from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template_string, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
@@ -8,13 +9,27 @@ import re
 # Blueprint per routes di autenticazione
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+
+@auth_bp.route('/check-session')
+def check_session():
+    """Debug endpoint to check session state"""
+    from flask_login import current_user
+    return jsonify({
+        'authenticated': current_user.is_authenticated,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+        'user_email': current_user.email if current_user.is_authenticated else None,
+        'session': dict(session)
+    })
+
+
 def get_db_session():
     """Helper per ottenere sessione database"""
     from flask_app import db
     return db
 
+
 # Import globale per db
-from flask_app import db
+
 
 def validate_password(password):
     """Valida password secondo standard di sicurezza"""
@@ -30,10 +45,12 @@ def validate_password(password):
         return False, "La password deve contenere almeno un carattere speciale"
     return True, "Password valida"
 
+
 def validate_email(email):
     """Valida formato email"""
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
+
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -188,30 +205,30 @@ def register():
 </body>
 </html>
         ''')
-    
+
     elif request.method == 'POST':
         # Processa registrazione
         data = request.get_json()
         db_session = get_db_session()
-        
+
         if not db_session:
             return jsonify({'error': 'Database non disponibile'}), 500
-        
+
         # Validazioni semplificate per tester
         required_fields = ['first_name', 'last_name', 'email']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'Campo {field} obbligatorio'}), 400
-        
+
         # Validazione email
         if not validate_email(data['email']):
             return jsonify({'error': 'Formato email non valido'}), 400
-        
+
         # Verifica email univoca
         existing_user = User.query.filter_by(email=data['email']).first()
         if existing_user:
             return jsonify({'error': 'Email già registrata'}), 400
-        
+
         try:
             # Crea nuovo utente senza password (sistema semplificato)
             new_user = User()
@@ -219,22 +236,33 @@ def register():
             new_user.email = data['email'].lower().strip()
             new_user.first_name = data['first_name'].strip()
             new_user.last_name = data['last_name'].strip()
-            
+
             db.session.add(new_user)
             db.session.commit()
-            
+
             return jsonify({
                 'success': True,
                 'message': 'Account creato con successo! Ora puoi accedere con la tua email.',
                 'user_id': new_user.id
             }), 201
-            
+
         except Exception as e:
             db_session.rollback()
             return jsonify({'error': f'Errore durante la registrazione: {str(e)}'}), 500
 
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    # Debug logging for login POST
+    if request.method == 'POST':
+        data = request.get_json()
+        print(f"[DEBUG] Login attempt for email: {data.get('email')}")
+        user = User.query.filter_by(email=data.get(
+            'email', '').lower().strip()).first() if data.get('email') else None
+        if user:
+            print(
+                f"[DEBUG] User found: {user.email}, is_authenticated: {getattr(user, 'is_authenticated', None)}")
+            print(f"[DEBUG] Logging in user: {user.email}")
     """Login utente esistente"""
     if request.method == 'GET':
         # Mostra form di login con header no-cache
@@ -279,8 +307,8 @@ def login():
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                            <input type="password" name="password" required 
-                                   class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                            <input type="password" name="password" 
+                                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
                         </div>
                         
                         <!-- Checkbox Ricordami -->
@@ -347,7 +375,8 @@ def login():
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
+                    credentials: 'include'
                 });
                 
                 const result = await response.json();
@@ -371,31 +400,110 @@ def login():
 </body>
 </html>
         '''))
-        
+
         # Aggiungi header no-cache per evitare problemi 304
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
-        
+
         return response
-    
+
     elif request.method == 'POST':
         # Processa login
         data = request.get_json()
         db_session = get_db_session()
-        
+
         if not db_session:
             return jsonify({'error': 'Database non disponibile'}), 500
-        
-        required_fields = ['email', 'password']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'Campo {field} obbligatorio'}), 400
-        
+
+        # Allow login with only email for tester accounts
+        if not data.get('email'):
+            return jsonify({'error': 'Campo email obbligatorio'}), 400
+
+        # Find user by email
+        user = User.query.filter_by(
+            email=data['email'].lower().strip()).first()
+
+        print(f"[DEBUG] Login attempt: {data.get('email')}")
+
+        if user:
+            print(
+                f"[DEBUG] User found: {user.email}, has password_hash: {hasattr(user, 'password_hash') and user.password_hash is not None}")
+
+            # Check if user has a password hash
+            if hasattr(user, 'password_hash') and user.password_hash:
+                # User has password - verify it
+                password = data.get('password', '')
+                if not password:
+                    print(
+                        f"[DEBUG] Password required but not provided for {user.email}")
+                    return jsonify({'error': 'Password obbligatoria per questo account'}), 401
+
+                if check_password_hash(user.password_hash, password):
+                    print(
+                        f"[DEBUG] Password verified for {user.email}, logging in...")
+                    session.permanent = True
+                    login_user(user, remember=data.get('remember_me', False))
+                    print(
+                        f"[DEBUG] login_user() called, session.permanent={session.permanent}")
+                    print(
+                        f"[DEBUG] current_user after login: {current_user.email if current_user.is_authenticated else 'Not authenticated'}")
+                    print(
+                        f"[DEBUG] Session ID: {session.get('_id', 'No session ID')}")
+                    print(
+                        f"[DEBUG] Session user_id: {session.get('_user_id', 'No user_id in session')}")
+
+                    response = jsonify({
+                        'success': True,
+                        'message': f'Benvenuto/a {user.first_name}! Login effettuato con successo',
+                        'redirect': '/dashboard',
+                        'user': {
+                            'id': user.id,
+                            'email': user.email,
+                            'first_name': user.first_name,
+                            'last_name': user.last_name
+                        }
+                    })
+                    print(f"[DEBUG] Response headers will include session cookie")
+                    return response, 200
+                else:
+                    print(
+                        f"[DEBUG] Password verification failed for {user.email}")
+                    return jsonify({'error': 'Password non valida'}), 401
+            else:
+                # User has no password - allow email-only login (testers)
+                print(
+                    f"[DEBUG] Tester account (no password), logging in with email only: {user.email}")
+                session.permanent = True
+                login_user(user, remember=data.get('remember_me', False))
+                print(f"[DEBUG] login_user() called for tester")
+                print(
+                    f"[DEBUG] current_user after login: {current_user.email if current_user.is_authenticated else 'Not authenticated'}")
+                print(
+                    f"[DEBUG] Session ID: {session.get('_id', 'No session ID')}")
+                print(
+                    f"[DEBUG] Session user_id: {session.get('_user_id', 'No user_id in session')}")
+
+                response = jsonify({
+                    'success': True,
+                    'message': f'Benvenuto/a {user.first_name}! Login effettuato con successo',
+                    'redirect': '/dashboard',
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    }
+                })
+                print(f"[DEBUG] Response headers will include session cookie")
+                return response, 200
+        else:
+            return jsonify({'error': 'Email non trovata. Registrati prima di accedere o usa le credenziali demo/Barbara'}), 401
+
         try:
             # Sistema login semplificato per Replit users e demo
             remember_me = data.get('remember_me', False)
-            
+
             if data['email'] == 'demo@viamigo.com' and data['password'] == 'Demo12345!':
                 # Utente demo
                 user = User.query.filter_by(email='demo@viamigo.com').first()
@@ -407,10 +515,10 @@ def login():
                     user.last_name = 'User'
                     db.session.add(user)
                     db.session.commit()
-                
+
                 session.permanent = True
                 login_user(user, remember=remember_me)
-                
+
                 return jsonify({
                     'success': True,
                     'message': 'Login demo effettuato con successo',
@@ -422,10 +530,11 @@ def login():
                         'last_name': user.last_name
                     }
                 }), 200
-                
+
             elif data['email'] == 'barbara.staltari@gmail.com' and data['password'] == 'viamigo2025':
                 # Accesso temporaneo per barbara (owner del progetto)
-                user = User.query.filter_by(email='barbara.staltari@gmail.com').first()
+                user = User.query.filter_by(
+                    email='barbara.staltari@gmail.com').first()
                 if not user:
                     user = User()
                     user.id = 'barbara_replit_user'
@@ -434,10 +543,10 @@ def login():
                     user.last_name = 'Staltari'
                     db.session.add(user)
                     db.session.commit()
-                
+
                 session.permanent = True
                 login_user(user, remember=remember_me)
-                
+
                 return jsonify({
                     'success': True,
                     'message': 'Benvenuta Barbara! Login effettuato con successo',
@@ -451,12 +560,13 @@ def login():
                 }), 200
             else:
                 # Login per utenti registrati - cerca utente per email
-                user = User.query.filter_by(email=data['email'].lower().strip()).first()
+                user = User.query.filter_by(
+                    email=data['email'].lower().strip()).first()
                 if user:
                     # Utente trovato - login automatico
                     session.permanent = True
                     login_user(user, remember=remember_me)
-                    
+
                     return jsonify({
                         'success': True,
                         'message': f'Benvenuto/a {user.first_name}! Login effettuato con successo',
@@ -470,9 +580,10 @@ def login():
                     }), 200
                 else:
                     return jsonify({'error': 'Email non trovata. Registrati prima di accedere o usa le credenziali demo/Barbara'}), 401
-                
+
         except Exception as e:
             return jsonify({'error': f'Errore durante il login: {str(e)}'}), 500
+
 
 @auth_bp.route('/logout', methods=['POST'])
 @login_required
@@ -480,6 +591,7 @@ def logout():
     """Logout utente"""
     logout_user()
     return jsonify({'success': True, 'message': 'Logout effettuato con successo'}), 200
+
 
 @auth_bp.route('/profile', methods=['GET'])
 @login_required
@@ -497,16 +609,17 @@ def get_profile():
         }
     }), 200
 
+
 @auth_bp.route('/update_profile', methods=['POST'])
 @login_required
 def update_profile():
     """Aggiorna profilo utente"""
     data = request.get_json()
     db_session = get_db_session()
-    
+
     if not db_session:
         return jsonify({'error': 'Database non disponibile'}), 500
-    
+
     try:
         # Aggiorna i campi consentiti
         if 'first_name' in data and data['first_name'].strip():
@@ -517,7 +630,8 @@ def update_profile():
             email = data['email'].lower().strip()
             if validate_email(email):
                 # Verifica che l'email non sia già in uso da un altro utente
-                existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
+                existing_user = User.query.filter(
+                    User.email == email, User.id != current_user.id).first()
                 if existing_user:
                     return jsonify({'error': 'Email già in uso'}), 400
                 current_user.email = email
@@ -525,13 +639,14 @@ def update_profile():
                 return jsonify({'error': 'Formato email non valido'}), 400
         if 'address' in data:
             current_user.address = data['address'].strip() or None
-        
+
         db_session.commit()
         return jsonify({'message': 'Profilo aggiornato con successo'}), 200
-        
+
     except Exception as e:
         db_session.rollback()
         return jsonify({'error': f'Errore durante l\'aggiornamento: {str(e)}'}), 500
+
 
 @auth_bp.route('/change_password', methods=['POST'])
 @login_required
@@ -539,32 +654,32 @@ def change_password():
     """Cambia password utente"""
     data = request.get_json()
     db_session = get_db_session()
-    
+
     if not db_session:
         return jsonify({'error': 'Database non disponibile'}), 500
-    
+
     required_fields = ['current_password', 'new_password', 'confirm_password']
     for field in required_fields:
         if not data.get(field):
             return jsonify({'error': f'Campo {field} obbligatorio'}), 400
-    
+
     if data['new_password'] != data['confirm_password']:
         return jsonify({'error': 'Le password non corrispondono'}), 400
-    
+
     # Verifica password attuale
     if not current_user.check_password(data['current_password']):
         return jsonify({'error': 'Password attuale non corretta'}), 400
-    
+
     # Validazione nuova password
     is_valid, message = validate_password(data['new_password'])
     if not is_valid:
         return jsonify({'error': message}), 400
-    
+
     try:
         current_user.set_password(data['new_password'])
         db_session.commit()
         return jsonify({'message': 'Password cambiata con successo'}), 200
-        
+
     except Exception as e:
         db_session.rollback()
         return jsonify({'error': f'Errore durante il cambio password: {str(e)}'}), 500

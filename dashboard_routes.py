@@ -4,9 +4,12 @@ from flask_login import login_required, current_user
 # Blueprint per routes della dashboard
 dashboard_bp = Blueprint('dashboard', __name__)
 
+
 @dashboard_bp.route('/dashboard')
 @login_required
 def dashboard():
+    print(
+        f"[DEBUG] Dashboard access: current_user.is_authenticated={getattr(current_user, 'is_authenticated', None)}, current_user.email={getattr(current_user, 'email', None)}")
     """Dashboard principale per utenti autenticati"""
     return render_template_string('''
 <!DOCTYPE html>
@@ -143,6 +146,7 @@ def dashboard():
 </body>
 </html>
     ''', current_user=current_user)
+
 
 @dashboard_bp.route('/account')
 @login_required
