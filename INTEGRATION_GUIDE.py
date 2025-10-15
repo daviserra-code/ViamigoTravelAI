@@ -7,6 +7,7 @@ How to integrate the enhanced scraping system into run.py
 # STEP 1: Add imports at the top of run.py
 # ============================================================
 
+import atexit
 from enhanced_integration import (
     create_enhanced_scraping_system,
     register_enhanced_routes
@@ -49,7 +50,6 @@ register_enhanced_routes(app, scraping_system)
 
 # At the end of run.py, before app.run() or similar:
 
-import atexit
 
 @atexit.register
 def shutdown_scraping_system():

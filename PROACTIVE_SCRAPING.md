@@ -7,6 +7,7 @@ The Proactive Scraping System intelligently manages background data collection u
 ## Key Features
 
 ### 1. **Intelligent Cache Management**
+
 - Automatically identifies cities with missing, old, or insufficient data
 - Prioritizes cities based on user access patterns
 - Maintains fresh data for popular destinations
@@ -14,16 +15,19 @@ The Proactive Scraping System intelligently manages background data collection u
 ### 2. **Multi-Strategy Scraping**
 
 #### Strategy A: User-Driven
+
 - Analyzes which cities users request most frequently
 - Pre-caches data for high-traffic destinations
 - Focuses on places users actually need
 
 #### Strategy B: Gap-Filling
+
 - Finds missing data in the database
 - Refreshes old cache entries (>30-90 days)
 - Ensures comprehensive coverage of popular cities
 
 ### 3. **Smart Coverage Analysis**
+
 - Tracks database health metrics
 - Provides actionable recommendations
 - Monitors cache freshness and completeness
@@ -128,9 +132,11 @@ print(f"✅ Scraped {result['successful']} cities successfully")
 ## API Endpoints
 
 ### GET `/admin/scraping/status`
+
 Get current database health status
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -145,9 +151,11 @@ Get current database health status
 ```
 
 ### POST `/admin/scraping/run`
+
 Manually trigger scraping
 
 **Request:**
+
 ```json
 {
   "max_scrapes": 10,
@@ -156,6 +164,7 @@ Manually trigger scraping
 ```
 
 **Response:**
+
 ```json
 {
   "total_attempted": 10,
@@ -165,9 +174,11 @@ Manually trigger scraping
 ```
 
 ### GET `/admin/scraping/coverage`
+
 Get detailed coverage statistics
 
 **Response:**
+
 ```json
 {
   "total_cities": 45,
@@ -189,21 +200,25 @@ Get detailed coverage statistics
 ## Cost Optimization Strategies
 
 ### 1. **Smart Cache Duration**
+
 - **Popular cities** (London, Paris): 24 hours
-- **Medium cities**: 7 days  
+- **Medium cities**: 7 days
 - **Rare cities**: 30 days
 
 ### 2. **Rate Limiting**
+
 - Max 5-10 scrapes per scheduled run
 - Prioritize user-requested cities
 - Spread scraping across day to avoid peaks
 
 ### 3. **Batch Processing**
+
 - Group similar cities by region
 - Scrape during off-peak hours
 - Use Apify's bulk pricing when available
 
 ### 4. **Intelligent Prioritization**
+
 ```
 Priority 1: Missing data (no cache at all)
 Priority 2: Insufficient data (<5 places)
@@ -214,6 +229,7 @@ Priority 4: Medium-old data (>30 days)
 ## Advanced Features (Future Enhancements)
 
 ### 1. **Machine Learning Predictions**
+
 ```python
 class PredictiveScrapingEngine:
     def predict_next_destinations(self, user_id):
@@ -224,6 +240,7 @@ class PredictiveScrapingEngine:
 ```
 
 ### 2. **Seasonal Intelligence**
+
 ```python
 def get_seasonal_cities(month):
     if month in [6, 7, 8]:  # Summer
@@ -233,12 +250,14 @@ def get_seasonal_cities(month):
 ```
 
 ### 3. **Real-time Analytics Dashboard**
+
 - Live scraping status
 - Cost tracking
 - Cache hit/miss ratios
 - Data freshness heatmap
 
 ### 4. **Smart Data Validation**
+
 ```python
 def validate_scraped_data(places):
     # Check for:
@@ -250,6 +269,7 @@ def validate_scraped_data(places):
 ```
 
 ### 5. **Multi-Source Aggregation**
+
 ```python
 # Combine data from multiple sources
 apify_data = scrape_apify('London')
@@ -269,10 +289,10 @@ from proactive_scraping import get_database_health_report
 
 def check_database_health():
     health = get_database_health_report()
-    
+
     if health['status'] == 'needs_attention':
         send_alert(f"Database needs refresh: {health['cities_needing_refresh']} cities")
-    
+
     if health['stats']['average_age_days'] > 60:
         send_alert("Cache is getting stale - schedule refresh")
 ```
@@ -288,15 +308,19 @@ def check_database_health():
 ## Troubleshooting
 
 ### Issue: Apify billing errors
+
 **Solution**: The system automatically falls back to cached data
 
 ### Issue: Slow scraping
+
 **Solution**: Reduce `max_scrapes` or increase interval between runs
 
 ### Issue: Duplicate data
+
 **Solution**: The system uses `cache_key` to prevent duplicates
 
 ### Issue: Missing data
+
 **Solution**: Check `get_cities_needing_refresh()` to see what needs scraping
 
 ## Example Workflow
@@ -339,11 +363,13 @@ print(f"Popular cities: {[(c, count) for c, _, count in user_cities[:5]]}")
 ## ROI Analysis
 
 ### Without Proactive Scraping:
+
 - Every user request = 1 Apify call
 - 1000 requests/day = 1000 Apify calls
 - Cost: ~$50-100/month
 
 ### With Proactive Scraping:
+
 - Background: 5 cities × 4 times/day = 20 Apify calls
 - User requests: 80% cache hit = 200 Apify calls
 - Total: 220 Apify calls/month

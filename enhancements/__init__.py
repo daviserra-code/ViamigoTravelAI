@@ -43,24 +43,24 @@ __all__ = [
     'EventBasedIntelligence',
     'get_seasonal_scraping_priorities',
     'integrate_seasonal_intelligence_with_scraping',
-    
+
     # ML Predictions
     'UserBehaviorAnalyzer',
     'CollaborativeFiltering',
     'get_ml_based_scraping_priorities',
-    
+
     # Analytics
     'CacheAnalytics',
     'CostMonitor',
     'QualityValidator',
     'create_analytics_dashboard_data',
     'monitor_and_alert',
-    
+
     # Multi-Source Aggregation
     'MultiSourceAggregator',
     'DataEnrichmentPipeline',
     'create_enriched_place_profile',
-    
+
     # Geographic Clustering
     'GeographicClusterer',
     'BatchScrapingOptimizer',

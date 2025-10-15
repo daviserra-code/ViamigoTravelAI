@@ -23,14 +23,15 @@ apscheduler = "^3.10.4"
 # 2. UPDATE run.py (or main.py)
 # ============================================================================
 
-from flask_app import app, db
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask_app import app, db
 from proactive_scraping import (
     schedule_proactive_scraping,
     register_proactive_routes,
     get_database_health_report
 )
 import logging
+import click
 import atexit
 
 # Configure logging
@@ -56,29 +57,37 @@ scheduler.add_job(
 logger.info("✅ Proactive scraping scheduler initialized")
 
 # Optional: Run once on startup to warm cache
+
+
 @app.before_first_request
 def warm_cache_on_startup():
     """Warm cache when app starts"""
     try:
         logger.info("🔥 Warming cache on startup...")
         from proactive_scraping import ProactiveScrapingManager
-        
+
         manager = ProactiveScrapingManager()
-        result = manager.run_proactive_scraping(max_scrapes=3, prioritize_users=True)
-        
-        logger.info(f"✅ Startup cache warming: {result['successful']}/{result['total_attempted']}")
+        result = manager.run_proactive_scraping(
+            max_scrapes=3, prioritize_users=True)
+
+        logger.info(
+            f"✅ Startup cache warming: {result['successful']}/{result['total_attempted']}")
     except Exception as e:
         logger.error(f"❌ Startup cache warming failed: {e}")
+
 
 # Register admin routes
 register_proactive_routes(app)
 
 # Add admin dashboard route
+
+
 @app.route('/admin/scraping')
 def admin_scraping_dashboard():
     """Admin dashboard for scraping management"""
     from flask import send_from_directory
     return send_from_directory('static', 'admin_scraping.html')
+
 
 # Shutdown scheduler gracefully
 atexit.register(lambda: scheduler.shutdown())
@@ -96,9 +105,9 @@ if __name__ == '__main__':
 def health_check():
     """Health check endpoint including scraping system status"""
     from flask import jsonify
-    
+
     health = get_database_health_report()
-    
+
     return jsonify({
         'status': 'ok',
         'database': health['status'],
@@ -171,23 +180,25 @@ def send_alert_email(subject, message):
     # Implement email sending logic
     pass
 
+
 def monitor_scraping_health():
     """Monitor scraping system health"""
     from proactive_scraping import get_database_health_report
-    
+
     health = get_database_health_report()
-    
+
     if health['status'] == 'needs_attention':
         send_alert_email(
             "Scraping System Alert",
             f"Database needs attention: {health['cities_needing_refresh']} cities need refresh"
         )
-    
+
     if health['stats'].get('average_age_days', 0) > 90:
         send_alert_email(
             "Cache Aging Alert",
             f"Cache is aging: average {health['stats']['average_age_days']:.1f} days old"
         )
+
 
 # Schedule health monitoring daily
 scheduler.add_job(
@@ -202,40 +213,44 @@ scheduler.add_job(
 # 7. CLI COMMANDS (optional - for manual control)
 # ============================================================================
 
-import click
 
 @click.group()
 def scraping_cli():
     """Scraping management commands"""
     pass
 
+
 @scraping_cli.command()
 @click.option('--cities', default=5, help='Number of cities to scrape')
 def scrape(cities):
     """Manually trigger scraping"""
     from proactive_scraping import ProactiveScrapingManager
-    
+
     manager = ProactiveScrapingManager()
     result = manager.run_proactive_scraping(max_scrapes=cities)
-    
-    click.echo(f"✅ Scraped {result['successful']}/{result['total_attempted']} cities")
+
+    click.echo(
+        f"✅ Scraped {result['successful']}/{result['total_attempted']} cities")
+
 
 @scraping_cli.command()
 def status():
     """Show scraping system status"""
     from proactive_scraping import get_database_health_report
-    
+
     health = get_database_health_report()
-    
+
     click.echo(f"Status: {health['status']}")
     click.echo(f"Total cities: {health['stats'].get('total_cities', 0)}")
     click.echo(f"Total places: {health['stats'].get('total_places', 0)}")
-    click.echo(f"Average age: {health['stats'].get('average_age_days', 0):.1f} days")
-    
+    click.echo(
+        f"Average age: {health['stats'].get('average_age_days', 0):.1f} days")
+
     if health['recommendations']:
         click.echo("\nRecommendations:")
         for rec in health['recommendations']:
             click.echo(f"  - {rec}")
+
 
 if __name__ == '__main__':
     scraping_cli()
