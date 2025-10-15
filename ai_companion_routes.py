@@ -41,13 +41,13 @@ class AICompanionEngine:
             if 'milano' in context_lower or 'milan' in context_lower or 'duomo milano' in context_lower:
                 city_name = "Milan"
             # Torino detection - PRIORITIZE before Roma to avoid "via roma" confusion
-            elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana', 
-                                                         '_torino', ',torino']):
+            elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana',
+                                                        '_torino', ',torino']):
                 city_name = "Torino"
             # Roma detection - check for city context, not just substring
-            elif (('roma,' in context_lower or ',roma' in context_lower or 
+            elif (('roma,' in context_lower or ',roma' in context_lower or
                    'rome' in context_lower or 'colosseo' in context_lower or
-                   'vaticano' in context_lower) and 
+                   'vaticano' in context_lower) and
                   'torino' not in context_lower and 'milano' not in context_lower):
                 city_name = "Rome"
             elif 'london' in context_lower or 'piccadilly' in context_lower or 'westminster' in context_lower:
@@ -835,16 +835,22 @@ def plan_ai_powered():
                 # Lombardia
                 'milano': ('milano', 'Milano'),
                 'milan': ('milano', 'Milano'),
-                'duomo': ('milano', 'Milano'),
+                'duomo milano': ('milano', 'Milano'),
                 'buenos aires': ('milano', 'Milano'),
+                # Piemonte
+                'torino': ('torino', 'Torino'),
+                'turin': ('torino', 'Torino'),
+                'mole antonelliana': ('torino', 'Torino'),
                 # Liguria
                 'genova': ('genova', 'Genova'),
-                'portofino': ('genova', 'Portofino'),
-                'cinque terre': ('genova', 'Cinque Terre'),
-                # Lazio
-                'roma': ('roma', 'Roma'),
-                'rome': ('roma', 'Roma'),
+                'genoa': ('genova', 'Genova'),
+                'portofino': ('portofino', 'Portofino'),
+                'cinque terre': ('cinqueterre', 'Cinque Terre'),
+                # Lazio - MUST check for context to avoid "via roma" match
                 'colosseo': ('roma', 'Roma'),
+                'colosseum': ('roma', 'Roma'),
+                'vaticano': ('roma', 'Roma'),
+                'fontana di trevi': ('roma', 'Roma'),
                 'trevi': ('roma', 'Roma'),
                 # Veneto
                 'venezia': ('venezia', 'Venezia'),
@@ -885,12 +891,38 @@ def plan_ai_powered():
             }
 
             location_lower = location_text.lower()
+
+            # PRIORITY 1: Check for explicit city suffix (e.g., ",torino" or "_torino")
+            import re
+            city_suffix_match = re.search(
+                r'[,_\s](torino|milano|roma|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
+            if city_suffix_match:
+                city_found = city_suffix_match.group(1)
+                city_mappings_reverse = {
+                    'torino': ('torino', 'Torino'),
+                    'milano': ('milano', 'Milano'),
+                    'roma': ('roma', 'Roma'),
+                    'genova': ('genova', 'Genova'),
+                    'venezia': ('venezia', 'Venezia'),
+                    'firenze': ('firenze', 'Firenze'),
+                    'napoli': ('napoli', 'Napoli'),
+                    'palermo': ('palermo', 'Palermo'),
+                    'catania': ('catania', 'Catania'),
+                    'london': ('london', 'London')
+                }
+                if city_found in city_mappings_reverse:
+                    return city_mappings_reverse[city_found]
+
+            # PRIORITY 2: Check landmark patterns (but not "roma" alone to avoid "via roma")
             for city_name, (city_key, city_display) in city_mappings.items():
                 if city_name in location_lower:
+                    # Skip generic "roma" or "rome" if we detect torino/milano/etc context
+                    if city_name in ['roma', 'rome']:
+                        if any(ctx in location_lower for ctx in ['torino', 'milano', 'genova', 'via roma']):
+                            continue  # Skip Roma detection if other city context present
                     return city_key, city_display
 
             # Dynamic city extraction from comma-separated format
-            import re
             # Extract city name after comma (e.g., "piazza pretoria,palermo" -> "palermo")
             comma_match = re.search(r',\s*([a-z]+)', location_lower)
             if comma_match:
