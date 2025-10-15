@@ -33,24 +33,50 @@ class AICompanionEngine:
         """Real AI Piano B generation with fast timeout"""
         try:
             # Extract city from context to avoid hallucination
-            city_name = "Unknown City"
-            if current_itinerary and len(current_itinerary) > 0:
-                first_stop = current_itinerary[0].get('title', '')
-                if 'london' in first_stop.lower():
-                    city_name = "London"
-                elif 'paris' in first_stop.lower():
-                    city_name = "Paris"
-                elif 'rome' in first_stop.lower() or 'roma' in first_stop.lower():
-                    city_name = "Rome"
-                elif 'milan' in first_stop.lower() or 'milano' in first_stop.lower():
+            city_name = None
+            context_lower = context.lower() if context else ""
+            
+            # Check context first
+            if 'milano' in context_lower or 'milan' in context_lower or 'duomo milano' in context_lower:
+                city_name = "Milan"
+            elif 'roma' in context_lower or 'rome' in context_lower or 'colosseo' in context_lower:
+                city_name = "Rome"
+            elif 'london' in context_lower or 'piccadilly' in context_lower or 'westminster' in context_lower:
+                city_name = "London"
+            elif 'paris' in context_lower or 'eiffel' in context_lower:
+                city_name = "Paris"
+            elif 'venezia' in context_lower or 'venice' in context_lower:
+                city_name = "Venice"
+            elif 'genova' in context_lower or 'genoa' in context_lower:
+                city_name = "Genova"
+            
+            # Then check itinerary
+            if not city_name and current_itinerary and len(current_itinerary) > 0:
+                first_stop = current_itinerary[0].get('title', '').lower()
+                if any(term in first_stop for term in ['milano', 'milan', 'duomo']):
                     city_name = "Milan"
-                else:
-                    # Try to extract from context
-                    for stop in current_itinerary[:3]:
-                        title = stop.get('title', '').lower()
-                        if any(city in title for city in ['london', 'paris', 'rome', 'milan', 'berlin', 'madrid']):
-                            city_name = title.split(',')[-1].strip().title() if ',' in title else "Current Location"
-                            break
+                elif any(term in first_stop for term in ['london', 'piccadilly', 'westminster']):
+                    city_name = "London"
+                elif any(term in first_stop for term in ['paris', 'eiffel']):
+                    city_name = "Paris"
+                elif any(term in first_stop for term in ['roma', 'rome', 'colosseo']):
+                    city_name = "Rome"
+                elif any(term in first_stop for term in ['genova', 'genoa', 'ferrari']):
+                    city_name = "Genova"
+                elif any(term in first_stop for term in ['venezia', 'venice', 'rialto']):
+                    city_name = "Venice"
+            
+            # If still no city, refuse to hallucinate
+            if not city_name:
+                print(f"⚠️ NO CITY DETECTED - refusing to hallucinate")
+                return {
+                    "emergency_type": emergency_type,
+                    "ai_analysis": "Unable to determine city - please specify location",
+                    "dynamic_alternatives": [],
+                    "smart_adaptations": ["Specify the city for better recommendations"],
+                    "cost_impact": "Unknown",
+                    "ai_confidence": "error"
+                }
 
             prompt = f"""
 Sei un AI travel companion intelligente per {city_name}. Genera un Piano B dinamico per questo itinerario:
@@ -60,16 +86,21 @@ Itinerario corrente: {json.dumps(current_itinerary[:3], indent=2)}
 Contesto: {context}
 Emergenza: {emergency_type}
 
-IMPORTANTE: Tutte le alternative devono essere specifiche per {city_name}, NON per altre città.
+REGOLA CRITICA: Tutte le alternative devono essere SOLO E ESCLUSIVAMENTE per {city_name}.
+NON menzionare MAI attrazioni di altre città.
+NON menzionare Genova se stiamo parlando di Milano, Roma, etc.
+NON menzionare Milano se stiamo parlando di Genova, Roma, etc.
 
-Crea un JSON con alternative realistiche e intelligenti per {city_name}:
+Verifica OGNI suggerimento prima di includerlo: è davvero a {city_name}?
+
+Crea un JSON con alternative realistiche e intelligenti SOLO per {city_name}:
 {{
     "emergency_type": "{emergency_type}",
     "ai_analysis": "Analisi intelligente della situazione",
     "dynamic_alternatives": [
         {{
             "time": "orario",
-            "title": "Nome alternativa",
+            "title": "Nome alternativa A {city_name}",
             "description": "Descrizione dettagliata",
             "why_better": "Perché è meglio della versione originale",
             "ai_insight": "Insight intelligente specifico",
@@ -81,7 +112,7 @@ Crea un JSON con alternative realistiche e intelligenti per {city_name}:
     "ai_confidence": "high/medium/low"
 }}
 
-Rispondi SOLO con JSON valido. Sii specifico e intelligente.
+Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare città diverse.
 """
 
             response = openai_client.chat.completions.create(
@@ -121,25 +152,61 @@ Rispondi SOLO con JSON valido. Sii specifico e intelligente.
     def generate_scoperte_intelligenti(self, location, time_context, user_profile=None):
         """Real AI intelligent discoveries"""
         try:
+            # Extract city from location to prevent cross-city hallucinations
+            location_lower = location.lower() if location else ""
+            city_name = None
+            
+            if any(term in location_lower for term in ['milano', 'milan', 'duomo', 'navigli']):
+                city_name = "Milan"
+            elif any(term in location_lower for term in ['roma', 'rome', 'colosseo', 'trevi']):
+                city_name = "Rome"
+            elif any(term in location_lower for term in ['london', 'piccadilly', 'westminster']):
+                city_name = "London"
+            elif any(term in location_lower for term in ['paris', 'eiffel', 'louvre']):
+                city_name = "Paris"
+            elif any(term in location_lower for term in ['venezia', 'venice', 'rialto', 'san marco']):
+                city_name = "Venice"
+            elif any(term in location_lower for term in ['genova', 'genoa', 'acquario', 'ferrari']):
+                city_name = "Genova"
+            
+            if not city_name:
+                print(f"⚠️ NO CITY IN LOCATION - refusing to hallucinate")
+                return {
+                    "ai_analysis": "Unable to determine city from location",
+                    "contextual_discoveries": [],
+                    "behavioral_learning": "Please specify city for personalized discoveries",
+                    "adaptive_suggestions": ["Provide more specific location"],
+                    "ai_confidence": "error"
+                }
+
             profile_context = f"Profilo utente: {user_profile}" if user_profile else "Profilo generico"
 
             prompt = f"""
 Sei un AI travel companion che scopre gemme nascoste. Analizza questa situazione:
 
 Località: {location}
+Città: {city_name}
 Momento: {time_context}
 {profile_context}
 
-Genera scoperte intelligenti e contestuali:
+REGOLA CRITICA: Tutte le scoperte devono essere SOLO E ESCLUSIVAMENTE a {city_name}.
+NON suggerire MAI luoghi di altre città.
+NON menzionare Genova se parliamo di Milano.
+NON menzionare Milano se parliamo di Genova.
+NON menzionare Roma se parliamo di altre città.
+
+Verifica che OGNI scoperta sia davvero a {city_name} prima di includerla.
+
+Genera scoperte intelligenti e contestuali PER {city_name}:
 {{
-    "ai_analysis": "Analisi intelligente del contesto attuale",
+    "ai_analysis": "Analisi intelligente del contesto attuale a {city_name}",
     "contextual_discoveries": [
         {{
-            "title": "Nome scoperta",
+            "title": "Nome scoperta a {city_name}",
             "description": "Descrizione dettagliata e autentica",
             "distance": "distanza precisa",
             "why_now": "Perché è perfetto PROPRIO ora",
-            "local_secret": "Segreto che solo i locals sanno",
+            "local_secret": "Segreto che solo i locals di {city_name} sanno",
             "ai_insight": "Insight intelligente unico",
             "timing_perfect": "Spiegazione timing perfetto"
         }}
@@ -149,7 +216,7 @@ Genera scoperte intelligenti e contestuali:
     "ai_confidence": "high/medium/low"
 }}
 
-Sii specifico, intelligente e contextualmente rilevante.
+Sii specifico per {city_name}, intelligente e contextualmente rilevante. NO CROSS-CITY HALLUCINATIONS.
 """
 
             response = openai_client.chat.completions.create(
