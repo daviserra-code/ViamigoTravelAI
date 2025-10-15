@@ -1325,17 +1325,19 @@ def plan_ai_powered():
         ]
 
         # Build comprehensive itinerary with multiple waypoints
+        city_key_clean = city_name.lower().replace(' ', '_')
         for i, attraction in enumerate(dynamic_attractions[:4]):
             # Calculate travel time and method based on distance
             travel_duration = 0.33  # 20 minutes between attractions
             if i > 0:
                 current_time += travel_duration
+                attraction_name_walk = attraction['name'].lower().replace(' ', '_')
                 itinerary.append({
                     "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
                     "title": f"Verso {attraction['name']}",
                     "description": f"Breve passeggiata di 15-20 minuti attraverso {city_name}",
                     "type": "transport",
-                    "context": f"walk_to_{attraction['name'].lower().replace(' ', '_')}",
+                    "context": f"walk_to_{attraction_name_walk}_{city_key_clean}",  # NOW INCLUDES CITY!
                     "coordinates": attraction['coords'],
                     "transport": "walking"
                 })
@@ -1353,12 +1355,17 @@ def plan_ai_powered():
             # Use rich description from details
             description = details['description']
 
+            # Generate context with city suffix to prevent cross-city hallucinations
+            attraction_name_clean = attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_')
+            city_key_clean = city_name.lower().replace(' ', '_')
+            context_with_city = f"{attraction_name_clean}_{city_key_clean}"
+            
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
                 "description": description,
                 "type": "activity",
-                "context": attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_'),
+                "context": context_with_city,  # NOW INCLUDES CITY SUFFIX!
                 "coordinates": attraction['coords'],
                 "transport": "visit",
             })
