@@ -124,18 +124,20 @@ class ApifyTravelIntegration:
                 
             print(f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
             
+            # Updated input format for dtrungtin/google-maps-scraper
             run_input = {
-                "searchStringsArray": [search_query],
-                "maxCrawledPlaces": max(max_results, 20),  # Ensure we get enough results
+                "searchQueries": [search_query],
+                "maxCrawledPlacesPerSearch": max(max_results, 20),  # Ensure we get enough results
                 "language": "en",  # Use English for better international results
-                "forceEng": True
+                "maxReviews": 5,  # Limit reviews to speed up scraping
+                "maxImages": 1,   # Minimal images to save time
             }
             
             print(f"🚀 CALLING APIFY with query: {search_query}")
             print(f"🔧 APIFY INPUT: {run_input}")
             
-            # Usa il Google Maps Scraper di Apify
-            run = self.client.actor("compass/crawler-google-places").call(run_input=run_input)
+            # Use dtrungtin/google-maps-scraper - more reliable and well-maintained
+            run = self.client.actor("dtrungtin/google-maps-scraper").call(run_input=run_input)
             print(f"📡 APIFY RUN STARTED: {run.get('id', 'unknown')}")
             print(f"📡 APIFY RUN STATUS: {run}")
             
@@ -144,18 +146,18 @@ class ApifyTravelIntegration:
             
             # Debug first few items
             for i, item in enumerate(dataset_items[:2]):
-                print(f"📊 APIFY ITEM {i}: {item.get('title', 'Unknown')} at {item.get('latitude', 'no-lat')}, {item.get('longitude', 'no-lon')}")
+                print(f"📊 APIFY ITEM {i}: {item.get('title', item.get('name', 'Unknown'))} at {item.get('latitude', 'no-lat')}, {item.get('longitude', 'no-lon')}")
             
             places = []
             for item in dataset_items:
                 try:
-                    # 🔍 DEBUG: Vediamo che dati arrivano da Apify
+                    # dtrungtin/google-maps-scraper output format
+                    # Fields: title, address, rating, reviewsCount, location (lat/lng), categoryName, website, phoneNumber
                     lat = item.get('latitude') or item.get('lat')
                     lng = item.get('longitude') or item.get('lng') or item.get('lon')
                     
-                    # Prova anche coordinate alternative nei dati Apify
+                    # Check nested location object (dtrungtin format)
                     if not lat or not lng:
-                        # Cerca location data nei metadata
                         location = item.get('location', {})
                         lat = lat or location.get('lat') or location.get('latitude')
                         lng = lng or location.get('lng') or location.get('longitude')
@@ -167,27 +169,30 @@ class ApifyTravelIntegration:
                     except (ValueError, TypeError):
                         lat = lng = None
                     
-                    # Build description safely
+                    # Build description from available data
                     description = "Luogo di interesse"
-                    if item.get('reviewsCount', 0) and item.get('totalScore'):
-                        description = f"Rating {item.get('totalScore', 'N/A')} ({item.get('reviewsCount')} reviews)"
+                    reviews_count = item.get('reviewsCount') or item.get('reviews')
+                    rating = item.get('rating') or item.get('totalScore')
+                    
+                    if reviews_count and rating:
+                        description = f"Rating {rating} ⭐ ({reviews_count} recensioni)"
                     elif item.get('address'):
-                        description = f"Luogo a {item.get('address')}"
+                        description = f"Indirizzo: {item.get('address')}"
                     
                     place = {
                         'name': item.get('title') or item.get('name') or 'Unknown Location',
                         'description': description,
                         'latitude': lat,
                         'longitude': lng,
-                        'rating': item.get('totalScore'),
+                        'rating': rating,
                         'address': item.get('address', ''),
-                        'category': item.get('categoryName', category),
+                        'category': item.get('categoryName') or item.get('category', category),
                         'website': item.get('website', ''),
-                        'phone': item.get('phone', ''),
-                        'source': 'google_maps'
+                        'phone': item.get('phoneNumber') or item.get('phone', ''),
+                        'source': 'google_maps_dtrungtin'
                     }
                     
-                    # ✅ FILTRO PIU' PERMISSIVO: accetta anche coordinate parziali
+                    # Validate coordinates before adding
                     if lat is not None and lng is not None and lat != 0 and lng != 0:
                         places.append(place)
                     else:
