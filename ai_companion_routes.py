@@ -1039,15 +1039,15 @@ def plan_ai_powered():
                     f"⚠️ Apify insufficient for {city_name}, checking PostgreSQL as fallback...")
                 # Fallback to PostgreSQL check
                 try:
-                    attraction_cache = PlaceCache.query.filter(
+                    # Get all places for this city and filter by type in Python
+                    all_city_places = PlaceCache.query.filter(
                         PlaceCache.city.ilike(f'%{city_name}%')
-                    ).filter(
-                        PlaceCache.place_data.contains({'type': 'attraction'})
-                    ).limit(4).all()
+                    ).all()
 
-                    for cache_entry in attraction_cache:
+                    # Filter attractions
+                    for cache_entry in all_city_places:
                         place_data = cache_entry.get_place_data()
-                        if place_data:
+                        if place_data and place_data.get('type') == 'attraction':
                             postgres_attractions.append({
                                 'name': place_data.get('name', cache_entry.place_name),
                                 'latitude': place_data.get('latitude', 45.4642),
@@ -1055,18 +1055,16 @@ def plan_ai_powered():
                                 'description': place_data.get('description', f'Historic attraction in {city_name}'),
                                 'source': 'PostgreSQL Database'
                             })
+                            if len(postgres_attractions) >= 4:
+                                break
+                    
                     print(
                         f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
-                    restaurant_cache = PlaceCache.query.filter(
-                        PlaceCache.city.ilike(f'%{city_name}%')
-                    ).filter(
-                        PlaceCache.place_data.contains({'type': 'restaurant'})
-                    ).limit(2).all()
-
-                    for cache_entry in restaurant_cache:
+                    # Filter restaurants
+                    for cache_entry in all_city_places:
                         place_data = cache_entry.get_place_data()
-                        if place_data:
+                        if place_data and place_data.get('type') == 'restaurant':
                             postgres_restaurants.append({
                                 'name': place_data.get('name', cache_entry.place_name),
                                 'latitude': place_data.get('latitude', 45.4642),
@@ -1074,6 +1072,9 @@ def plan_ai_powered():
                                 'description': place_data.get('description', f'Restaurant in {city_name}'),
                                 'source': 'PostgreSQL Database'
                             })
+                            if len(postgres_restaurants) >= 2:
+                                break
+                    
                     print(
                         f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
@@ -1193,16 +1194,15 @@ def plan_ai_powered():
                 ]
 
             try:
-                # Query PostgreSQL for cached data
-                attraction_cache = PlaceCache.query.filter(
+                # Query PostgreSQL for cached data - filter by type in Python
+                all_city_places = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
-                ).filter(
-                    PlaceCache.place_data.contains({'type': 'attraction'})
-                ).limit(4).all()
+                ).all()
 
-                for cache_entry in attraction_cache:
+                # Filter attractions
+                for cache_entry in all_city_places:
                     place_data = cache_entry.get_place_data()
-                    if place_data:
+                    if place_data and place_data.get('type') == 'attraction':
                         postgres_attractions.append({
                             'name': place_data.get('name', cache_entry.place_name),
                             'latitude': place_data.get('latitude', 45.4642),
@@ -1210,18 +1210,16 @@ def plan_ai_powered():
                             'description': place_data.get('description', f'Historic attraction in {city_name}'),
                             'source': 'PostgreSQL Database'
                         })
+                        if len(postgres_attractions) >= 4:
+                            break
+                
                 print(
                     f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
-                restaurant_cache = PlaceCache.query.filter(
-                    PlaceCache.city.ilike(f'%{city_name}%')
-                ).filter(
-                    PlaceCache.place_data.contains({'type': 'restaurant'})
-                ).limit(2).all()
-
-                for cache_entry in restaurant_cache:
+                # Filter restaurants
+                for cache_entry in all_city_places:
                     place_data = cache_entry.get_place_data()
-                    if place_data:
+                    if place_data and place_data.get('type') == 'restaurant':
                         postgres_restaurants.append({
                             'name': place_data.get('name', cache_entry.place_name),
                             'latitude': place_data.get('latitude', 45.4642),
@@ -1229,6 +1227,9 @@ def plan_ai_powered():
                             'description': place_data.get('description', f'Restaurant in {city_name}'),
                             'source': 'PostgreSQL Database'
                         })
+                        if len(postgres_restaurants) >= 2:
+                            break
+                
                 print(
                     f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
@@ -1331,13 +1332,15 @@ def plan_ai_powered():
             travel_duration = 0.33  # 20 minutes between attractions
             if i > 0:
                 current_time += travel_duration
-                attraction_name_walk = attraction['name'].lower().replace(' ', '_')
+                attraction_name_walk = attraction['name'].lower().replace(
+                    ' ', '_')
                 itinerary.append({
                     "time": f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}",
                     "title": f"Verso {attraction['name']}",
                     "description": f"Breve passeggiata di 15-20 minuti attraverso {city_name}",
                     "type": "transport",
-                    "context": f"walk_to_{attraction_name_walk}_{city_key_clean}",  # NOW INCLUDES CITY!
+                    # NOW INCLUDES CITY!
+                    "context": f"walk_to_{attraction_name_walk}_{city_key_clean}",
                     "coordinates": attraction['coords'],
                     "transport": "walking"
                 })
@@ -1356,10 +1359,11 @@ def plan_ai_powered():
             description = details['description']
 
             # Generate context with city suffix to prevent cross-city hallucinations
-            attraction_name_clean = attraction['name'].lower().replace(' ', '_').replace('di_', '').replace('del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_')
+            attraction_name_clean = attraction['name'].lower().replace(' ', '_').replace('di_', '').replace(
+                'del_', '').replace('di', '').replace('del', '').replace('__', '_').strip('_')
             city_key_clean = city_name.lower().replace(' ', '_')
             context_with_city = f"{attraction_name_clean}_{city_key_clean}"
-            
+
             itinerary.append({
                 "time": f"{start_time} - {end_time}",
                 "title": attraction['name'],
