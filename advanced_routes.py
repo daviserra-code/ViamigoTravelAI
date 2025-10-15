@@ -1,18 +1,23 @@
+from openai import OpenAI
 from flask import Blueprint, request, jsonify, send_from_directory
 import json
 import time
 import os
-from openai import OpenAI
+import dotenv
+dotenv.load_dotenv()
 
 advanced_bp = Blueprint('advanced', __name__)
+
 
 @advanced_bp.route('/advanced-features')
 def advanced_features_page():
     """Serve the advanced features HTML page"""
     return send_from_directory('static', 'advanced_features.html')
 
+
 # Initialize OpenAI client
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
 
 @advanced_bp.route('/piano_b', methods=['POST'])
 def generate_piano_b():
@@ -24,7 +29,8 @@ def generate_piano_b():
         original_plan = data.get('original_plan', [])
         city = data.get('city', 'Milano')
 
-        print(f"🚨 Generating Piano B for {disruption_type} at {current_location}")
+        print(
+            f"🚨 Generating Piano B for {disruption_type} at {current_location}")
 
         prompt = f"""
         SITUAZIONE EMERGENZA: {disruption_type} a {current_location}, {city}
@@ -98,6 +104,7 @@ def generate_piano_b():
             }
         }), 500
 
+
 @advanced_bp.route('/scoperte_intelligenti', methods=['POST'])
 def smart_discoveries():
     """Generate contextualized discoveries based on current location and time"""
@@ -108,7 +115,8 @@ def smart_discoveries():
         user_interests = data.get('interests', ['culture', 'food'])
         city = data.get('city', 'Milano')
 
-        print(f"🔍 Generating smart discoveries for {current_location} at {time_of_day}")
+        print(
+            f"🔍 Generating smart discoveries for {current_location} at {time_of_day}")
 
         prompt = f"""
         POSIZIONE ATTUALE: {current_location}, {city}
@@ -180,6 +188,7 @@ def smart_discoveries():
             }
         }), 500
 
+
 @advanced_bp.route('/diario_ai', methods=['POST'])
 def ai_diary():
     """Generate personalized travel diary insights"""
@@ -190,7 +199,8 @@ def ai_diary():
         travel_style = data.get('travel_style', 'explorer')
         city = data.get('city', 'Milano')
 
-        print(f"📖 Generating AI diary for {len(visited_places)} places in {city}")
+        print(
+            f"📖 Generating AI diary for {len(visited_places)} places in {city}")
 
         prompt = f"""
         DIARIO DI VIAGGIO PERSONALE - {city}
@@ -271,6 +281,7 @@ def ai_diary():
             }
         }), 500
 
+
 @advanced_bp.route('/plan_route_advanced', methods=['POST'])
 def plan_route_advanced():
     """
@@ -282,9 +293,10 @@ def plan_route_advanced():
         start = data.get('start', '')
         end = data.get('end', '')
         transport_mode = data.get('transport_mode', 'driving')
-        city = data.get('city', '') # City context for local searches
+        city = data.get('city', '')  # City context for local searches
 
-        print(f"🗺️ Planning route: {start} to {end} via {transport_mode} in {city}")
+        print(
+            f"🗺️ Planning route: {start} to {end} via {transport_mode} in {city}")
 
         # 🌍 DESTINAZIONI ESTERE - Usa Apify per dati autentici
         foreign_destinations = {
@@ -292,14 +304,16 @@ def plan_route_advanced():
             'japan tokyo': {'country': 'Japan', 'center': [35.6762, 139.6503]},
             'germany berlin': {'country': 'Germany', 'center': [52.5200, 13.4050]},
             'england london': {'country': 'UK', 'center': [51.5074, -0.1278]},
-            'london': {'country': 'UK', 'center': [51.5074, -0.1278]},  # Add direct London mapping
+            # Add direct London mapping
+            'london': {'country': 'UK', 'center': [51.5074, -0.1278]},
             'france paris': {'country': 'France', 'center': [48.8566, 2.3522]},
             'spain madrid': {'country': 'Spain', 'center': [40.4168, -3.7038]}
         }
 
         # Mock function to simulate city detection
         def detect_city_advanced(start_loc, end_loc):
-            print(f"Simulating city detection for: start='{start_loc}', end='{end_loc}'")
+            print(
+                f"Simulating city detection for: start='{start_loc}', end='{end_loc}'")
             # In a real scenario, this would involve more sophisticated geocoding or API calls.
             # For this example, we'll make some basic assumptions.
             if 'london' in start_loc.lower() or 'london' in end_loc.lower():
@@ -315,7 +329,8 @@ def plan_route_advanced():
             elif 'washington' in start_loc.lower() or 'washington' in end_loc.lower():
                 return 'usa washington d'
             else:
-                return city if city else 'milano centro' # Fallback to provided city or default
+                # Fallback to provided city or default
+                return city if city else 'milano centro'
 
         # 🔍 Auto-detect city for foreign destinations
         detected_city = detect_city_advanced(start, end)
@@ -323,7 +338,8 @@ def plan_route_advanced():
         # 🇬🇧 SPECIAL: Force London detection
         if any('london' in loc.lower() for loc in [start, end]) or 'london' in detected_city.lower():
             detected_city = 'london'
-            print(f"🇬🇧 FORCED London detection from: start='{start}', end='{end}'")
+            print(
+                f"🇬🇧 FORCED London detection from: start='{start}', end='{end}'")
 
         # Map detected cities to foreign destinations
         if detected_city in foreign_destinations:
@@ -331,7 +347,8 @@ def plan_route_advanced():
             country = destination_info['country']
             center_coords = destination_info['center']
 
-            print(f"🌍 Detected foreign destination: {detected_city} ({country}). Using Apify simulation.")
+            print(
+                f"🌍 Detected foreign destination: {detected_city} ({country}). Using Apify simulation.")
             # In a real application, you would call an Apify scraper here.
             # For now, we'll return mock data.
             return jsonify({
@@ -349,7 +366,8 @@ def plan_route_advanced():
             })
         else:
             # Use local data or routing service for domestic destinations
-            print(f"🏠 Detected local destination or city context: {city or detected_city}. Using local data.")
+            print(
+                f"🏠 Detected local destination or city context: {city or detected_city}. Using local data.")
             # Here you would integrate with a local routing service or use local place data.
             # For example, if 'city' is 'Milano', you might query a local database for points of interest.
             return jsonify({
@@ -373,5 +391,6 @@ def plan_route_advanced():
                 "message": "Could not plan route. Please try again or use manual navigation."
             }
         }), 500
+
 
 print("🚀 Advanced Routes caricato - Piano B, Scoperte Intelligenti, Diario AI attivi!")

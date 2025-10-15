@@ -407,16 +407,16 @@ def get_details():
                                                   'castello sforzesco', 'scala']):
             city_detected = 'milano'
         # Torino detection - PRIORITIZE before Roma to avoid "via roma" confusion
-        elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana', 
-                                                     'museo egizio', 'palazzo reale torino',
-                                                     '_torino', ',torino']):
+        elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana',
+                                                    'museo egizio', 'palazzo reale torino',
+                                                    '_torino', ',torino']):
             city_detected = 'torino'
         # Roma detection - check for city context, not just substring "roma"
         # Avoid matching "via roma" (common street name in many cities)
-        elif (('roma,' in context_lower or ',roma' in context_lower or 
+        elif (('roma,' in context_lower or ',roma' in context_lower or
                'rome' in context_lower or 'colosseum' in context_lower or
                'colosseo' in context_lower or 'vaticano' in context_lower or
-               'fontana di trevi' in context_lower) and 
+               'fontana di trevi' in context_lower) and
               'torino' not in context_lower and 'milano' not in context_lower):
             city_detected = 'roma'
         # London detection with various patterns
