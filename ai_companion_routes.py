@@ -17,13 +17,14 @@ from api_error_handler import resilient_api_call, with_cache, cache_openai, cach
 from weather_intelligence import weather_intelligence
 from crowd_prediction import crowd_predictor
 from multi_language_support import multi_language
-import requests # Import requests for making HTTP calls
+import requests  # Import requests for making HTTP calls
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
 # Initialize OpenAI with fast timeout
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-openai_api_key = os.environ.get("OPENAI_API_KEY") # Ensure this is available
+openai_api_key = os.environ.get("OPENAI_API_KEY")  # Ensure this is available
+
 
 class AICompanionEngine:
     def __init__(self):
@@ -35,11 +36,19 @@ class AICompanionEngine:
             # Extract city from context to avoid hallucination
             city_name = None
             context_lower = context.lower() if context else ""
-            
+
             # Check context first
             if 'milano' in context_lower or 'milan' in context_lower or 'duomo milano' in context_lower:
                 city_name = "Milan"
-            elif 'roma' in context_lower or 'rome' in context_lower or 'colosseo' in context_lower:
+            # Torino detection - PRIORITIZE before Roma to avoid "via roma" confusion
+            elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana', 
+                                                         '_torino', ',torino']):
+                city_name = "Torino"
+            # Roma detection - check for city context, not just substring
+            elif (('roma,' in context_lower or ',roma' in context_lower or 
+                   'rome' in context_lower or 'colosseo' in context_lower or
+                   'vaticano' in context_lower) and 
+                  'torino' not in context_lower and 'milano' not in context_lower):
                 city_name = "Rome"
             elif 'london' in context_lower or 'piccadilly' in context_lower or 'westminster' in context_lower:
                 city_name = "London"
@@ -49,23 +58,27 @@ class AICompanionEngine:
                 city_name = "Venice"
             elif 'genova' in context_lower or 'genoa' in context_lower:
                 city_name = "Genova"
-            
+
             # Then check itinerary
             if not city_name and current_itinerary and len(current_itinerary) > 0:
                 first_stop = current_itinerary[0].get('title', '').lower()
                 if any(term in first_stop for term in ['milano', 'milan', 'duomo']):
                     city_name = "Milan"
+                elif any(term in first_stop for term in ['torino', 'turin', 'mole antonelliana']):
+                    city_name = "Torino"
                 elif any(term in first_stop for term in ['london', 'piccadilly', 'westminster']):
                     city_name = "London"
                 elif any(term in first_stop for term in ['paris', 'eiffel']):
                     city_name = "Paris"
-                elif any(term in first_stop for term in ['roma', 'rome', 'colosseo']):
+                # Roma - avoid "via roma" substring match
+                elif (any(term in first_stop for term in ['colosseo', 'vaticano', 'fontana di trevi']) or
+                      ('roma,' in first_stop or ',roma' in first_stop or 'rome' in first_stop)):
                     city_name = "Rome"
-                elif any(term in first_stop for term in ['genova', 'genoa', 'ferrari']):
+                elif any(term in first_stop for term in ['genova', 'genoa', 'piazza de ferrari']):
                     city_name = "Genova"
                 elif any(term in first_stop for term in ['venezia', 'venice', 'rialto']):
                     city_name = "Venice"
-            
+
             # If still no city, refuse to hallucinate
             if not city_name:
                 print(f"⚠️ NO CITY DETECTED - refusing to hallucinate")
@@ -126,7 +139,8 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
             )
 
             result = json.loads(response.choices[0].message.content)
-            print(f"✅ AI Piano B generato: {result.get('ai_confidence', 'unknown')} confidence")
+            print(
+                f"✅ AI Piano B generato: {result.get('ai_confidence', 'unknown')} confidence")
             return result
 
         except Exception as e:
@@ -155,10 +169,15 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
             # Extract city from location to prevent cross-city hallucinations
             location_lower = location.lower() if location else ""
             city_name = None
-            
+
             if any(term in location_lower for term in ['milano', 'milan', 'duomo', 'navigli']):
                 city_name = "Milan"
-            elif any(term in location_lower for term in ['roma', 'rome', 'colosseo', 'trevi']):
+            # Torino detection - PRIORITIZE before Roma
+            elif any(term in location_lower for term in ['torino', 'turin', 'mole antonelliana', '_torino', ',torino']):
+                city_name = "Torino"
+            # Roma detection - avoid "via roma" substring match
+            elif (any(term in location_lower for term in ['colosseo', 'vaticano', 'fontana di trevi']) or
+                  ('roma,' in location_lower or ',roma' in location_lower or 'rome' in location_lower)):
                 city_name = "Rome"
             elif any(term in location_lower for term in ['london', 'piccadilly', 'westminster']):
                 city_name = "London"
@@ -166,9 +185,9 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
                 city_name = "Paris"
             elif any(term in location_lower for term in ['venezia', 'venice', 'rialto', 'san marco']):
                 city_name = "Venice"
-            elif any(term in location_lower for term in ['genova', 'genoa', 'acquario', 'ferrari']):
+            elif any(term in location_lower for term in ['genova', 'genoa', 'acquario', 'piazza de ferrari']):
                 city_name = "Genova"
-            
+
             if not city_name:
                 print(f"⚠️ NO CITY IN LOCATION - refusing to hallucinate")
                 return {
@@ -230,7 +249,8 @@ Sii specifico per {city_name}, intelligente e contextualmente rilevante. NO CROS
             )
 
             result = json.loads(response.choices[0].message.content)
-            print(f"✅ AI Scoperte generate: {len(result.get('contextual_discoveries', []))} scoperte")
+            print(
+                f"✅ AI Scoperte generate: {len(result.get('contextual_discoveries', []))} scoperte")
             return result
 
         except Exception as e:
@@ -295,7 +315,8 @@ Sii perspicace e intelligente nell'analisi comportamentale.
             )
 
             result = json.loads(response.choices[0].message.content)
-            print(f"✅ AI Diario generato: {result.get('personalization_level', 'unknown')} personalizzazione")
+            print(
+                f"✅ AI Diario generato: {result.get('personalization_level', 'unknown')} personalizzazione")
             return result
 
         except Exception as e:
@@ -317,8 +338,10 @@ Sii perspicace e intelligente nell'analisi comportamentale.
                 "personalization_level": "basic"
             }
 
+
 # Global AI engine
 ai_engine = AICompanionEngine()
+
 
 @ai_companion_bp.route('/ai/piano_b', methods=['POST'])
 @resilient_api_call('openai', timeout=60, fallback_data={
@@ -339,7 +362,8 @@ def ai_piano_b():
         current_plan = data.get('current_plan', [])
         city = data.get('city', 'Milano')
 
-        print(f"🧠 Generating Piano B for {city} with {len(current_plan)} current stops")
+        print(
+            f"🧠 Generating Piano B for {city} with {len(current_plan)} current stops")
 
         prompt = f"""
         PIANO B INTELLIGENTE - {city}
@@ -378,7 +402,7 @@ def ai_piano_b():
             timeout=60  # Increased timeout for GPT-4
         )
 
-        response.raise_for_status() # Raise an exception for bad status codes
+        response.raise_for_status()  # Raise an exception for bad status codes
         result = response.json()
 
         # Extract and parse the relevant part of the response
@@ -394,7 +418,7 @@ def ai_piano_b():
     except requests.exceptions.Timeout:
         print("⚠️ OpenAI API call timed out.")
         # The resilient_api_call decorator will handle this and return fallback_data
-        raise # Re-raise to let the decorator catch it
+        raise  # Re-raise to let the decorator catch it
     except requests.exceptions.RequestException as e:
         print(f"⚠️ OpenAI API request failed: {e}")
         # The resilient_api_call decorator will handle this
@@ -402,6 +426,7 @@ def ai_piano_b():
     except Exception as e:
         print(f"❌ An unexpected error occurred in ai_piano_b: {e}")
         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+
 
 @ai_companion_bp.route('/ai/scoperte', methods=['POST'])
 @resilient_api_call('openai', timeout=60, fallback_data={
@@ -423,7 +448,8 @@ def ai_scoperte():
         city = data.get('city', 'Milano')
         current_location = data.get('current_location', '')
 
-        print(f"🔍 Generating discoveries for {city} based on interests: {user_interests}")
+        print(
+            f"🔍 Generating discoveries for {city} based on interests: {user_interests}")
 
         prompt = f"""
         SCOPERTE INTELLIGENTI - {city}
@@ -482,6 +508,7 @@ def ai_scoperte():
         print(f"❌ An unexpected error occurred in ai_scoperte: {e}")
         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
+
 @ai_companion_bp.route('/ai_piano_b', methods=['POST'])
 def ai_piano_b_deprecated():
     """Generate real AI Piano B (deprecated, use /ai/piano_b)"""
@@ -489,12 +516,14 @@ def ai_piano_b_deprecated():
     # to redirect to the new endpoint. For now, it just calls the new endpoint.
     return ai_piano_b()
 
+
 @ai_companion_bp.route('/ai_scoperte', methods=['POST'])
 def ai_scoperte_deprecated():
     """Generate real AI intelligent discoveries (deprecated, use /ai/scoperte)"""
     # This route is kept for backward compatibility but should ideally be removed or updated
     # to redirect to the new endpoint. For now, it just calls the new endpoint.
     return ai_scoperte()
+
 
 @ai_companion_bp.route('/ai_diario', methods=['POST'])
 def ai_diario():
@@ -533,6 +562,7 @@ def ai_diario():
 
     except Exception as e:
         return jsonify({'error': f'AI Diario error: {str(e)}'}), 500
+
 
 def get_dynamic_city_coordinates(city_name: str):
     """Get city coordinates dynamically using geocoding"""
@@ -596,11 +626,13 @@ def get_dynamic_city_coordinates(city_name: str):
                 'addressdetails': 1
             }
 
-            response = requests.get(url, params=params, timeout=3, headers={'User-Agent': 'Viamigo/1.0'})
+            response = requests.get(url, params=params, timeout=3, headers={
+                                    'User-Agent': 'Viamigo/1.0'})
             if response.ok and response.json():
                 data = response.json()[0]
                 coords = [float(data['lat']), float(data['lon'])]
-                print(f"🗺️ Found coordinates for {city_name} in {country}: {coords}")
+                print(
+                    f"🗺️ Found coordinates for {city_name} in {country}: {coords}")
                 return coords
     except:
         pass
@@ -628,6 +660,7 @@ def get_dynamic_city_coordinates(city_name: str):
         # True last resort - return center of Italy (not Rome)
         return [42.5, 12.5]  # Geographic center of Italy
 
+
 def generate_dynamic_attraction_details(attraction, city_name: str):
     """Generate dynamic attraction details from scraped data"""
     return {
@@ -641,6 +674,7 @@ def generate_dynamic_attraction_details(attraction, city_name: str):
         'accessibility': 'Da verificare accessibilità',
         'photo_spots': ['Punti panoramici locali']
     }
+
 
 def generate_ai_attractions_for_city(city_name: str, city_key: str):
     """Use AI to generate authentic attractions for any city"""
@@ -684,7 +718,7 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         )
 
         attractions_data = json.loads(response.choices[0].message.content)
-        
+
         # Handle different response formats from OpenAI
         if isinstance(attractions_data, dict):
             if 'attractions' in attractions_data:
@@ -697,7 +731,8 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         elif isinstance(attractions_data, list):
             attractions_list = attractions_data
         else:
-            print(f"⚠️ Unexpected AI response format: {type(attractions_data)}")
+            print(
+                f"⚠️ Unexpected AI response format: {type(attractions_data)}")
             attractions_list = []
 
         # Convert to our format
@@ -705,16 +740,18 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
         for i, attr in enumerate(attractions_list[:4]):
             if isinstance(attr, dict):
                 # Safely extract coordinates with fallbacks
-                lat = attr.get('latitude', attr.get('lat', coords[0] + (i * 0.01)))
-                lng = attr.get('longitude', attr.get('lng', coords[1] + (i * 0.01)))
-                
+                lat = attr.get('latitude', attr.get(
+                    'lat', coords[0] + (i * 0.01)))
+                lng = attr.get('longitude', attr.get(
+                    'lng', coords[1] + (i * 0.01)))
+
                 try:
                     lat = float(lat)
                     lng = float(lng)
                 except (ValueError, TypeError):
                     lat = coords[0] + (i * 0.01)
                     lng = coords[1] + (i * 0.01)
-                
+
                 dynamic_attractions.append({
                     'name': attr.get('name', f'Attrazione {city_name} {i+1}'),
                     'coords': [lat, lng],
@@ -724,7 +761,8 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
             else:
                 print(f"⚠️ Skipping invalid attraction data: {attr}")
 
-        print(f"✅ AI generated {len(dynamic_attractions)} attractions for {city_name}")
+        print(
+            f"✅ AI generated {len(dynamic_attractions)} attractions for {city_name}")
         return dynamic_attractions
 
     except Exception as e:
@@ -737,6 +775,7 @@ def generate_ai_attractions_for_city(city_name: str, city_key: str):
             'duration': 2.0,
             'description': f'Esplora il centro storico di {city_name}'
         }]
+
 
 def cache_attractions_to_db(city_name: str, attractions):
     """Cache generated attractions to database for future use"""
@@ -775,6 +814,7 @@ def cache_attractions_to_db(city_name: str, attractions):
 
     except Exception as e:
         print(f"⚠️ Failed to cache attractions: {e}")
+
 
 @ai_companion_bp.route('/plan_ai_powered', methods=['POST'])
 def plan_ai_powered():
@@ -910,28 +950,35 @@ def plan_ai_powered():
             'new york', 'usa', 'america', 'manhattan', 'brooklyn'
         ]
 
-        is_foreign = any(pattern in start.lower() or pattern in end.lower() for pattern in foreign_patterns)
+        is_foreign = any(pattern in start.lower() or pattern in end.lower()
+                         for pattern in foreign_patterns)
 
         combined_text_for_foreign_check = start.lower() + " " + end.lower()
-        is_foreign = any(pattern in combined_text_for_foreign_check for pattern in foreign_patterns)
+        is_foreign = any(
+            pattern in combined_text_for_foreign_check for pattern in foreign_patterns)
 
         if is_foreign:
-            print(f"🌍 FOREIGN destination detected: {city_name} - FORCING Apify")
+            print(
+                f"🌍 FOREIGN destination detected: {city_name} - FORCING Apify")
 
             # FORCE Apify for foreign destinations - don't check PostgreSQL first
             from apify_integration import apify_travel
             if apify_travel.is_available():
                 print(f"🌍 FORCING Apify usage for {city_name}")
                 try:
-                    apify_attractions = apify_travel.get_authentic_places(city_name, ['tourist_attraction'])
-                    apify_restaurants = apify_travel.get_authentic_places(city_name, ['restaurant'])
+                    apify_attractions = apify_travel.get_authentic_places(
+                        city_name, ['tourist_attraction'])
+                    apify_restaurants = apify_travel.get_authentic_places(city_name, [
+                                                                          'restaurant'])
 
                     if apify_attractions and 'tourist_attraction' in apify_attractions and apify_attractions['tourist_attraction']:
-                        print(f"✅ Apify returned {len(apify_attractions['tourist_attraction'])} attractions for {city_name}")
+                        print(
+                            f"✅ Apify returned {len(apify_attractions['tourist_attraction'])} attractions for {city_name}")
                         attractions = apify_attractions['tourist_attraction'][:4]
 
                     if apify_restaurants and 'restaurant' in apify_restaurants and apify_restaurants['restaurant']:
-                        print(f"✅ Apify returned {len(apify_restaurants['restaurant'])} restaurants for {city_name}")
+                        print(
+                            f"✅ Apify returned {len(apify_restaurants['restaurant'])} restaurants for {city_name}")
                         restaurants = apify_restaurants['restaurant'][:2]
 
                     if attractions and restaurants:
@@ -940,7 +987,8 @@ def plan_ai_powered():
                         postgres_attractions = []
                         postgres_restaurants = []
                     else:
-                        print(f"⚠️ Apify returned insufficient data for {city_name}")
+                        print(
+                            f"⚠️ Apify returned insufficient data for {city_name}")
 
                 except Exception as e:
                     print(f"❌ Apify error for {city_name}: {e}")
@@ -949,7 +997,8 @@ def plan_ai_powered():
 
             # Only check PostgreSQL if Apify completely failed
             if not attractions or not restaurants:
-                print(f"⚠️ Apify insufficient for {city_name}, checking PostgreSQL as fallback...")
+                print(
+                    f"⚠️ Apify insufficient for {city_name}, checking PostgreSQL as fallback...")
                 # Fallback to PostgreSQL check
                 try:
                     attraction_cache = PlaceCache.query.filter(
@@ -968,7 +1017,8 @@ def plan_ai_powered():
                                 'description': place_data.get('description', f'Historic attraction in {city_name}'),
                                 'source': 'PostgreSQL Database'
                             })
-                    print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
+                    print(
+                        f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
                     restaurant_cache = PlaceCache.query.filter(
                         PlaceCache.city.ilike(f'%{city_name}%')
@@ -986,7 +1036,8 @@ def plan_ai_powered():
                                 'description': place_data.get('description', f'Restaurant in {city_name}'),
                                 'source': 'PostgreSQL Database'
                             })
-                    print(f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
+                    print(
+                        f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
                 except Exception as e:
                     print(f"⚠️ PostgreSQL query error: {e}")
@@ -996,65 +1047,104 @@ def plan_ai_powered():
                 restaurants.extend(postgres_restaurants)
 
             if not attractions or not restaurants:
-                print(f"⚠️ Insufficient data from Apify and PostgreSQL for {city_name}. Using AI generation as last resort.")
-                dynamic_attractions_ai = generate_ai_attractions_for_city(city_name, city_key)
-                attractions.extend(dynamic_attractions_ai) # Use AI generated as fallback
+                print(
+                    f"⚠️ Insufficient data from Apify and PostgreSQL for {city_name}. Using AI generation as last resort.")
+                dynamic_attractions_ai = generate_ai_attractions_for_city(
+                    city_name, city_key)
+                # Use AI generated as fallback
+                attractions.extend(dynamic_attractions_ai)
                 # No restaurants from AI in this fallback scenario
 
-        else: # Not a foreign destination, proceed with standard logic
-            print(f"🏛️ Domestic destination: {city_name}. Checking PostgreSQL first.")
+        else:  # Not a foreign destination, proceed with standard logic
+            print(
+                f"🏛️ Domestic destination: {city_name}. Checking PostgreSQL first.")
             # Add hardcoded attractions for major cities
             city_attractions = {
                 'milano': [
-                    {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900, 'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
-                    {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656, 'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
-                    {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794, 'description': 'Fortezza storica con musei e giardini'},
-                    {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812, 'description': 'Quartiere dei canali con ristoranti e vita notturna'}
+                    {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900,
+                        'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
+                    {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656,
+                        'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
+                    {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794,
+                        'description': 'Fortezza storica con musei e giardini'},
+                    {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812,
+                        'description': 'Quartiere dei canali con ristoranti e vita notturna'}
                 ],
                 'roma': [
-                    {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922, 'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
-                    {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833, 'description': 'Fontana barocca più famosa al mondo'},
-                    {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769, 'description': 'Tempio romano meglio conservato'},
-                    {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730, 'description': 'Piazza barocca con fontana del Bernini'}
+                    {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922,
+                        'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
+                    {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833,
+                        'description': 'Fontana barocca più famosa al mondo'},
+                    {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769,
+                        'description': 'Tempio romano meglio conservato'},
+                    {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730,
+                        'description': 'Piazza barocca con fontana del Bernini'}
                 ],
                 'venezia': [
-                    {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387, 'description': 'Il salotto di Venezia con la Basilica'},
-                    {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360, 'description': 'Ponte storico sul Canal Grande'},
-                    {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406, 'description': 'Capolavoro gotico veneziano'},
-                    {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327, 'description': 'Arteria principale di Venezia'}
+                    {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387,
+                        'description': 'Il salotto di Venezia con la Basilica'},
+                    {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360,
+                        'description': 'Ponte storico sul Canal Grande'},
+                    {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406,
+                        'description': 'Capolavoro gotico veneziano'},
+                    {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327,
+                        'description': 'Arteria principale di Venezia'}
                 ],
                 'napoli': [
-                    {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581, 'description': 'Via storica che taglia il centro antico'},
-                    {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478, 'description': 'Castello sul mare nel Borgo Marinari'},
-                    {'name': 'Piazza del Plebiscito', 'latitude': 40.8359, 'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
-                    {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490, 'description': 'Vicoli caratteristici napoletani'}
+                    {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581,
+                        'description': 'Via storica che taglia il centro antico'},
+                    {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478,
+                        'description': 'Castello sul mare nel Borgo Marinari'},
+                    {'name': 'Piazza del Plebiscito', 'latitude': 40.8359,
+                        'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
+                    {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490,
+                        'description': 'Vicoli caratteristici napoletani'}
                 ],
                 'palermo': [
-                    {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561, 'description': 'Maestosa cattedrale normanna con cripta reale'},
-                    {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571, 'description': 'Il più grande teatro lirico d\'Italia'},
-                    {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590, 'description': 'Mercato storico con street food siciliano'},
-                    {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530, 'description': 'Palazzo reale con Cappella Palatina'},
-                    {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613, 'description': 'Piazza barocca ottagonale al centro'},
-                    {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620, 'description': 'Piazza con fontana monumentale'}
+                    {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561,
+                        'description': 'Maestosa cattedrale normanna con cripta reale'},
+                    {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571,
+                        'description': 'Il più grande teatro lirico d\'Italia'},
+                    {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590,
+                        'description': 'Mercato storico con street food siciliano'},
+                    {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530,
+                        'description': 'Palazzo reale con Cappella Palatina'},
+                    {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613,
+                        'description': 'Piazza barocca ottagonale al centro'},
+                    {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620,
+                        'description': 'Piazza con fontana monumentale'}
                 ],
                 'olbia': [
-                    {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002, 'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
-                    {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150, 'description': 'Porto turistico con vista sull\'isola di Tavolara'},
-                    {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968, 'description': 'Reperti nuragici e relitti di navi romane'},
-                    {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978, 'description': 'Via principale dello shopping e aperitivi'}
+                    {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002,
+                        'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
+                    {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150,
+                        'description': 'Porto turistico con vista sull\'isola di Tavolara'},
+                    {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968,
+                        'description': 'Reperti nuragici e relitti di navi romane'},
+                    {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978,
+                        'description': 'Via principale dello shopping e aperitivi'}
                 ],
                 'portorotondo': [
-                    {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353, 'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
-                    {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370, 'description': 'Porto turistico esclusivo con yacht di lusso'},
-                    {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345, 'description': 'Chiesa moderna con sculture di Mario Ceroli'},
-                    {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400, 'description': 'Spiaggia di sabbia bianca con acque cristalline'},
-                    {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360, 'description': 'Anfiteatro all\'aperto per eventi estivi'}
+                    {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353,
+                        'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
+                    {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370,
+                        'description': 'Porto turistico esclusivo con yacht di lusso'},
+                    {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345,
+                        'description': 'Chiesa moderna con sculture di Mario Ceroli'},
+                    {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400,
+                        'description': 'Spiaggia di sabbia bianca con acque cristalline'},
+                    {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360,
+                        'description': 'Anfiteatro all\'aperto per eventi estivi'}
                 ],
                 'portocervo': [
-                    {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366, 'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
-                    {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370, 'description': 'Porto più esclusivo del Mediterraneo'},
-                    {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340, 'description': 'Chiesa moderna con vista panoramica'},
-                    {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200, 'description': 'Campo da golf più prestigioso della Sardegna'}
+                    {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366,
+                        'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
+                    {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370,
+                        'description': 'Porto più esclusivo del Mediterraneo'},
+                    {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340,
+                        'description': 'Chiesa moderna con vista panoramica'},
+                    {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200,
+                        'description': 'Campo da golf più prestigioso della Sardegna'}
                 ]
             }
 
@@ -1082,7 +1172,8 @@ def plan_ai_powered():
                             'description': place_data.get('description', f'Historic attraction in {city_name}'),
                             'source': 'PostgreSQL Database'
                         })
-                print(f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
+                print(
+                    f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
 
                 restaurant_cache = PlaceCache.query.filter(
                     PlaceCache.city.ilike(f'%{city_name}%')
@@ -1100,7 +1191,8 @@ def plan_ai_powered():
                             'description': place_data.get('description', f'Restaurant in {city_name}'),
                             'source': 'PostgreSQL Database'
                         })
-                print(f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
+                print(
+                    f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
 
             except Exception as e:
                 print(f"⚠️ PostgreSQL query error: {e}")
@@ -1110,10 +1202,13 @@ def plan_ai_powered():
             real_restaurants = postgres_restaurants
 
             if len(real_attractions) < 2:
-                print(f"🔍 PostgreSQL insufficient, using cost-effective scraping for {city_name}")
+                print(
+                    f"🔍 PostgreSQL insufficient, using cost-effective scraping for {city_name}")
                 scraping_provider = CostEffectiveDataProvider()
-                scraped_attractions = scraping_provider.get_places_data(city_name, "tourist_attraction")
-                scraped_restaurants = scraping_provider.get_places_data(city_name, "restaurant")
+                scraped_attractions = scraping_provider.get_places_data(
+                    city_name, "tourist_attraction")
+                scraped_restaurants = scraping_provider.get_places_data(
+                    city_name, "restaurant")
 
                 # Combine PostgreSQL + scraped data
                 real_attractions.extend(scraped_attractions)
@@ -1135,15 +1230,16 @@ def plan_ai_powered():
                     lat = attraction.get('latitude', 0)
                     lng = attraction.get('longitude', 0)
                     duration = attraction.get('duration', 1.5)
-                    description = attraction.get('description', f'Attraction in {city_name}')
-                    
+                    description = attraction.get(
+                        'description', f'Attraction in {city_name}')
+
                     # Ensure coordinates are valid numbers
                     try:
                         lat = float(lat) if lat is not None else 0
                         lng = float(lng) if lng is not None else 0
                     except (ValueError, TypeError):
                         lat = lng = 0
-                    
+
                     dynamic_attractions.append({
                         'name': name,
                         'coords': [lat, lng],
@@ -1151,12 +1247,16 @@ def plan_ai_powered():
                         'description': description
                     })
                 else:
-                    print(f"⚠️ Skipping invalid attraction format: {attraction}")
-            print(f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {city_name}")
+                    print(
+                        f"⚠️ Skipping invalid attraction format: {attraction}")
+            print(
+                f"✅ Using {len(dynamic_attractions)} DYNAMIC attractions for {city_name}")
         else:
-            print(f"⚠️ No attractions found/generated for {city_name}, using AI generation as a last resort.")
+            print(
+                f"⚠️ No attractions found/generated for {city_name}, using AI generation as a last resort.")
             # Use AI to generate authentic attractions for any city
-            dynamic_attractions = generate_ai_attractions_for_city(city_name, city_key)
+            dynamic_attractions = generate_ai_attractions_for_city(
+                city_name, city_key)
 
             # Cache the generated attractions for future use
             if dynamic_attractions:
@@ -1209,7 +1309,8 @@ def plan_ai_powered():
             end_time = f"{int(current_time):02d}:{int((current_time % 1) * 60):02d}"
 
             # Generate dynamic details using attraction data
-            details = generate_dynamic_attraction_details(attraction, city_name)
+            details = generate_dynamic_attraction_details(
+                attraction, city_name)
 
             # Use rich description from details
             description = details['description']
@@ -1233,7 +1334,6 @@ def plan_ai_powered():
             }
             print(f"✅ Minimal details added for {attraction['name']}")
 
-
         # Add local tips for the correct city
         itinerary.extend([
             {
@@ -1248,7 +1348,8 @@ def plan_ai_powered():
             }
         ])
 
-        print(f"✅ Generated itinerary with {len(itinerary)} items for {city_name}")
+        print(
+            f"✅ Generated itinerary with {len(itinerary)} items for {city_name}")
 
         return jsonify({
             "itinerary": itinerary,
@@ -1280,7 +1381,8 @@ def get_weather_intelligence():
         weather = weather_intelligence.get_current_weather(lat, lon)
 
         # Analyze conditions
-        severity, trigger_plan_b, reasons = weather_intelligence.analyze_weather_conditions(weather)
+        severity, trigger_plan_b, reasons = weather_intelligence.analyze_weather_conditions(
+            weather)
 
         # Get forecast
         forecast = weather_intelligence.get_forecast(lat, lon, hours=24)
@@ -1293,13 +1395,16 @@ def get_weather_intelligence():
 
         # Translate if needed
         if language != 'en':
-            weather['description'] = multi_language.translate(weather['description'], language, 'en')
-            reasons = [multi_language.translate(r, language, 'en') for r in reasons]
+            weather['description'] = multi_language.translate(
+                weather['description'], language, 'en')
+            reasons = [multi_language.translate(
+                r, language, 'en') for r in reasons]
 
             # Translate suggestions
             for key in suggestions:
                 if isinstance(suggestions[key], list):
-                    suggestions[key] = [multi_language.translate(s, language, 'en') for s in suggestions[key]]
+                    suggestions[key] = [multi_language.translate(
+                        s, language, 'en') for s in suggestions[key]]
 
         response = {
             'current_weather': weather,
@@ -1313,7 +1418,8 @@ def get_weather_intelligence():
 
         # Auto-trigger Plan B if severe weather
         if trigger_plan_b:
-            print(f"⚠️ Weather Alert: Auto-triggering Plan B due to {severity} weather")
+            print(
+                f"⚠️ Weather Alert: Auto-triggering Plan B due to {severity} weather")
             response['plan_b_auto_triggered'] = True
             response['plan_b_reason'] = f"Weather conditions: {', '.join(reasons)}"
 
@@ -1436,7 +1542,8 @@ def translate_content():
 
         result['source_language'] = source_language
         result['target_language'] = target_language
-        result['language_info'] = multi_language.supported_languages.get(target_language)
+        result['language_info'] = multi_language.supported_languages.get(
+            target_language)
 
         return jsonify(result)
 
@@ -1460,7 +1567,8 @@ def intelligent_trip_planning():
 
         # Get weather intelligence
         weather = weather_intelligence.get_current_weather(lat, lon)
-        weather_severity, trigger_plan_b, weather_reasons = weather_intelligence.analyze_weather_conditions(weather)
+        weather_severity, trigger_plan_b, weather_reasons = weather_intelligence.analyze_weather_conditions(
+            weather)
 
         # Get basic itinerary (reuse existing logic)
         # This would normally call your existing itinerary generation

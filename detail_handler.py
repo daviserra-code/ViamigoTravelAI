@@ -406,13 +406,24 @@ def get_details():
                                                   'galleria vittorio', 'navigli', 'brera',
                                                   'castello sforzesco', 'scala']):
             city_detected = 'milano'
+        # Torino detection - PRIORITIZE before Roma to avoid "via roma" confusion
+        elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana', 
+                                                     'museo egizio', 'palazzo reale torino',
+                                                     '_torino', ',torino']):
+            city_detected = 'torino'
+        # Roma detection - check for city context, not just substring "roma"
+        # Avoid matching "via roma" (common street name in many cities)
+        elif (('roma,' in context_lower or ',roma' in context_lower or 
+               'rome' in context_lower or 'colosseum' in context_lower or
+               'colosseo' in context_lower or 'vaticano' in context_lower or
+               'fontana di trevi' in context_lower) and 
+              'torino' not in context_lower and 'milano' not in context_lower):
+            city_detected = 'roma'
         # London detection with various patterns
         elif ('london' in context_lower or 'piccadilly' in context_lower or
               'westminster' in context_lower or 'soho' in context_lower or
                 'big_ben' in context_lower or 'tower_bridge' in context_lower):
             city_detected = 'london'
-        elif 'roma' in context_lower or 'rome' in context_lower or 'colosseum' in context_lower:
-            city_detected = 'roma'
         elif 'venezia' in context_lower or 'venice' in context_lower or 'rialto' in context_lower:
             city_detected = 'venezia'
         elif 'napoli' in context_lower or 'naples' in context_lower or 'vesuvio' in context_lower:
@@ -424,13 +435,9 @@ def get_details():
         elif 'paris' in context_lower or 'eiffel' in context_lower:
             city_detected = 'paris'
         # Genova detection - ONLY if explicitly mentioned
-        elif any(term in context_lower for term in ['genova', 'genoa', 'ferrari', 'acquario',
-                                                    'palazzo ducale genova', 'porto antico']):
-            city_detected = 'genova'
-
-        # Genova detection - ONLY if explicitly mentioned
-        elif any(term in context_lower for term in ['genova', 'genoa', 'ferrari', 'acquario',
-                                                    'palazzo ducale genova', 'porto antico']):
+        elif any(term in context_lower for term in ['genova', 'genoa', 'piazza de ferrari genova',
+                                                    'acquario di genova', 'palazzo ducale genova',
+                                                    'porto antico genova', 'lanterna genova']):
             city_detected = 'genova'
 
         # If no city detected, return error instead of wrong data
@@ -449,7 +456,42 @@ def get_details():
         print(
             f"✅ City detected: {city_detected} from context: {context[:100]}")
 
-        # Try dynamic generation for all cities (including Genova)
+        # 🔍 STEP 1: Check PostgreSQL PlaceCache first for verified data
+        from models import PlaceCache
+        from flask_app import db
+
+        place_name_clean = context.replace('_', ' ').replace(',', '').strip()
+
+        # Try to find in database by matching place name and city
+        db_place = PlaceCache.query.filter(
+            db.func.lower(PlaceCache.place_name).like(
+                f'%{place_name_clean.lower()}%'),
+            db.func.lower(PlaceCache.city) == city_detected.lower()
+        ).first()
+
+        if db_place:
+            print(
+                f"✅ Found verified data in PostgreSQL for: {db_place.place_name}")
+            place_data = db_place.place_data
+
+            # Format for frontend if it's in the correct structure
+            if isinstance(place_data, dict) and 'name' in place_data:
+                return jsonify({
+                    'title': f"{place_data.get('name', 'Attrazione')}, {city_detected.title()}",
+                    'summary': f"Informazioni verificate per {place_data.get('name')}",
+                    'details': [
+                        {'label': 'Tipo', 'value': place_data.get(
+                            'type', 'N/A').title()},
+                        {'label': 'Coordinate',
+                            'value': f"{place_data.get('lat', 'N/A')}, {place_data.get('lon', 'N/A')}"},
+                        {'label': 'Fonte', 'value': 'Database verificato ✅'}
+                    ],
+                    'tip': f'Dati verificati dal database per {city_detected.title()}',
+                    'opening_hours': 'Verifica sul posto',
+                    'cost': 'Verifica sul posto'
+                })
+
+        # 🔍 STEP 2: Try dynamic generation for all cities (including Genova)
         dynamic_details = generate_dynamic_details(context, city_detected)
         if dynamic_details:
             return jsonify(dynamic_details)
