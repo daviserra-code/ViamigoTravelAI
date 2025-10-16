@@ -107,3 +107,4 @@ apify-client
 trafilatura
 APScheduler==3.10.4
 wikipedia-api==0.7.2
+sentence-transformers==2.2.2
