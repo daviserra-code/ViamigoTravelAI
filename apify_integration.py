@@ -135,22 +135,22 @@ class ApifyTravelIntegration:
             print(
                 f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
 
-            # Updated input format for dtrungtin/google-maps-scraper
+            # Updated input format for compass/crawler-google-places (working actor!)
             run_input = {
-                "searchQueries": [search_query],
-                # Ensure we get enough results
-                "maxCrawledPlacesPerSearch": max(max_results, 20),
+                "searchStringsArray": [search_query],  # Use searchStringsArray instead of searchQueries
+                "maxCrawledPlaces": max(max_results, 20),  # Max results to scrape
                 "language": "en",  # Use English for better international results
                 "maxReviews": 5,  # Limit reviews to speed up scraping
                 "maxImages": 1,   # Minimal images to save time
+                "onlyDataFromSearchPage": False  # Get detailed place data
             }
 
             print(f"🚀 CALLING APIFY with query: {search_query}")
             print(f"🔧 APIFY INPUT: {run_input}")
 
-            # Use dtrungtin/google-maps-scraper - more reliable and well-maintained
+            # Use compass/crawler-google-places - CONFIRMED WORKING as of Oct 16, 2025
             run = self.client.actor(
-                "dtrungtin/google-maps-scraper").call(run_input=run_input)
+                "compass/crawler-google-places").call(run_input=run_input)
             print(f"📡 APIFY RUN STARTED: {run.get('id', 'unknown')}")
             print(f"📡 APIFY RUN STATUS: {run}")
 
@@ -166,19 +166,20 @@ class ApifyTravelIntegration:
             places = []
             for item in dataset_items:
                 try:
-                    # dtrungtin/google-maps-scraper output format
-                    # Fields: title, address, rating, reviewsCount, location (lat/lng), categoryName, website, phoneNumber
-                    lat = item.get('latitude') or item.get('lat')
-                    lng = item.get('longitude') or item.get(
-                        'lng') or item.get('lon')
+                    # compass/crawler-google-places output format
+                    # Fields: title, address, totalScore, reviewsCount, location (dict with lat/lng), 
+                    # categoryName, website, phone, placeId, imageUrl, etc.
+                    
+                    # Get location from nested object
+                    location = item.get('location', {})
+                    lat = location.get('lat')
+                    lng = location.get('lng')
 
-                    # Check nested location object (dtrungtin format)
-                    if not lat or not lng:
-                        location = item.get('location', {})
-                        lat = lat or location.get(
-                            'lat') or location.get('latitude')
-                        lng = lng or location.get(
-                            'lng') or location.get('longitude')
+                    # Fallback to top-level if nested not found
+                    if lat is None:
+                        lat = item.get('latitude') or item.get('lat')
+                    if lng is None:
+                        lng = item.get('longitude') or item.get('lng') or item.get('lon')
 
                     # Convert to float if they're strings
                     try:
@@ -189,12 +190,13 @@ class ApifyTravelIntegration:
 
                     # Build description from available data
                     description = "Luogo di interesse"
-                    reviews_count = item.get(
-                        'reviewsCount') or item.get('reviews')
-                    rating = item.get('rating') or item.get('totalScore')
+                    reviews_count = item.get('reviewsCount') or item.get('reviews')
+                    rating = item.get('totalScore') or item.get('rating')
 
                     if reviews_count and rating:
                         description = f"Rating {rating} ⭐ ({reviews_count} recensioni)"
+                    elif item.get('description'):
+                        description = item.get('description')[:150]  # Truncate long descriptions
                     elif item.get('address'):
                         description = f"Indirizzo: {item.get('address')}"
 
@@ -207,8 +209,10 @@ class ApifyTravelIntegration:
                         'address': item.get('address', ''),
                         'category': item.get('categoryName') or item.get('category', category),
                         'website': item.get('website', ''),
-                        'phone': item.get('phoneNumber') or item.get('phone', ''),
-                        'source': 'google_maps_dtrungtin'
+                        'phone': item.get('phone') or item.get('phoneUnformatted', ''),
+                        'place_id': item.get('placeId', ''),
+                        'image_url': item.get('imageUrl', ''),
+                        'source': 'google_maps_compass'
                     }
 
                     # Validate coordinates before adding
