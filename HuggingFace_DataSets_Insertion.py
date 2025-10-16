@@ -326,7 +326,110 @@ conn.close()
 print("=" * 60)
 print("✅ Done! Hotel reviews loaded successfully")
 print()
+
+# 9. PATH C (HYBRID): Sync hotels to place_cache for compatibility
+print("=" * 60)
+print("� PATH C: Syncing hotels to place_cache...")
+print("This creates lightweight entries compatible with existing code")
+print()
+
+def sync_hotels_to_place_cache():
+    """Convert hotel_reviews to place_cache format (Apify-compatible)"""
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+    
+    # Get hotels grouped by city with aggregated data
+    cursor.execute("""
+        SELECT 
+            city,
+            hotel_name,
+            hotel_address,
+            AVG(latitude) as lat,
+            AVG(longitude) as lng,
+            AVG(reviewer_score) as avg_score,
+            COUNT(*) as review_count,
+            STRING_AGG(DISTINCT positive_review, ' | ') as highlights
+        FROM hotel_reviews
+        WHERE city IS NOT NULL 
+        AND latitude IS NOT NULL 
+        AND longitude IS NOT NULL
+        GROUP BY city, hotel_name, hotel_address
+        ORDER BY city, avg_score DESC
+    """)
+    
+    hotels = cursor.fetchall()
+    print(f"📍 Found {len(hotels)} unique hotels to sync")
+    
+    synced_count = 0
+    for city, name, address, lat, lng, score, reviews, highlights in hotels:
+        # Create cache_key in format: city_hotelname
+        cache_key = f"{city.lower().replace(' ', '_')}_{name.lower().replace(' ', '_').replace('-', '_')[:50]}"
+        
+        # Create Apify-compatible JSON format
+        place_data = {
+            "title": name,
+            "address": address,
+            "location": {
+                "lat": lat,
+                "lng": lng
+            },
+            "rating": score if score else 0,
+            "reviewsCount": reviews,
+            "categoryName": "Hotel",
+            "type": "hotel",
+            "description": highlights[:500] if highlights else "",  # Truncate
+            "source": "HuggingFace",
+            "price": None,
+            "website": None,
+            "phone": None
+        }
+        
+        # Insert into place_cache (compatible with existing system!)
+        insert_cache_query = """
+        INSERT INTO place_cache (
+            cache_key, place_name, city, country, place_data, priority_level
+        )
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (cache_key) 
+        DO UPDATE SET 
+            place_data = EXCLUDED.place_data,
+            last_accessed = NOW()
+        """
+        
+        cursor.execute(insert_cache_query, (
+            cache_key,
+            name,
+            city.lower(),
+            'italy',  # All current hotels are Italian
+            json.dumps(place_data),
+            'medium'  # Priority level for hotels
+        ))
+        synced_count += 1
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    print(f"✅ Synced {synced_count} hotels to place_cache")
+    return synced_count
+
+# Run the sync
+try:
+    synced = sync_hotels_to_place_cache()
+    print()
+    print("🎯 PATH C Benefits:")
+    print("  ✅ hotel_reviews: Rich review data for AI context")
+    print("  ✅ place_cache: Works with existing dynamic_routing.py")
+    print("  ✅ Best of both worlds: Detailed + Compatible")
+    print()
+except Exception as e:
+    print(f"⚠️ Sync failed: {e}")
+    print("You can run this manually later")
+
+print()
 print("💡 Next steps:")
-print("  1. Query hotels by city: SELECT * FROM hotel_reviews WHERE city = 'Amsterdam' LIMIT 10;")
-print("  2. Find top-rated hotels: SELECT * FROM hotel_reviews WHERE reviewer_score > 9 ORDER BY reviewer_score DESC;")
-print("  3. Integrate with RAG: Use hotel reviews for context-aware recommendations")
+print("  1. Query hotels by city: SELECT * FROM hotel_reviews WHERE city = 'Milan' LIMIT 10;")
+print("  2. Test cache: SELECT * FROM place_cache WHERE cache_key LIKE 'milan_%' LIMIT 5;")
+print("  3. Update simple_rag_helper.py to use hotel_reviews for rich context")
+print("  4. Use Apify for OTHER categories (cafe, museum, nightlife) - Point 5 Approach 2")
+

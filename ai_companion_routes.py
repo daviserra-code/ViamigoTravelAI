@@ -17,7 +17,7 @@ from api_error_handler import resilient_api_call, with_cache, cache_openai, cach
 from weather_intelligence import weather_intelligence
 from crowd_prediction import crowd_predictor
 from multi_language_support import multi_language
-from simple_rag_helper import get_city_context_prompt, rag_helper  # RAG integration for real data
+from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper  # RAG integration
 import requests  # Import requests for making HTTP calls
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
@@ -94,7 +94,12 @@ class AICompanionEngine:
 
             # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
             real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+            
+            # 🏨 PATH C: Add hotel context with rich reviews
+            hotel_context = get_hotel_context_prompt(city_name, min_score=8.0, limit=3)
+            
             print(f"🧠 RAG: Injected {city_name} context into Piano B prompt")
+            print(f"🏨 PATH C: Added hotel reviews for {city_name}")
 
             prompt = f"""
 Sei un AI travel companion intelligente per {city_name}. Genera un Piano B dinamico per questo itinerario:
@@ -105,6 +110,8 @@ Contesto: {context}
 Emergenza: {emergency_type}
 
 {real_context}
+
+{hotel_context}
 
 REGOLA CRITICA: Tutte le alternative devono essere SOLO E ESCLUSIVAMENTE per {city_name}.
 NON menzionare MAI attrazioni di altre città.
@@ -209,7 +216,12 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
 
             # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
             real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+            
+            # 🏨 PATH C: Add hotel context with rich reviews
+            hotel_context = get_hotel_context_prompt(city_name, min_score=8.0, limit=3)
+            
             print(f"🧠 RAG: Injected {city_name} context into Scoperte prompt")
+            print(f"🏨 PATH C: Added hotel reviews for {city_name}")
 
             prompt = f"""
 Sei un AI travel companion che scopre gemme nascoste. Analizza questa situazione:
@@ -220,6 +232,8 @@ Momento: {time_context}
 {profile_context}
 
 {real_context}
+
+{hotel_context}
 
 REGOLA CRITICA: Tutte le scoperte devono essere SOLO E ESCLUSIVAMENTE a {city_name}.
 NON suggerire MAI luoghi di altre città.
