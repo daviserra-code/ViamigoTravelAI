@@ -19,8 +19,20 @@ class CostEffectiveDataProvider:
         
     def get_places_data(self, city: str, category: str = "restaurant") -> List[Dict]:
         """
-        Strategia a cascata: FREE APIs → Economico scraping solo se necessario
+        Strategia a cascata: PostgreSQL Cache → FREE APIs → Economico scraping solo se necessario
         """
+        # 🚀 PRIORITY 0: Check PostgreSQL cache FIRST (instant + highest quality)
+        try:
+            from apify_integration import apify_travel
+            cached_data = apify_travel.get_cached_places(city, category)
+            if cached_data and len(cached_data) >= 3:
+                print(f"⚡ CACHE HIT! Using {len(cached_data)} places from PostgreSQL cache for {city}/{category}")
+                return cached_data
+            else:
+                print(f"💾 Cache miss or insufficient data for {city}/{category} (found: {len(cached_data) if cached_data else 0})")
+        except Exception as e:
+            print(f"⚠️ Cache check failed: {e}")
+        
         # 1. PRIORITÀ: Geoapify (3000 crediti/giorno) - Dati più ricchi
         if self.geoapify_key:
             geo_data = self._get_geoapify_places(city, category)
