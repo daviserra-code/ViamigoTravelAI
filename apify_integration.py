@@ -97,7 +97,8 @@ class ApifyTravelIntegration:
             print(f"⚠️ Errore cache per {city}: {e}")
             db.session.rollback()
 
-    @resilient_api_call('apify', timeout=90, fallback_data=[])  # Increased timeout for Apify (60s+)
+    # Increased timeout for Apify (60s+)
+    @resilient_api_call('apify', timeout=90, fallback_data=[])
     @with_cache(cache_apify, lambda self, city, category, max_results: f"apify_gmaps_{city}_{category}_{max_results}")
     def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 15) -> List[Dict]:
         """Cerca luoghi su Google Maps tramite Apify"""
@@ -124,13 +125,23 @@ class ApifyTravelIntegration:
 
             translated_city = city_translations.get(city.lower(), city)
 
-            # Better search queries for different categories
-            if category == 'tourist_attraction':
-                search_query = f"top attractions {translated_city}"
-            elif category == 'restaurant':
-                search_query = f"best restaurants {translated_city}"
-            else:
-                search_query = f"{category} in {translated_city}"
+            # 🎯 MULTI-CATEGORY SUPPORT: Better search queries for all categories
+            category_queries = {
+                'tourist_attraction': f"top attractions {translated_city}",
+                'restaurant': f"best restaurants {translated_city}",
+                'hotel': f"top hotels {translated_city}",
+                'cafe': f"best cafes coffee shops {translated_city}",
+                'museum': f"museums {translated_city}",
+                'monument': f"monuments landmarks {translated_city}",
+                'park': f"parks gardens {translated_city}",
+                'shopping': f"shopping centers markets {translated_city}",
+                'nightlife': f"bars clubs nightlife {translated_city}",
+                'bar': f"best bars pubs {translated_city}",
+                'bakery': f"bakeries pastry shops {translated_city}",
+                'church': f"churches cathedrals {translated_city}"
+            }
+            
+            search_query = category_queries.get(category, f"{category} in {translated_city}")
 
             print(
                 f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
@@ -141,7 +152,8 @@ class ApifyTravelIntegration:
                 # Use searchStringsArray instead of searchQueries
                 "searchStringsArray": [search_query],
                 # Max results to scrape - REDUCED for speed (was 20, now 10)
-                "maxCrawledPlaces": min(max(max_results, 10), 15),  # Cap at 15 for faster scraping
+                # Cap at 15 for faster scraping
+                "maxCrawledPlaces": min(max(max_results, 10), 15),
                 "language": "en",  # Use English for better international results
                 "maxReviews": 3,  # Reduced from 5 to 3 for speed
                 "maxImages": 1,   # Minimal images to save time

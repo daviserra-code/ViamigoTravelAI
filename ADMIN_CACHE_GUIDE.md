@@ -4,6 +4,31 @@
 
 This guide explains how to pre-populate the PostgreSQL database with high-quality Apify data for instant route responses.
 
+## Supported Categories
+
+The system now supports **12 categories** for comprehensive itineraries:
+
+### Core Categories (Default)
+- ✅ `restaurant` - Best restaurants and trattorias
+- ✅ `tourist_attraction` - Top attractions and sights
+- ✅ `hotel` - Hotels and accommodations
+- ✅ `cafe` - Cafes and coffee shops
+- ✅ `museum` - Museums and galleries
+
+### Additional Categories
+- ✅ `monument` - Monuments and landmarks
+- ✅ `park` - Parks and gardens
+- ✅ `shopping` - Shopping centers and markets
+- ✅ `nightlife` - Nightclubs and entertainment
+- ✅ `bar` - Bars and pubs
+- ✅ `bakery` - Bakeries and pastry shops
+- ✅ `church` - Churches and religious sites
+
+**To check supported categories programmatically**:
+```bash
+curl http://localhost:3000/admin/supported-categories
+```
+
 ## Why Pre-populate?
 
 **Problem**: Apify calls take 60-70 seconds each
@@ -12,6 +37,7 @@ This guide explains how to pre-populate the PostgreSQL database with high-qualit
 ## Setup
 
 1. **Set Admin Secret** in `.env`:
+
    ```bash
    ADMIN_SECRET=your-super-secret-admin-key-here
    BASE_URL=http://localhost:3000  # or your production URL
@@ -31,6 +57,7 @@ python populate_cache.py --status
 ```
 
 Output:
+
 ```
 📊 Current Cache Status
 Total cached cities: 3
@@ -48,6 +75,7 @@ python populate_cache.py --city Bergamo
 ```
 
 Output:
+
 ```
 📍 Populating Bergamo...
 ✅ Success!
@@ -63,6 +91,7 @@ python populate_cache.py --batch --delay 5
 ```
 
 This will populate 25 common Italian cities:
+
 - Bergamo, Bologna, Verona, Firenze, Pisa, Siena, Lucca, Perugia...
 - Estimated time: ~33 minutes
 - Creates ~50 cache entries (2 categories × 25 cities)
@@ -70,6 +99,7 @@ This will populate 25 common Italian cities:
 ### Option 4: Custom Cities List
 
 Create a file `my_cities.txt`:
+
 ```
 Bergamo
 Bologna
@@ -77,6 +107,7 @@ Verona
 ```
 
 Then run:
+
 ```bash
 python populate_cache.py --cities-file my_cities.txt --delay 5
 ```
@@ -93,17 +124,20 @@ curl -X POST http://localhost:3000/admin/populate-city \
   -H "X-Admin-Secret: your-secret-key" \
   -d '{
     "city": "Bergamo",
-    "categories": ["tourist_attraction", "restaurant"],
+    "categories": ["tourist_attraction", "restaurant", "hotel", "cafe", "museum"],
     "force_refresh": false
   }'
 ```
 
 **Parameters**:
+
 - `city` (required): City name
-- `categories` (optional): Array of categories (default: `["tourist_attraction", "restaurant"]`)
+- `categories` (optional): Array of categories (default: `["restaurant", "tourist_attraction", "hotel", "cafe", "museum"]`)
+  - See **Supported Categories** section above for full list
 - `force_refresh` (optional): Force re-fetch even if cached (default: `false`)
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -118,9 +152,24 @@ curl -X POST http://localhost:3000/admin/populate-city \
       "cached": false,
       "count": 10,
       "sample": "Ristorante Da Mimmo"
+    },
+    "hotel": {
+      "cached": false,
+      "count": 8,
+      "sample": "Hotel Excelsior San Marco"
+    },
+    "cafe": {
+      "cached": false,
+      "count": 5,
+      "sample": "Caffè del Tasso"
+    },
+    "museum": {
+      "cached": false,
+      "count": 3,
+      "sample": "Accademia Carrara"
     }
   },
-  "duration_seconds": 65.3
+  "duration_seconds": 120.5
 }
 ```
 
@@ -132,14 +181,15 @@ curl -X POST http://localhost:3000/admin/populate-cities-batch \
   -H "X-Admin-Secret: your-secret-key" \
   -d '{
     "cities": ["Bergamo", "Bologna", "Verona"],
-    "categories": ["tourist_attraction", "restaurant"],
+    "categories": ["restaurant", "tourist_attraction", "hotel", "cafe", "museum"],
     "delay_seconds": 5
   }'
 ```
 
 **Parameters**:
+
 - `cities` (required): Array of city names
-- `categories` (optional): Array of categories
+- `categories` (optional): Array of categories (default: core 5 categories)
 - `delay_seconds` (optional): Delay between API calls (default: `5`)
 
 ### 3. Check Cache Status
@@ -150,6 +200,7 @@ curl http://localhost:3000/admin/cache-status \
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -199,6 +250,7 @@ curl -X POST http://localhost:3000/admin/clear-cache \
 ### Initial Setup (One-time)
 
 1. **Populate priority cities** (high traffic):
+
    ```bash
    python populate_cache.py --city Bergamo
    python populate_cache.py --city Bologna
@@ -206,6 +258,7 @@ curl -X POST http://localhost:3000/admin/clear-cache \
    ```
 
 2. **Batch populate remaining cities**:
+
    ```bash
    python populate_cache.py --batch
    ```
@@ -224,10 +277,12 @@ curl -X POST http://localhost:3000/admin/clear-cache \
 ### Performance Benefits
 
 **Before** (no cache):
+
 - First request: 70 seconds ❌
 - All requests: 70 seconds ❌
 
 **After** (with pre-populated cache):
+
 - First request: 2-3 seconds ✅ (from PostgreSQL)
 - Subsequent requests: < 1 second ✅ (cached)
 - Cache hits: Instant ⚡
@@ -243,19 +298,23 @@ curl -X POST http://localhost:3000/admin/clear-cache \
 ## Troubleshooting
 
 ### "Unauthorized" Error
+
 - Check `ADMIN_SECRET` in `.env` matches header value
 - Verify header is `X-Admin-Secret` (case-sensitive)
 
 ### "Apify is not configured"
+
 - Check `APIFY_API_TOKEN` in `.env`
 - Verify Apify account has active billing
 
 ### Timeout Errors
+
 - Increase timeout in `populate_cache.py`
 - Reduce `delay_seconds` (but watch rate limits)
 - Populate cities one-by-one instead of batch
 
 ### Poor Quality Data
+
 - Use `force_refresh: true` to re-fetch
 - Check Apify actor status at console.apify.com
 - Verify city name spelling
@@ -271,6 +330,7 @@ curl -X POST http://localhost:3000/admin/clear-cache \
 ## Summary
 
 With pre-populated cache:
+
 - ✅ **Instant responses** (< 1 second)
 - ✅ **High-quality data** (from Google Maps via Apify)
 - ✅ **Cost-effective** (pay once, serve millions)

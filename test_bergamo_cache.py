@@ -2,6 +2,12 @@
 """
 Test script to verify Bergamo uses PostgreSQL cache
 """
+import inspect
+from dynamic_routing import dynamic_router
+from cost_effective_scraping import CostEffectiveDataProvider
+from apify_integration import apify_travel
+from flask_app import app
+from dotenv import load_dotenv
 import sys
 import os
 
@@ -9,11 +15,9 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Load environment
-from dotenv import load_dotenv
 load_dotenv()
 
 # Create Flask app context
-from flask_app import app
 
 print("="*60)
 print("🧪 TESTING BERGAMO CACHE USAGE")
@@ -26,8 +30,10 @@ with app.app_context():
     from models import PlaceCache
 with app.app_context():
     from models import PlaceCache
-    bergamo_restaurants = PlaceCache.query.filter_by(cache_key='bergamo_restaurant').first()
-    bergamo_attractions = PlaceCache.query.filter_by(cache_key='bergamo_tourist_attraction').first()
+    bergamo_restaurants = PlaceCache.query.filter_by(
+        cache_key='bergamo_restaurant').first()
+    bergamo_attractions = PlaceCache.query.filter_by(
+        cache_key='bergamo_tourist_attraction').first()
 
     if bergamo_restaurants:
         import json
@@ -47,17 +53,19 @@ with app.app_context():
 
 # Test 2: Test apify_travel.get_cached_places
 print("\n📊 TEST 2: Test apify_travel.get_cached_places()")
-from apify_integration import apify_travel
 
 cached_restaurants = apify_travel.get_cached_places('bergamo', 'restaurant')
-print(f"Result: {len(cached_restaurants) if cached_restaurants else 0} restaurants from cache")
+print(
+    f"Result: {len(cached_restaurants) if cached_restaurants else 0} restaurants from cache")
 if cached_restaurants:
     print(f"✅ Cache retrieval works! Sample: {cached_restaurants[0]['name']}")
 else:
     print("❌ Cache retrieval failed!")
 
-cached_attractions = apify_travel.get_cached_places('bergamo', 'tourist_attraction')
-print(f"Result: {len(cached_attractions) if cached_attractions else 0} attractions from cache")
+cached_attractions = apify_travel.get_cached_places(
+    'bergamo', 'tourist_attraction')
+print(
+    f"Result: {len(cached_attractions) if cached_attractions else 0} attractions from cache")
 if cached_attractions:
     print(f"✅ Cache retrieval works! Sample: {cached_attractions[0]['name']}")
 else:
@@ -65,7 +73,6 @@ else:
 
 # Test 3: Test CostEffectiveDataProvider
 print("\n📊 TEST 3: Test CostEffectiveDataProvider.get_places_data()")
-from cost_effective_scraping import CostEffectiveDataProvider
 
 provider = CostEffectiveDataProvider()
 print("\n🔍 Getting restaurants for Bergamo...")
@@ -88,10 +95,8 @@ else:
 
 # Test 4: Test dynamic routing would use cost-effective provider
 print("\n📊 TEST 4: Check if Bergamo is in cost-effective cities list")
-from dynamic_routing import dynamic_router
 
 # Check the source code
-import inspect
 source = inspect.getsource(dynamic_router._fallback_itinerary)
 if 'bergamo' in source.lower():
     print("✅ Bergamo is explicitly mentioned in _fallback_itinerary")
@@ -101,7 +106,8 @@ else:
         print("✅ Using use_cost_effective_provider list")
         # Try to find the list
         import re
-        match = re.search(r'use_cost_effective_provider\s*=\s*\[(.*?)\]', source, re.DOTALL)
+        match = re.search(
+            r'use_cost_effective_provider\s*=\s*\[(.*?)\]', source, re.DOTALL)
         if match:
             cities_str = match.group(1).lower()
             if 'bergamo' in cities_str:

@@ -11,19 +11,20 @@ from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
 from apify_integration import apify_travel
 
+
 class DynamicRouter:
     def __init__(self):
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.nominatim_base = "https://nominatim.openstreetmap.org"
-        
+
         # Cache dinamico per città scoperte via API
         self.dynamic_city_cache = {}
-        
+
         # Database completo città italiane con coordinate precise
         self.city_centers = {
             # Grandi città
             'roma': [41.9028, 12.4964],
-            'milano': [45.4642, 9.1900], 
+            'milano': [45.4642, 9.1900],
             'venezia': [45.4408, 12.3155],
             'firenze': [43.7696, 11.2558],
             'torino': [45.0703, 7.6869],
@@ -65,7 +66,7 @@ class DynamicRouter:
             'ferrara': [44.8381, 11.6176],
             'ravenna': [44.4184, 12.2035],
             'rimini': [44.0678, 12.5695],
-            # Friuli-Venezia Giulia  
+            # Friuli-Venezia Giulia
             'trieste': [45.6495, 13.7768],
             'udine': [46.0748, 13.2335],
             # Marche
@@ -121,7 +122,7 @@ class DynamicRouter:
             'caprera': [41.2167, 9.4500],
             'porto rotondo': [40.9547, 9.5361],
             'golfo aranci': [40.9789, 9.6256],
-            
+
             # Espansione città europee principali per scalabilità
             'parigi': [48.8566, 2.3522],
             'berlino': [52.5200, 13.4050],
@@ -140,9 +141,9 @@ class DynamicRouter:
             'cracovia': [50.0647, 19.9450],
             'varsavia': [52.2297, 21.0122]
         }
-    
-    def generate_personalized_itinerary(self, start: str, end: str, city: str = "", 
-                                       duration: str = "half_day", user_interests: List[str] = None) -> List[Dict]:
+
+    def generate_personalized_itinerary(self, start: str, end: str, city: str = "",
+                                        duration: str = "half_day", user_interests: List[str] = None) -> List[Dict]:
         """
         Genera itinerario personalizzato da start a end
         """
@@ -158,74 +159,76 @@ class DynamicRouter:
                     if len(city_candidate) > 2:
                         city = city_candidate
                         break
-            
+
             # 2. 🛑 EMERGENCY FIX: FORZA New York per percorsi interni NY
             combined = f"{start} {end}".lower()
-            if ("fifth avenue" in combined or "cornelia street" in combined or 
-                "manhattan" in combined or "brooklyn" in combined) and "washington" not in combined:
+            if ("fifth avenue" in combined or "cornelia street" in combined or
+                    "manhattan" in combined or "brooklyn" in combined) and "washington" not in combined:
                 city = "new york"
-                print(f"🗽 FORZATO New York per percorso interno: {start} → {end}")
-            
+                print(
+                    f"🗽 FORZATO New York per percorso interno: {start} → {end}")
+
             city_lower = city.lower() if city else ""
             # Città con sistema ottimizzato (Italia + Europa + USA)
             optimized_cities = [
                 # Italia
-                'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia', 
-                'firenze', 'napoli', 'bologna', 'palermo', 'pisa', 'cagliari', 
+                'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia',
+                'firenze', 'napoli', 'bologna', 'palermo', 'pisa', 'cagliari',
                 'perugia', 'verona', 'torino', 'olbia', 'costa smeralda', 'porto cervo',
                 'sardegna', 'arzachena', 'la maddalena', 'baia sardinia',
                 # Europa
-                'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna', 
-                'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo', 
+                'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna',
+                'praga', 'budapest', 'atene', 'barcellona', 'londra', 'zurigo',
                 'ginevra', 'monaco', 'cracovia', 'varsavia',
                 # 🗽 USA
                 'new york', 'washington dc'
             ]
-            
+
             if any(city in city_lower for city in optimized_cities):
-                print(f"🎯 Routing ottimizzato per {city} - coordinate verificate")
+                print(
+                    f"🎯 Routing ottimizzato per {city} - coordinate verificate")
                 return self._fallback_itinerary(start, end, city)
-            
+
             # 3. Geocoding per città non specifiche
             start_coords = self._geocode_location(start, city)
             end_coords = self._geocode_location(end, city)
-            
+
             if not start_coords or not end_coords:
                 return self._fallback_itinerary(start, end, city)
-            
+
             # 4. Sistema dinamico per altre città
             if not city:
                 city = self._detect_city_from_coords(start_coords)
-            
+
             waypoints = self._generate_smart_waypoints(
                 start_coords, end_coords, city, duration, user_interests
             )
-            
+
             itinerary = self._build_itinerary(
                 start, end, start_coords, end_coords, waypoints, city
             )
-            
+
             return itinerary
-            
+
         except Exception as e:
             print(f"Errore routing dinamico: {e}")
             return self._fallback_itinerary(start, end, city)
-    
+
     def _geocode_location(self, location: str, city: str = "") -> Optional[Tuple[float, float]]:
         """Geocodifica universale per qualsiasi località italiana"""
         try:
             location_lower = location.lower().strip()
             city_lower = city.lower().strip()
-            
+
             # 1. Se city è nel database locale, usa quelle coordinate come base
             base_coords = None
             if city_lower in self.city_centers:
                 base_coords = self.city_centers[city_lower]
-            
+
             # 2. Pattern specifici con offset intelligenti
             location_patterns = {
                 'piazza': (0.001, 0.001),
-                'stazione': (-0.003, 0.002), 
+                'stazione': (-0.003, 0.002),
                 'porto': (0.002, -0.003),
                 'lungomare': (0.003, -0.001),
                 'centro': (0, 0),
@@ -233,7 +236,7 @@ class DynamicRouter:
                 'castello': (-0.002, -0.002),
                 'mercato': (0.002, 0.002)
             }
-            
+
             # Se abbiamo coordinate base e un pattern, usa offset
             if base_coords:
                 for pattern, (offset_lat, offset_lon) in location_patterns.items():
@@ -245,7 +248,7 @@ class DynamicRouter:
                         )
                 # Se non c'è pattern ma abbiamo coordinate base, usale
                 return base_coords
-            
+
             # 3. Geocoding API dinamico per qualsiasi località italiana
             query_parts = []
             if location:
@@ -253,9 +256,9 @@ class DynamicRouter:
             if city:
                 query_parts.append(city)
             query_parts.append("Italia")
-            
+
             query = ", ".join(query_parts)
-            
+
             params = {
                 'q': query,
                 'format': 'json',
@@ -265,105 +268,115 @@ class DynamicRouter:
                 'bounded': 0,  # Allow worldwide search
                 'viewbox': '-180,-90,180,90'  # Worldwide bounding box
             }
-            
+
             response = requests.get(
-                f"{self.nominatim_base}/search", 
-                params=params, 
+                f"{self.nominatim_base}/search",
+                params=params,
                 timeout=10,
                 headers={'User-Agent': 'Viamigo-Travel-App/1.0'}
             )
-            
+
             if response.ok and response.json():
                 results = response.json()
                 for result in results:
                     lat, lon = float(result['lat']), float(result['lon'])
                     # Verifica coordinate europee valide (Italia + Europa)
                     if 35.0 <= lat <= 70.0 and -10.0 <= lon <= 30.0:
-                        
+
                         # Salva nel cache dinamico per future richieste (NON nel database statico)
                         if city_lower and city_lower not in self.city_centers:
                             self.dynamic_city_cache[city_lower] = [lat, lon]
-                            print(f"📍 Cache aggiornato per {city}: [{lat}, {lon}]")
-                        
+                            print(
+                                f"📍 Cache aggiornato per {city}: [{lat}, {lon}]")
+
                         return (lat, lon)
-                
+
         except Exception as e:
             print(f"Errore geocoding universale {location} in {city}: {e}")
-        
+
         # 4. Fallback finale - usa coordinate della città se disponibile
         if city_lower in self.city_centers:
             return tuple(self.city_centers[city_lower])
-        
+
         # 4.5. Cache dinamico - se abbiamo già scoperto questa città
         if city_lower in self.dynamic_city_cache:
-            print(f"✅ Usando cache per {city}: {self.dynamic_city_cache[city_lower]}")
+            print(
+                f"✅ Usando cache per {city}: {self.dynamic_city_cache[city_lower]}")
             return tuple(self.dynamic_city_cache[city_lower])
-        
+
         # 5. Fallback geografico intelligente per città richiesta
         if 'genova' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Genova")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Genova")
             return (44.4056, 8.9463)  # Genova centro
         elif 'milano' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Milano")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Milano")
             return (45.4642, 9.1900)  # Milano centro
         elif 'roma' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Roma")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Roma")
             return (41.9028, 12.4964)  # Roma centro
         elif 'verona' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Verona")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Verona")
             return (45.4384, 10.9916)  # Verona centro
         elif 'firenze' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Firenze")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Firenze")
             return (43.7696, 11.2558)  # Firenze centro
         elif 'napoli' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Napoli")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Napoli")
             return (40.8518, 14.2681)  # Napoli centro
         elif 'torino' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Torino")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Torino")
             return (45.0703, 7.6869)  # Torino centro
         elif 'bologna' in city_lower:
-            print(f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Bologna")
+            print(
+                f"⚠️ Nessuna coordinata trovata per {location} in {city}, usando centro Bologna")
             return (44.4949, 11.3426)  # Bologna centro
         else:
             # 🗽 EMERGENCY FIX NYC fallback
             if 'new york' in city_lower or 'manhattan' in city_lower:
                 print(f"🗽 NYC fallback per {location}")
                 return (40.7589, -73.9851)  # NYC center
-            
+
             # Sistema avanzato di rilevamento geografico intelligente
             return self._smart_geographic_fallback(location, city_lower)
-    
+
     def _detect_city_from_coords(self, coords: Tuple[float, float]) -> str:
         """Rileva la città dalle coordinate con precisione migliorata"""
         lat, lon = coords
-        
+
         best_match = None
         min_distance = float('inf')
-        
+
         # Trova la città più vicina
         for city_name, city_coords in self.city_centers.items():
             city_lat, city_lon = city_coords
             # Calcolo distanza euclidea approssimativa
             distance = ((lat - city_lat) ** 2 + (lon - city_lon) ** 2) ** 0.5
-            
+
             if distance < min_distance:
                 min_distance = distance
                 best_match = city_name
-        
+
         # Se la distanza è ragionevole (entro ~50km), restituisci la città
         if min_distance < 0.5:  # circa 50km
             return best_match.title()
-        
+
         # Altrimenti, determina regione italiana
         if 40.0 <= lat <= 42.0:
             return "Sud Italia"
         elif 42.0 <= lat <= 45.0:
-            return "Centro Italia"  
+            return "Centro Italia"
         elif 45.0 <= lat <= 47.0:
             return "Nord Italia"
-        
+
         return "Italia"
-    
+
     def _get_fast_discoveries(self, city: str) -> List[Dict]:
         """Fast pre-built discoveries without AI delays"""
         if 'new york' in city.lower():
@@ -378,7 +391,7 @@ class DynamicRouter:
                 {
                     "title": "High Line Access Point",
                     "description": "Less crowded entrance to elevated park",
-                    "distance": "5 minutes walk", 
+                    "distance": "5 minutes walk",
                     "why_now": "Early morning has fewer tourists",
                     "local_secret": "Best views at Gansevoort Street entrance"
                 }
@@ -393,7 +406,7 @@ class DynamicRouter:
                     "local_secret": "Ask locals for best spots"
                 }
             ]
-    
+
     def _get_fast_plan_b(self, city: str) -> Dict:
         """Fast pre-built Plan B without AI delays"""
         if 'new york' in city.lower():
@@ -408,7 +421,7 @@ class DynamicRouter:
                         "indoor": True
                     },
                     {
-                        "time": "11:00", 
+                        "time": "11:00",
                         "title": "Chelsea Market",
                         "description": "Historic indoor market with shops and dining",
                         "why_better": "Full day indoor activities",
@@ -433,12 +446,12 @@ class DynamicRouter:
                 "smart_tips": ["Check weather apps", "Bring umbrella"],
                 "cost_impact": "Similar cost"
             }
-    
+
     def _validate_coordinates_for_city(self, coords: List[float], city: str) -> bool:
         """Validate that coordinates make sense for the requested city"""
         city_lower = city.lower()
         lat, lon = coords
-        
+
         # Basic validation for major cities
         city_bounds = {
             'milano': {'lat': (45.3, 45.6), 'lon': (9.0, 9.4)},
@@ -447,15 +460,15 @@ class DynamicRouter:
             'paris': {'lat': (48.7, 49.0), 'lon': (2.1, 2.5)},
             'london': {'lat': (51.3, 51.7), 'lon': (-0.5, 0.2)}
         }
-        
+
         for city_key, bounds in city_bounds.items():
             if city_key in city_lower:
                 lat_ok = bounds['lat'][0] <= lat <= bounds['lat'][1]
                 lon_ok = bounds['lon'][0] <= lon <= bounds['lon'][1]
                 return lat_ok and lon_ok
-        
+
         return True  # For unknown cities, accept coordinates
-    
+
     def _fallback_geocoding(self, city: str) -> List[float]:
         """Fallback geocoding using Nominatim"""
         try:
@@ -472,7 +485,7 @@ class DynamicRouter:
                 return [float(result['lat']), float(result['lon'])]
         except:
             pass
-        
+
         # Ultimate fallback - return center of major cities
         fallback_coords = {
             'milano': [45.4642, 9.1900],
@@ -481,14 +494,14 @@ class DynamicRouter:
             'paris': [48.8566, 2.3522],
             'london': [51.5074, -0.1278]
         }
-        
+
         city_lower = city.lower()
         for city_key, coords in fallback_coords.items():
             if city_key in city_lower:
                 return coords
-        
+
         return [0, 0]  # Last resort
-    
+
     def _get_real_city_coordinates(self, city: str) -> List[float]:
         """Ottiene coordinate reali per qualsiasi città mondiale via geocoding"""
         try:
@@ -499,36 +512,36 @@ class DynamicRouter:
                 'limit': 1,
                 'addressdetails': 1
             }
-            
+
             response = requests.get(
-                "https://nominatim.openstreetmap.org/search", 
-                params=params, 
+                "https://nominatim.openstreetmap.org/search",
+                params=params,
                 timeout=10,
                 headers={'User-Agent': 'Viamigo-Travel-App/1.0'}
             )
-            
+
             if response.ok and response.json():
                 result = response.json()[0]
                 lat = float(result['lat'])
                 lon = float(result['lon'])
                 print(f"🌍 Geocoding dinamico: {city} → [{lat}, {lon}]")
                 return [lat, lon]
-                
+
         except Exception as e:
             print(f"⚠️ Errore geocoding per {city}: {e}")
-        
+
         # Fallback solo per città italiane conosciute
         italian_cities = {
             'genova': [44.4056, 8.9463],
             'milano': [45.4642, 9.1900],
             'roma': [41.9028, 12.4964]
         }
-        
+
         return italian_cities.get(city.lower(), [44.4056, 8.9463])
-    
+
     def _smart_geographic_fallback(self, location: str, city_lower: str) -> Tuple[float, float]:
         """Sistema intelligente di fallback geografico per qualsiasi città europea"""
-        
+
         # 1. ITALIA - Rilevamento regionale avanzato
         italian_regions = {
             'nord': {
@@ -547,7 +560,7 @@ class DynamicRouter:
                 'name': 'Sud Italia'
             }
         }
-        
+
         # 2. EUROPA - Rilevamento per nazioni
         european_countries = {
             'francia': {
@@ -579,51 +592,56 @@ class DynamicRouter:
                 'center': (51.5074, -0.1278),  # Londra
             }
         }
-        
+
         # Controlla prima le regioni italiane
         for region, data in italian_regions.items():
             if any(keyword in city_lower for keyword in data['keywords']):
-                print(f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando {data['name']}")
+                print(
+                    f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando {data['name']}")
                 return data['center']
-        
+
         # Controlla poi le nazioni europee
         for country, data in european_countries.items():
             if any(keyword in city_lower for keyword in data['keywords']):
-                print(f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando capitale {country}")
+                print(
+                    f"⚠️ Nessuna coordinata per {location} in {city_lower}, usando capitale {country}")
                 return data['center']
-        
+
         # Fallback finale intelligente basato su pattern geografici
         if any(term in city_lower for term in ['mare', 'costa', 'porto', 'beach', 'sea']):
-            print(f"⚠️ Località costiera {city_lower} non trovata, usando Genova")
+            print(
+                f"⚠️ Località costiera {city_lower} non trovata, usando Genova")
             return (44.4056, 8.9463)  # Genova per località costiere
         elif any(term in city_lower for term in ['monte', 'alpi', 'mountain', 'valle', 'ski']):
-            print(f"⚠️ Località montana {city_lower} non trovata, usando Torino")
+            print(
+                f"⚠️ Località montana {city_lower} non trovata, usando Torino")
             return (45.0703, 7.6869)  # Torino per località montane
         else:
-            print(f"⚠️ Città {city_lower} non riconosciuta, usando centro Europa")
+            print(
+                f"⚠️ Città {city_lower} non riconosciuta, usando centro Europa")
             return (43.7696, 11.2558)  # Firenze come centro geografico europeo
-    
-    def _generate_smart_waypoints(self, start_coords: Tuple[float, float], 
-                                 end_coords: Tuple[float, float], 
-                                 city: str, duration: str, user_interests: List[str] = None) -> List[Dict]:
+
+    def _generate_smart_waypoints(self, start_coords: Tuple[float, float],
+                                  end_coords: Tuple[float, float],
+                                  city: str, duration: str, user_interests: List[str] = None) -> List[Dict]:
         """Genera punti intermedi intelligenti usando AI"""
         if not self.openai_api_key:
             return self._generate_basic_waypoints(start_coords, end_coords, city, user_interests)
-        
+
         try:
             from openai import OpenAI
             client = OpenAI(api_key=self.openai_api_key)
-            
+
             # Calcola punto medio per riferimento
             mid_lat = (start_coords[0] + end_coords[0]) / 2
             mid_lon = (start_coords[1] + end_coords[1]) / 2
-            
+
             duration_map = {
                 'quick': '2-3 ore',
-                'half_day': '4-5 ore', 
+                'half_day': '4-5 ore',
                 'full_day': '8+ ore'
             }
-            
+
             prompt = f"""
             Crea un itinerario turistico personalizzato per {city} in {duration_map.get(duration, '4-5 ore')}.
             
@@ -653,7 +671,7 @@ class DynamicRouter:
             Coordinate devono essere realistiche per {city}.
             Transport options: walking, metro, bus, tram, funicular
             """
-            
+
             response = client.chat.completions.create(
                 model="gpt-4-turbo",
                 messages=[{"role": "user", "content": prompt}],
@@ -661,23 +679,23 @@ class DynamicRouter:
                 max_completion_tokens=600,
                 timeout=30
             )
-            
+
             ai_result = json.loads(response.choices[0].message.content)
             return ai_result.get('waypoints', [])
-            
+
         except Exception as e:
             print(f"Errore AI waypoints: {e}")
             return self._generate_basic_waypoints(start_coords, end_coords, city, user_interests)
-    
-    def _generate_basic_waypoints(self, start_coords: Tuple[float, float], 
-                                 end_coords: Tuple[float, float], city: str, user_interests: List[str] = None) -> List[Dict]:
+
+    def _generate_basic_waypoints(self, start_coords: Tuple[float, float],
+                                  end_coords: Tuple[float, float], city: str, user_interests: List[str] = None) -> List[Dict]:
         """Genera waypoints base senza AI"""
         mid_lat = (start_coords[0] + end_coords[0]) / 2
         mid_lon = (start_coords[1] + end_coords[1]) / 2
-        
+
         # Sistema waypoint dinamico e universale
         city_lower = city.lower()
-        
+
         # Waypoints specifici per città principali con dettagli autentici
         specific_waypoints = {
             'roma': ['Centro Storico', 'Piazza di Spagna', 'Campo de\' Fiori'],
@@ -695,38 +713,38 @@ class DynamicRouter:
             'pisa': ['Torre di Pisa', 'Piazza dei Miracoli', 'Lungarni'],
             'lecce': ['Basilica Santa Croce', 'Piazza del Duomo', 'Anfiteatro Romano']
         }
-        
+
         # Waypoints generici per città costiere/montane/interne
         generic_waypoints = {
             'costiera': ['Centro Storico', 'Lungomare', 'Porto'],
             'montana': ['Centro Storico', 'Piazza Principale', 'Belvedere'],
             'interna': ['Centro Storico', 'Piazza del Duomo', 'Via Principale']
         }
-        
+
         # Determina il tipo di città e waypoints appropriati
         if city_lower in specific_waypoints:
             names = specific_waypoints[city_lower]
             base_coords = self.city_centers.get(city_lower, start_coords)
         else:
             # Classifica automatica del tipo di città
-            coastal_keywords = ['mare', 'porto', 'lungomare', 'costa', 'riviera']
+            coastal_keywords = ['mare', 'porto',
+                                'lungomare', 'costa', 'riviera']
             mountain_keywords = ['monte', 'val', 'alpe', 'passo', 'colle']
-            
+
             city_type = 'interna'  # default
             if any(keyword in city_lower for keyword in coastal_keywords):
                 city_type = 'costiera'
             elif any(keyword in city_lower for keyword in mountain_keywords):
                 city_type = 'montana'
-            
+
             names = generic_waypoints[city_type]
             base_coords = self.city_centers.get(city_lower, start_coords)
-        
-        
+
         waypoints = []
         for i, name in enumerate(names[:3]):
             # Distribuzione intelligente: usa coordinate base della città + offset graduali
             factor = (i + 1) / (len(names) + 1)
-            
+
             # Per città reali, usa coordinate base + piccoli offset realistici
             if city_lower in self.city_centers:
                 offset_lat = (i - 1) * 0.003  # ~300m per waypoint
@@ -735,15 +753,17 @@ class DynamicRouter:
                 lon = base_coords[1] + offset_lon
             else:
                 # Fallback: distribuzione tra start e end
-                lat = start_coords[0] + (end_coords[0] - start_coords[0]) * factor
-                lon = start_coords[1] + (end_coords[1] - start_coords[1]) * factor
-            
+                lat = start_coords[0] + \
+                    (end_coords[0] - start_coords[0]) * factor
+                lon = start_coords[1] + \
+                    (end_coords[1] - start_coords[1]) * factor
+
             # Descrizioni dettagliate e personalizzate per luoghi specifici
             if user_interests:
                 interest_context = f" - perfetto per chi ama {', '.join(user_interests[:2])}"
             else:
                 interest_context = ""
-                
+
             detailed_descriptions = {
                 'Piazza Unità d\'Italia': f'La piazza più grande d\'Europa affacciata sul mare, circondata da eleganti palazzi asburgici del XIX secolo{interest_context}',
                 'Castello di Miramare': f'Romantico castello bianco affacciato sul golfo con giardini botanici e arredi storici dell\'Arciduca Massimiliano{interest_context}',
@@ -752,9 +772,10 @@ class DynamicRouter:
                 'Lungomare': f'Suggestiva passeggiata panoramica sul golfo di Trieste con vista sulle montagne carsiche{interest_context}',
                 'Porto': f'Il grande porto commerciale di Trieste, storico ponte tra Europa centrale e Mediterraneo{interest_context}'
             }
-            
-            description = detailed_descriptions.get(name, f'Esplora {name} e le sue meraviglie caratteristiche di {city.title()}')
-            
+
+            description = detailed_descriptions.get(
+                name, f'Esplora {name} e le sue meraviglie caratteristiche di {city.title()}')
+
             waypoints.append({
                 'name': name,
                 'description': description,
@@ -762,27 +783,28 @@ class DynamicRouter:
                 'visit_duration': '45 min',
                 'transport_from_previous': 'walking'
             })
-        
+
         return waypoints
-    
-    def _build_itinerary(self, start: str, end: str, 
-                        start_coords: Tuple[float, float], 
-                        end_coords: Tuple[float, float],
-                        waypoints: List[Dict], city: str) -> List[Dict]:
+
+    def _build_itinerary(self, start: str, end: str,
+                         start_coords: Tuple[float, float],
+                         end_coords: Tuple[float, float],
+                         waypoints: List[Dict], city: str) -> List[Dict]:
         """Costruisce l'itinerario finale"""
         itinerary = []
         current_time = datetime(2025, 1, 1, 9, 0)  # Start at 9 AM
-        
-        # Starting point  
+
+        # Starting point
         itinerary.append({
             'time': current_time.strftime('%H:%M'),
             'title': start.title(),
             'description': f'Punto di partenza: {start}',
-            'coordinates': list(start_coords),  # Coordinate precise del punto di partenza
+            # Coordinate precise del punto di partenza
+            'coordinates': list(start_coords),
             'context': self._generate_context_key(start, city),
             'transport': 'start'
         })
-        
+
         # Waypoints con coordinate precise
         for waypoint in waypoints:
             current_time += timedelta(minutes=30)  # Travel time
@@ -790,15 +812,17 @@ class DynamicRouter:
                 'time': current_time.strftime('%H:%M'),
                 'title': waypoint['name'],
                 'description': waypoint['description'],
-                'coordinates': waypoint['estimated_coords'],  # Usa coordinate precise dal waypoint
+                # Usa coordinate precise dal waypoint
+                'coordinates': waypoint['estimated_coords'],
                 'context': self._generate_context_key(waypoint['name'], city),
                 'transport': waypoint.get('transport_from_previous', 'walking')
             })
-            
+
             # Add visit duration
-            duration_mins = self._parse_duration(waypoint.get('visit_duration', '45 min'))
+            duration_mins = self._parse_duration(
+                waypoint.get('visit_duration', '45 min'))
             current_time += timedelta(minutes=duration_mins)
-        
+
         # Ending point
         current_time += timedelta(minutes=20)  # Final travel
         itinerary.append({
@@ -809,22 +833,22 @@ class DynamicRouter:
             'context': self._generate_context_key(end, city),
             'transport': 'walking'
         })
-        
+
         # Add local tips
         itinerary.append({
             'type': 'tip',
             'title': f'💡 {city}',
             'description': f'Itinerario personalizzato generato per il tuo percorso da {start} a {end}'
         })
-        
+
         return itinerary
-    
+
     def _generate_context_key(self, place: str, city: str) -> str:
         """Genera chiave di contesto per il database"""
         place_clean = place.lower().replace(' ', '_').replace('\'', '').replace('.', '')
         city_clean = city.lower()
         return f"{place_clean}_{city_clean}"
-    
+
     def _parse_duration(self, duration_str: str) -> int:
         """Converte stringa durata in minuti"""
         try:
@@ -835,7 +859,7 @@ class DynamicRouter:
         except:
             pass
         return 45  # Default 45 minutes
-    
+
     def _is_specific_destination(self, end_lower: str, start_lower: str) -> bool:
         """Rileva se la destinazione richiede un viaggio specifico fuori dal centro città"""
         # Pattern di destinazioni specifiche che richiedono trasporto
@@ -849,34 +873,36 @@ class DynamicRouter:
             'bellagio', 'varenna', 'menaggio',
             'taormina', 'cefalù', 'monreale'
         ]
-        
+
         return any(pattern in end_lower for pattern in specific_patterns)
-    
+
     def _generate_journey_itinerary(self, start: str, end: str, city_lower: str) -> List[Dict]:
         """Genera itinerario intelligente per viaggi verso destinazioni specifiche"""
         end_lower = end.lower().strip()
-        
+
         # Ottieni coordinate reali del punto di partenza e destinazione
         # Fix coordinate di partenza per città specifica
         if city_lower == 'genova':
             start_coords = [44.4056, 8.9463]  # Piazza De Ferrari Genova
         else:
-            start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
-        
+            start_coords = self._geocode_location(start, city_lower) or self.city_centers.get(
+                city_lower, [44.4056, 8.9463])  # Default Genova
+
         # Per Nervi, usa coordinate specifiche note
         if 'nervi' in end_lower or 'parchi' in end_lower:
             end_coords = [44.3814, 9.0402]  # Coordinate reali Nervi
         else:
             end_coords = self._geocode_location(end, city_lower)
-        
+
         if not end_coords:
             # Fallback se non riusciamo a geocodificare la destinazione
             return self._generate_fallback_city_tour(start, end, city_lower)
-        
+
         # Calcola distanza per determinare tipo di trasporto
         distance = self._calculate_distance(start_coords, end_coords)
-        transport_info = self._determine_transport(distance, start_coords, end_coords)
-        
+        transport_info = self._determine_transport(
+            distance, start_coords, end_coords)
+
         # Genera itinerario dinamico
         itinerary = [
             {
@@ -888,7 +914,7 @@ class DynamicRouter:
                 'transport': 'start'
             }
         ]
-        
+
         # Aggiungi tappa di viaggio se necessaria
         if transport_info['needs_transport']:
             itinerary.append({
@@ -902,7 +928,7 @@ class DynamicRouter:
             start_time = '10:00'
         else:
             start_time = '09:30'
-        
+
         # Genera waypoints specifici per destinazioni note
         if 'nervi' in end_lower or 'parchi' in end_lower:
             destination_waypoints = [
@@ -969,8 +995,9 @@ class DynamicRouter:
             ]
         else:
             # Genera waypoints intelligenti per altre destinazioni
-            destination_waypoints = self._generate_smart_destination_waypoints(end_coords, end_lower, city_lower)
-        
+            destination_waypoints = self._generate_smart_destination_waypoints(
+                end_coords, end_lower, city_lower)
+
         # Aggiungi waypoints all'itinerario
         current_time = datetime.strptime(start_time, '%H:%M')
         for i, waypoint in enumerate(destination_waypoints):
@@ -983,7 +1010,7 @@ class DynamicRouter:
                 'context': waypoint['context'],
                 'transport': 'walking' if i > 0 else 'walking'
             })
-        
+
         # Aggiungi tips specifici
         if 'nervi' in end_lower or 'parchi' in end_lower:
             itinerary.extend([
@@ -1000,23 +1027,24 @@ class DynamicRouter:
             ])
         else:
             # Tips automatici per altre destinazioni
-            itinerary.extend(self._generate_smart_tips(transport_info, end_lower))
-        
+            itinerary.extend(self._generate_smart_tips(
+                transport_info, end_lower))
+
         return itinerary
-    
+
     def _calculate_distance(self, coords1: Tuple[float, float], coords2: Tuple[float, float]) -> float:
         """Calcola distanza approssimativa tra due coordinate (km)"""
         from math import radians, cos, sin, asin, sqrt
-        
+
         lat1, lon1 = radians(coords1[0]), radians(coords1[1])
         lat2, lon2 = radians(coords2[0]), radians(coords2[1])
-        
+
         dlat = lat2 - lat1
         dlon = lon2 - lon1
-        
+
         a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
         return 2 * asin(sqrt(a)) * 6371  # Radio Terra in km
-    
+
     def _determine_transport(self, distance: float, start_coords: Tuple[float, float], end_coords: Tuple[float, float]) -> Dict:
         """Determina il tipo di trasporto più appropriato"""
         if distance > 15:  # Oltre 15km = treno/bus
@@ -1026,7 +1054,7 @@ class DynamicRouter:
                 'description': f'Viaggio in treno/autobus (circa {int(distance * 2)} min)',
                 'duration_mins': int(distance * 2)
             }
-        elif distance > 5:  # 5-15km = metro/tram/bus urbano  
+        elif distance > 5:  # 5-15km = metro/tram/bus urbano
             return {
                 'needs_transport': True,
                 'type': 'metro',
@@ -1040,15 +1068,15 @@ class DynamicRouter:
                 'description': f'A piedi (circa {int(distance * 12)} min)',
                 'duration_mins': int(distance * 12)
             }
-    
+
     def _generate_smart_destination_waypoints(self, coords: Tuple[float, float], destination: str, city: str) -> List[Dict]:
         """Genera waypoints intelligenti per una destinazione specifica usando AI + geocoding"""
         try:
             from openai import OpenAI
             import os
-            
+
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-            
+
             prompt = f"""
             Genera 3-4 waypoints per visitare "{destination}" vicino a {city}, Italia.
             
@@ -1069,17 +1097,17 @@ class DynamicRouter:
             
             Usa coordinate realistiche vicine a quelle base, descrizioni autentiche e nomi reali.
             """
-            
+
             response = client.chat.completions.create(
                 model="gpt-4-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
                 max_completion_tokens=400
             )
-            
+
             ai_result = json.loads(response.choices[0].message.content)
             waypoints = ai_result.get('waypoints', [])
-            
+
             # Valida e correggi coordinate se necessario
             validated_waypoints = []
             for waypoint in waypoints:
@@ -1087,10 +1115,12 @@ class DynamicRouter:
                 wp_coords = waypoint.get('coordinates', coords)
                 if self._calculate_distance(coords, tuple(wp_coords)) > 2:
                     # Correggi coordinate troppo lontane usando offset dalla base
-                    offset_lat = (len(validated_waypoints) * 0.002) - 0.002  # ±200m
+                    offset_lat = (len(validated_waypoints)
+                                  * 0.002) - 0.002  # ±200m
                     offset_lon = (len(validated_waypoints) * 0.002) - 0.002
-                    wp_coords = [coords[0] + offset_lat, coords[1] + offset_lon]
-                
+                    wp_coords = [coords[0] + offset_lat,
+                                 coords[1] + offset_lon]
+
                 validated_waypoints.append({
                     'name': waypoint.get('name', f'Attrazione {len(validated_waypoints) + 1}'),
                     'description': waypoint.get('description', f'Esplora questa zona di {destination}'),
@@ -1098,19 +1128,20 @@ class DynamicRouter:
                     'context': waypoint.get('context', f'{destination.lower().replace(" ", "_")}_{len(validated_waypoints)}'),
                     'visit_duration': waypoint.get('visit_duration', '45 min')
                 })
-            
+
             return validated_waypoints
-            
+
         except Exception as e:
             print(f"Errore generazione AI waypoints per {destination}: {e}")
             # Fallback: genera waypoints base intorno alla destinazione
             return self._generate_basic_destination_waypoints(coords, destination)
-    
+
     def _generate_basic_destination_waypoints(self, coords: Tuple[float, float], destination: str) -> List[Dict]:
         """Genera waypoints base senza AI"""
         waypoints = []
-        offsets = [(0.001, 0.001), (-0.001, 0.001), (0.001, -0.001), (-0.001, -0.001)]
-        
+        offsets = [(0.001, 0.001), (-0.001, 0.001),
+                   (0.001, -0.001), (-0.001, -0.001)]
+
         for i, (lat_offset, lon_offset) in enumerate(offsets[:3]):
             waypoints.append({
                 'name': f'{destination.title()} - Punto {i+1}',
@@ -1119,57 +1150,59 @@ class DynamicRouter:
                 'context': f'{destination.lower().replace(" ", "_")}_{i+1}',
                 'visit_duration': '45 min'
             })
-        
+
         return waypoints
-    
+
     def _generate_smart_tips(self, transport_info: Dict, destination: str) -> List[Dict]:
         """Genera tips intelligenti basati su trasporto e destinazione"""
         tips = []
-        
+
         if transport_info['needs_transport']:
             tips.append({
                 'type': 'tip',
                 'title': f'🚗 Come arrivare',
                 'description': transport_info['description']
             })
-        
+
         # Tips stagionali/generici
         if any(word in destination for word in ['parchi', 'giardini', 'natura']):
             tips.append({
-                'type': 'tip', 
+                'type': 'tip',
                 'title': '🌸 Stagione ideale',
                 'description': 'Primavera e estate per godere al meglio della natura'
             })
         elif any(word in destination for word in ['museo', 'arte', 'galleria']):
             tips.append({
                 'type': 'tip',
-                'title': '🎨 Consigli visita', 
+                'title': '🎨 Consigli visita',
                 'description': 'Controlla orari di apertura e prenota in anticipo'
             })
-        
+
         return tips
-    
+
     def _generate_fallback_city_tour(self, start: str, end: str, city_lower: str) -> List[Dict]:
         """Genera tour generico della città quando non riusciamo a geocodificare la destinazione"""
-        base_coords = self.city_centers.get(city_lower, [44.4056, 8.9463])  # Default Genova
-    
+        base_coords = self.city_centers.get(
+            city_lower, [44.4056, 8.9463])  # Default Genova
+
     def _fallback_itinerary(self, start: str, end: str, city: str) -> List[Dict]:
         """Itinerario di fallback con geocoding dinamico mondiale"""
         city_lower = city.lower()
-        
+
         # 🌍 GEOCODING DINAMICO: Ottieni coordinate reali per QUALSIASI città
         city_coords = self._get_real_city_coordinates(city)
         print(f"📍 Coordinate dinamiche per {city}: {city_coords}")
-        
+
         # Validate coordinates match the requested city
         if not self._validate_coordinates_for_city(city_coords, city):
-            print(f"⚠️ Coordinate mismatch for {city}, using fallback geocoding")
+            print(
+                f"⚠️ Coordinate mismatch for {city}, using fallback geocoding")
             city_coords = self._fallback_geocoding(city)
-        
+
         # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO + AI per destinazioni mondiali E ITALIANE
         from cost_effective_scraping import CostEffectiveDataProvider
         from intelligent_content_generator import IntelligentContentGenerator
-        
+
         # 🇮🇹 FIXED: Include Italian cities so they use PostgreSQL cache!
         use_cost_effective_provider = any(keyword in city_lower for keyword in [
             # Foreign destinations
@@ -1187,23 +1220,26 @@ class DynamicRouter:
             'trapani', 'agrigento', 'caltanissetta', 'enna', 'messina', 'ragusa', 'siracusa',
             'sassari', 'nuoro', 'oristano', 'carbonia', 'olbia', 'alghero'
         ])
-        
+
         if use_cost_effective_provider:
-            print(f"🌍 Using cost-effective provider (with PostgreSQL cache priority) for {city}")
+            print(
+                f"🌍 Using cost-effective provider (with PostgreSQL cache priority) for {city}")
             cost_provider = CostEffectiveDataProvider()
             ai_generator = IntelligentContentGenerator()
-            
+
             try:
                 # Ottieni luoghi di interesse economicamente
                 restaurants = cost_provider.get_places_data(city, "restaurant")
-                attractions = cost_provider.get_places_data(city, "tourist_attraction")
-                
+                attractions = cost_provider.get_places_data(
+                    city, "tourist_attraction")
+
                 if len(restaurants) >= 2 and len(attractions) >= 2:
-                    print(f"✅ Sistema economico: {len(restaurants)} ristoranti + {len(attractions)} attrazioni per {city}")
-                    
+                    print(
+                        f"✅ Sistema economico: {len(restaurants)} ristoranti + {len(attractions)} attrazioni per {city}")
+
                     # Crea itinerario ricco con dati reali
                     waypoints = []
-                    
+
                     # Start
                     waypoints.append({
                         'time': '09:00',
@@ -1213,14 +1249,15 @@ class DynamicRouter:
                         'context': f'{start.lower().replace(" ", "_")}_{city_lower}',
                         'transport': 'start'
                     })
-                    
+
                     # Prima attrazione con AI enhancement
                     if attractions:
                         attr = attractions[0]
                         # 🚀 INSTANT AI DETAILS - No delays
                         from smart_ai_cache import get_cached_ai_details
-                        ai_details = get_cached_ai_details(attr['name'], "attraction")
-                        
+                        ai_details = get_cached_ai_details(
+                            attr['name'], "attraction")
+
                         waypoints.append({
                             'time': '10:00',
                             'title': attr['name'],
@@ -1235,20 +1272,23 @@ class DynamicRouter:
                             'insider_tip': ai_details.get('insider_tip'),
                             'best_time': ai_details.get('best_time')
                         })
-                    
+
                     # Ristorante con controllo coordinate
                     if restaurants:
                         rest = restaurants[0]
                         # 🚨 VERIFICA coordinate sono nell'area corretta
                         if "new york" in city_lower:
                             if not (40.6 <= rest['latitude'] <= 40.8 and -74.1 <= rest['longitude'] <= -73.9):
-                                print(f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
-                                rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
-                        
+                                print(
+                                    f"⚠️ Coordinate sbagliate per {rest['name']}: {rest['latitude']}, {rest['longitude']}")
+                                rest = {'name': 'Ristorante Centro NYC', 'latitude': 40.7589, 'longitude': -
+                                        73.9851, 'description': 'Ristorante autentico nel cuore di Manhattan'}
+
                         # 🚀 INSTANT AI DETAILS - No delays
                         from smart_ai_cache import get_cached_ai_details
-                        ai_details = get_cached_ai_details(rest['name'], "restaurant")
-                        
+                        ai_details = get_cached_ai_details(
+                            rest['name'], "restaurant")
+
                         waypoints.append({
                             'time': '12:30',
                             'title': rest['name'],
@@ -1263,14 +1303,15 @@ class DynamicRouter:
                             'insider_tip': ai_details.get('insider_tip'),
                             'emergency_alternatives': ai_details.get('emergency_alternatives', [])
                         })
-                    
+
                     # Seconda attrazione con AI enrichment
                     if len(attractions) > 1:
                         attr2 = attractions[1]
                         # 🚀 INSTANT AI DETAILS - No delays
                         from smart_ai_cache import get_cached_ai_details
-                        ai_details2 = get_cached_ai_details(attr2['name'], "attraction")
-                            
+                        ai_details2 = get_cached_ai_details(
+                            attr2['name'], "attraction")
+
                         waypoints.append({
                             'time': '14:30',
                             'title': attr2['name'],
@@ -1284,14 +1325,15 @@ class DynamicRouter:
                             'insider_tip': ai_details2.get('insider_tip'),
                             'best_time': ai_details2.get('best_time')
                         })
-                    
+
                     # Terza attrazione se disponibile
                     if len(attractions) > 2:
                         attr3 = attractions[2]
                         # 🚀 INSTANT AI DETAILS - No delays
                         from smart_ai_cache import get_cached_ai_details
-                        ai_details3 = get_cached_ai_details(attr3['name'], "attraction")
-                            
+                        ai_details3 = get_cached_ai_details(
+                            attr3['name'], "attraction")
+
                         waypoints.append({
                             'time': '15:30',
                             'title': attr3['name'],
@@ -1305,14 +1347,15 @@ class DynamicRouter:
                             'insider_tip': ai_details3.get('insider_tip'),
                             'best_time': ai_details3.get('best_time')
                         })
-                    
+
                     # Secondo ristorante se disponibile
                     if len(restaurants) > 1:
                         rest2 = restaurants[1]
                         # 🚀 INSTANT AI DETAILS - No delays
                         from smart_ai_cache import get_cached_ai_details
-                        ai_details_rest2 = get_cached_ai_details(rest2['name'], "restaurant")
-                            
+                        ai_details_rest2 = get_cached_ai_details(
+                            rest2['name'], "restaurant")
+
                         waypoints.append({
                             'time': '17:00',
                             'title': rest2['name'],
@@ -1326,7 +1369,7 @@ class DynamicRouter:
                             'insider_tip': ai_details_rest2.get('insider_tip'),
                             'emergency_alternatives': ai_details_rest2.get('emergency_alternatives', [])
                         })
-                    
+
                     # End
                     waypoints.append({
                         'time': '18:30',
@@ -1336,25 +1379,27 @@ class DynamicRouter:
                         'context': f'{end.lower().replace(" ", "_")}_{city_lower}',
                         'transport': 'walking'
                     })
-                    
+
                     # 🧠 REAL AI WITH FAST TIMEOUT - Authentic but quick
                     try:
-                        smart_discoveries = ai_generator.generate_smart_discoveries(start, city, "morning")
-                        plan_b = ai_generator.generate_emergency_plan_b(waypoints, city, "rain")
+                        smart_discoveries = ai_generator.generate_smart_discoveries(
+                            start, city, "morning")
+                        plan_b = ai_generator.generate_emergency_plan_b(
+                            waypoints, city, "rain")
                         print("✅ Real AI features generated in time")
                     except Exception as e:
                         print(f"⚠️ AI timeout, using smart cache: {e}")
                         from smart_ai_cache import get_cached_plan_b, get_cached_discoveries
                         smart_discoveries = get_cached_discoveries(city)
                         plan_b = get_cached_plan_b(city)
-                    
+
                     # Tip arricchito
                     waypoints.append({
                         'type': 'tip',
                         'title': f'💡 {city.title()}',
                         'description': f'Itinerario autentico con AI-powered dettagli, Piano B intelligente e scoperte local'
                     })
-                    
+
                     # Piano B per imprevisti CON COORDINATE
                     waypoints.append({
                         'type': 'emergency_plan',
@@ -1363,7 +1408,7 @@ class DynamicRouter:
                         'coordinates': city_coords,  # 🗽 Coordinate della città!
                         'plan_b_data': plan_b
                     })
-                    
+
                     # Scoperte intelligenti CON COORDINATE
                     if smart_discoveries:
                         waypoints.append({
@@ -1373,22 +1418,23 @@ class DynamicRouter:
                             'coordinates': city_coords,  # 🗽 Coordinate della città!
                             'discoveries': smart_discoveries[:2]  # Max 2
                         })
-                    
+
                     return waypoints
-                    
+
                 else:
-                    print(f"⚠️ Dati insufficienti per {city}: {len(restaurants)} ristoranti, {len(attractions)} attrazioni")
-                    
+                    print(
+                        f"⚠️ Dati insufficienti per {city}: {len(restaurants)} ristoranti, {len(attractions)} attrazioni")
+
             except Exception as e:
                 print(f"⚠️ Errore sistema economico per {city}: {e}")
-                    
+
         # Fallback itinerari pre-programmati per città principali
         if 'trieste' in city_lower or 'miramare' in city_lower:
             base_coords = [45.6495, 13.7768]  # Trieste preciso
         else:
             # 🌍 USA coordinate dinamiche invece del database locale
             base_coords = city_coords
-        
+
         # Waypoints ottimizzati per città principali con coordinate precise
         if 'verona' in city_lower:
             return [
@@ -1475,7 +1521,8 @@ class DynamicRouter:
                         'time': '09:00',
                         'title': start,
                         'description': f'Punto di partenza: {start.lower()}',
-                        'coordinates': [40.9233, 9.5027] if 'olbia' in city_lower else [41.1362, 9.5347],  # Olbia o Costa Smeralda
+                        # Olbia o Costa Smeralda
+                        'coordinates': [40.9233, 9.5027] if 'olbia' in city_lower else [41.1362, 9.5347],
                         'context': f'{start.lower().replace(" ", "_").replace(",", "_")}_{city_lower}',
                         'transport': 'start'
                     },
@@ -1565,17 +1612,17 @@ class DynamicRouter:
                     'description': 'Itinerario autentico attraverso la storia asburgica di Trieste - dalle piazze imperiali al castello romantico'
                 }
             ]
-        
+
         # Waypoints per Genova - OTTIMIZZATO per destinazione specifica
         elif 'genova' in city_lower:
             # Analizza la destinazione per generare itinerario pertinente
             end_lower = end.lower().strip()
             start_lower = start.lower().strip()
-            
+
             # SISTEMA DINAMICO UNIVERSALE - RILEVAMENTO DESTINAZIONI SPECIFICHE
             if self._is_specific_destination(end_lower, start_lower):
                 return self._generate_journey_itinerary(start, end, city_lower)
-            
+
             # ITINERARIO GENERICO FALLBACK per centro città
             else:
                 return [
@@ -1626,53 +1673,53 @@ class DynamicRouter:
                     }
                 ]
                 return [
-                {
-                    'time': '09:00',
-                    'title': 'Piazza De Ferrari',
-                    'description': 'Il salotto di Genova con la grande fontana e palazzi storici',
-                    'coordinates': [44.4076, 8.9338],
-                    'context': 'piazza_de_ferrari',
-                    'transport': 'start'
-                },
-                {
-                    'time': '09:30',
-                    'title': 'Cattedrale di San Lorenzo',
-                    'description': 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941',
-                    'coordinates': [44.4070, 8.9307],
-                    'context': 'cattedrale_san_lorenzo',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '10:15',
-                    'title': 'Via del Campo',
-                    'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
-                    'coordinates': [44.4088, 8.9294],
-                    'context': 'via_del_campo',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '11:30',
-                    'title': 'Porto Antico',
-                    'description': 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera',
-                    'coordinates': [44.4108, 8.9279],
-                    'context': 'porto_antico',
-                    'transport': 'walking'
-                },
-                {
-                    'time': '12:30',
-                    'title': 'Acquario di Genova',
-                    'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari',
-                    'coordinates': [44.4108, 8.9279],
-                    'context': 'acquario_genova',
-                    'transport': 'walking'
-                },
-                {
-                    'type': 'tip',
-                    'title': '💡 Genova',
-                    'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
-                }
-            ]
-        
+                    {
+                        'time': '09:00',
+                        'title': 'Piazza De Ferrari',
+                        'description': 'Il salotto di Genova con la grande fontana e palazzi storici',
+                        'coordinates': [44.4076, 8.9338],
+                        'context': 'piazza_de_ferrari',
+                        'transport': 'start'
+                    },
+                    {
+                        'time': '09:30',
+                        'title': 'Cattedrale di San Lorenzo',
+                        'description': 'Duomo romanico-gotico con tesoro e bomba inesplosa del 1941',
+                        'coordinates': [44.4070, 8.9307],
+                        'context': 'cattedrale_san_lorenzo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '10:15',
+                        'title': 'Via del Campo',
+                        'description': 'La strada più famosa dei caruggi genovesi, immortalata da De André',
+                        'coordinates': [44.4088, 8.9294],
+                        'context': 'via_del_campo',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '11:30',
+                        'title': 'Porto Antico',
+                        'description': 'Area portuale rinnovata da Renzo Piano con Acquario e Biosfera',
+                        'coordinates': [44.4108, 8.9279],
+                        'context': 'porto_antico',
+                        'transport': 'walking'
+                    },
+                    {
+                        'time': '12:30',
+                        'title': 'Acquario di Genova',
+                        'description': 'Secondo acquario più grande d\'Europa con 12.000 esemplari',
+                        'coordinates': [44.4108, 8.9279],
+                        'context': 'acquario_genova',
+                        'transport': 'walking'
+                    },
+                    {
+                        'type': 'tip',
+                        'title': '💡 Genova',
+                        'description': 'Percorso ottimizzato: dal centro storico ai caruggi, fino al porto moderno'
+                    }
+                ]
+
         # Waypoints per Milano
         elif 'milano' in city_lower:
             return [
@@ -1722,7 +1769,7 @@ class DynamicRouter:
                     'description': 'Dal gotico al moderno - capitale della moda e dell\'innovazione'
                 }
             ]
-        
+
         elif 'firenze' in city_lower:
             return [
                 {
@@ -1763,7 +1810,7 @@ class DynamicRouter:
                     'description': f'Itinerario autentico nel cuore del Rinascimento - da {start} a {end}'
                 }
             ]
-        
+
         elif 'napoli' in city_lower:
             # SISTEMA ANTI-ALLUCINAZIONE RINFORZATO: Coordinate GPS verificate per Napoli
             return [
@@ -1771,7 +1818,8 @@ class DynamicRouter:
                     'time': '09:00',
                     'title': 'Piazza del Plebiscito',
                     'description': 'La piazza più grande di Napoli con la Basilica di San Francesco di Paola e il Palazzo Reale',
-                    'coordinates': [40.8358, 14.2488],  # COORDINATE VERIFICATE NAPOLI
+                    # COORDINATE VERIFICATE NAPOLI
+                    'coordinates': [40.8358, 14.2488],
                     'context': 'piazza_plebiscito_napoli',
                     'transport': 'start'
                 },
@@ -1779,7 +1827,8 @@ class DynamicRouter:
                     'time': '10:30',
                     'title': 'Castel Nuovo (Maschio Angioino)',
                     'description': 'Fortezza medievale simbolo di Napoli con l\'Arco di Trionfo aragonese',
-                    'coordinates': [40.8387, 14.2534],  # COORDINATE VERIFICATE NAPOLI
+                    # COORDINATE VERIFICATE NAPOLI
+                    'coordinates': [40.8387, 14.2534],
                     'context': 'castel_nuovo_napoli',
                     'transport': 'walking'
                 },
@@ -1787,7 +1836,8 @@ class DynamicRouter:
                     'time': '12:00',
                     'title': 'Spaccanapoli',
                     'description': 'Il decumano che divide la città antica, cuore pulsante della Napoli storica',
-                    'coordinates': [40.8518, 14.2681],  # COORDINATE VERIFICATE NAPOLI
+                    # COORDINATE VERIFICATE NAPOLI
+                    'coordinates': [40.8518, 14.2681],
                     'context': 'spaccanapoli_napoli',
                     'transport': 'walking'
                 },
@@ -1795,7 +1845,8 @@ class DynamicRouter:
                     'time': '13:30',
                     'title': 'Lungomare Caracciolo',
                     'description': 'Passeggiata panoramica sul Golfo di Napoli con vista su Vesuvio e Capri',
-                    'coordinates': [40.8280, 14.2147],  # COORDINATE VERIFICATE NAPOLI
+                    # COORDINATE VERIFICATE NAPOLI
+                    'coordinates': [40.8280, 14.2147],
                     'context': 'lungomare_napoli',
                     'transport': 'metro'
                 },
@@ -1805,7 +1856,7 @@ class DynamicRouter:
                     'description': f'Itinerario tra storia borbonica e cultura partenopea - da {start} a {end}'
                 }
             ]
-        
+
         elif 'bologna' in city_lower:
             return [
                 {
@@ -1846,7 +1897,7 @@ class DynamicRouter:
                     'description': f'Itinerario nella Dotta, Grassa e Rossa - da {start} a {end}'
                 }
             ]
-        
+
         elif 'palermo' in city_lower:
             return [
                 {
@@ -1887,7 +1938,7 @@ class DynamicRouter:
                     'description': f'Itinerario tra culture araba, normanna e barocca - da {start} a {end}'
                 }
             ]
-        
+
         elif 'venezia' in city_lower:
             return [
                 {
@@ -1928,7 +1979,7 @@ class DynamicRouter:
                     'description': f'Itinerario autentico attraverso i luoghi iconici della Serenissima - da {start} a {end}'
                 }
             ]
-        
+
         elif 'pisa' in city_lower:
             return [
                 {
@@ -1969,7 +2020,7 @@ class DynamicRouter:
                     'description': f'Itinerario nella città della Torre Pendente e delle Repubbliche Marinare - da {start} a {end}'
                 }
             ]
-        
+
         elif 'cagliari' in city_lower:
             return [
                 {
@@ -2010,7 +2061,7 @@ class DynamicRouter:
                     'description': f'Itinerario tra storia nuragica e dominazioni pisane-aragonesi - da {start} a {end}'
                 }
             ]
-        
+
         elif 'perugia' in city_lower:
             return [
                 {
@@ -2051,7 +2102,7 @@ class DynamicRouter:
                     'description': f'Itinerario tra Etruschi, medioevo e Rinascimento umbro - da {start} a {end}'
                 }
             ]
-        
+
         # Itinerario generico per altre città
         return [
             {
@@ -2084,6 +2135,7 @@ class DynamicRouter:
                 'description': f'Itinerario base per {city.title()} - per dettagli più specifici, prova con luoghi più precisi'
             }
         ]
+
 
 # Istanza globale
 dynamic_router = DynamicRouter()

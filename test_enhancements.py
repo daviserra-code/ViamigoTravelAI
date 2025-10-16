@@ -16,14 +16,14 @@ print("="*60)
 print("\n1️⃣ Testing Seasonal Intelligence...")
 try:
     from enhancements.seasonal_intelligence import SeasonalIntelligence, EventBasedIntelligence
-    
+
     seasonal = SeasonalIntelligence()
     current_season = seasonal.get_current_season()
     cities = seasonal.get_upcoming_season_cities()
-    
+
     events = EventBasedIntelligence()
     active_events = events.get_active_events()
-    
+
     print(f"   ✅ Current season: {current_season}")
     print(f"   ✅ Seasonal cities: {len(cities)} found")
     print(f"   ✅ Active events: {len(active_events)} found")
@@ -35,15 +35,17 @@ except Exception as e:
 print("\n2️⃣ Testing Geographic Clustering...")
 try:
     from enhancements.geographic_clustering import GeographicClusterer, create_geographic_scraping_plan
-    
+
     clusterer = GeographicClusterer()
     nearby = clusterer.find_nearby_cities('Milano', radius_km=100)
-    
+
     plan = create_geographic_scraping_plan(['Roma', 'Milano', 'Firenze'])
-    
+
     print(f"   ✅ Nearby cities to Milano: {len(nearby)} found")
-    print(f"   ✅ Scraping plan: {plan['total_cities']} cities, {len(plan['clusters'])} clusters")
-    print(f"   ✅ Estimated cost: ${plan['cost_estimate']['estimated_cost_usd']:.2f}")
+    print(
+        f"   ✅ Scraping plan: {plan['total_cities']} cities, {len(plan['clusters'])} clusters")
+    print(
+        f"   ✅ Estimated cost: ${plan['cost_estimate']['estimated_cost_usd']:.2f}")
 except Exception as e:
     print(f"   ❌ Error: {e}")
     sys.exit(1)
@@ -52,18 +54,18 @@ except Exception as e:
 print("\n3️⃣ Testing Analytics Modules...")
 try:
     from enhancements.analytics import QualityValidator
-    
+
     validator = QualityValidator()
-    
+
     # Test place validation
     test_place = {
         'name': 'Museo Egizio',
         'address': 'Via Accademia delle Scienze, 6, Torino',
         'rating': 4.7
     }
-    
+
     validation = validator.validate_place_data(test_place)
-    
+
     print(f"   ✅ Quality validator: {validation['valid']}")
     print(f"   ✅ Validation errors: {len(validation['errors'])}")
     print(f"   ✅ Validation warnings: {len(validation['warnings'])}")

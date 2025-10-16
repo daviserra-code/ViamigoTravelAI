@@ -17,6 +17,7 @@ from api_error_handler import resilient_api_call, with_cache, cache_openai, cach
 from weather_intelligence import weather_intelligence
 from crowd_prediction import crowd_predictor
 from multi_language_support import multi_language
+from simple_rag_helper import get_city_context_prompt, rag_helper  # RAG integration for real data
 import requests  # Import requests for making HTTP calls
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
@@ -91,6 +92,10 @@ class AICompanionEngine:
                     "ai_confidence": "error"
                 }
 
+            # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
+            real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+            print(f"🧠 RAG: Injected {city_name} context into Piano B prompt")
+
             prompt = f"""
 Sei un AI travel companion intelligente per {city_name}. Genera un Piano B dinamico per questo itinerario:
 
@@ -98,6 +103,8 @@ Città: {city_name}
 Itinerario corrente: {json.dumps(current_itinerary[:3], indent=2)}
 Contesto: {context}
 Emergenza: {emergency_type}
+
+{real_context}
 
 REGOLA CRITICA: Tutte le alternative devono essere SOLO E ESCLUSIVAMENTE per {city_name}.
 NON menzionare MAI attrazioni di altre città.
@@ -200,6 +207,10 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
 
             profile_context = f"Profilo utente: {user_profile}" if user_profile else "Profilo generico"
 
+            # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
+            real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+            print(f"🧠 RAG: Injected {city_name} context into Scoperte prompt")
+
             prompt = f"""
 Sei un AI travel companion che scopre gemme nascoste. Analizza questa situazione:
 
@@ -207,6 +218,8 @@ Località: {location}
 Città: {city_name}
 Momento: {time_context}
 {profile_context}
+
+{real_context}
 
 REGOLA CRITICA: Tutte le scoperte devono essere SOLO E ESCLUSIVAMENTE a {city_name}.
 NON suggerire MAI luoghi di altre città.
@@ -1266,38 +1279,21 @@ def plan_ai_powered():
                 # Combine PostgreSQL + scraped data
                 real_attractions.extend(scraped_attractions)
                 real_restaurants.extend(scraped_restaurants)
-                
-                # 🚀 SMART FALLBACK: If scraped data is poor quality, try Apify (premium but reliable)
-                if len(real_attractions) < 3 or any(
-                    attr.get('source') == 'fallback' or 
-                    attr.get('source') == 'openstreetmap_free' 
-                    for attr in real_attractions
-                ):
-                    print(f"⚠️ Scraped data quality is low for {city_name}. Trying Apify for premium data...")
-                    try:
-                        from apify_integration import apify_travel
-                        if apify_travel.is_available():
-                            print(f"🚀 Using Apify for {city_name}")
-                            apify_attractions = apify_travel.get_authentic_places(
-                                city_name, ['tourist_attraction'])
-                            apify_restaurants = apify_travel.get_authentic_places(
-                                city_name, ['restaurant'])
-                            
-                            if apify_attractions and 'tourist_attraction' in apify_attractions:
-                                apify_list = apify_attractions['tourist_attraction']
-                                if len(apify_list) >= 3:
-                                    print(f"✅ Apify returned {len(apify_list)} quality attractions. Replacing scraped data.")
-                                    real_attractions = apify_list[:4]
-                            
-                            if apify_restaurants and 'restaurant' in apify_restaurants:
-                                apify_rest_list = apify_restaurants['restaurant']
-                                if len(apify_rest_list) >= 2:
-                                    print(f"✅ Apify returned {len(apify_rest_list)} quality restaurants. Replacing scraped data.")
-                                    real_restaurants = apify_rest_list[:2]
-                        else:
-                            print(f"⚠️ Apify not available for {city_name}")
-                    except Exception as e:
-                        print(f"⚠️ Apify fallback error for {city_name}: {e}")
+
+                # ⚡ PERFORMANCE: Apify fallback DISABLED for speed
+                # Apify takes 60-70s per call = terrible UX
+                # Instead: Use fast OSM/Geoapify data immediately
+                # If quality is poor, user can retry and cache will warm up
+                # Alternative: Trigger Apify in background thread (future enhancement)
+
+                # OLD SLOW CODE (commented out):
+                # if len(real_attractions) < 3:
+                #     apify_attractions = apify_travel.get_authentic_places(city_name, ['tourist_attraction'])
+                #     # This blocks for 60-70 seconds! ❌
+
+                # NEW FAST APPROACH: Accept OSM data for instant response
+                print(
+                    f"⚡ Using fast scraped data for {city_name} ({len(real_attractions)} attractions, {len(real_restaurants)} restaurants)")
             else:
                 print(f"✅ Using PostgreSQL data for {city_name}")
 
