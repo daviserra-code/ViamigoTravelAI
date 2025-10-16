@@ -97,7 +97,7 @@ class ApifyTravelIntegration:
             print(f"⚠️ Errore cache per {city}: {e}")
             db.session.rollback()
 
-    @resilient_api_call('apify', timeout=45, fallback_data=[])
+    @resilient_api_call('apify', timeout=90, fallback_data=[])  # Increased timeout for Apify (60s+)
     @with_cache(cache_apify, lambda self, city, category, max_results: f"apify_gmaps_{city}_{category}_{max_results}")
     def search_google_maps_places(self, city: str, category: str = 'tourist attraction', max_results: int = 15) -> List[Dict]:
         """Cerca luoghi su Google Maps tramite Apify"""
@@ -136,11 +136,14 @@ class ApifyTravelIntegration:
                 f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")
 
             # Updated input format for compass/crawler-google-places (working actor!)
+            # ⚡ PERFORMANCE: Reduced maxCrawledPlaces to 10 for faster response (~30s instead of 60s)
             run_input = {
-                "searchStringsArray": [search_query],  # Use searchStringsArray instead of searchQueries
-                "maxCrawledPlaces": max(max_results, 20),  # Max results to scrape
+                # Use searchStringsArray instead of searchQueries
+                "searchStringsArray": [search_query],
+                # Max results to scrape - REDUCED for speed (was 20, now 10)
+                "maxCrawledPlaces": min(max(max_results, 10), 15),  # Cap at 15 for faster scraping
                 "language": "en",  # Use English for better international results
-                "maxReviews": 5,  # Limit reviews to speed up scraping
+                "maxReviews": 3,  # Reduced from 5 to 3 for speed
                 "maxImages": 1,   # Minimal images to save time
                 "onlyDataFromSearchPage": False  # Get detailed place data
             }
@@ -167,9 +170,9 @@ class ApifyTravelIntegration:
             for item in dataset_items:
                 try:
                     # compass/crawler-google-places output format
-                    # Fields: title, address, totalScore, reviewsCount, location (dict with lat/lng), 
+                    # Fields: title, address, totalScore, reviewsCount, location (dict with lat/lng),
                     # categoryName, website, phone, placeId, imageUrl, etc.
-                    
+
                     # Get location from nested object
                     location = item.get('location', {})
                     lat = location.get('lat')
@@ -179,7 +182,8 @@ class ApifyTravelIntegration:
                     if lat is None:
                         lat = item.get('latitude') or item.get('lat')
                     if lng is None:
-                        lng = item.get('longitude') or item.get('lng') or item.get('lon')
+                        lng = item.get('longitude') or item.get(
+                            'lng') or item.get('lon')
 
                     # Convert to float if they're strings
                     try:
@@ -190,13 +194,15 @@ class ApifyTravelIntegration:
 
                     # Build description from available data
                     description = "Luogo di interesse"
-                    reviews_count = item.get('reviewsCount') or item.get('reviews')
+                    reviews_count = item.get(
+                        'reviewsCount') or item.get('reviews')
                     rating = item.get('totalScore') or item.get('rating')
 
                     if reviews_count and rating:
                         description = f"Rating {rating} ⭐ ({reviews_count} recensioni)"
                     elif item.get('description'):
-                        description = item.get('description')[:150]  # Truncate long descriptions
+                        # Truncate long descriptions
+                        description = item.get('description')[:150]
                     elif item.get('address'):
                         description = f"Indirizzo: {item.get('address')}"
 
