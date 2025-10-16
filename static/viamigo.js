@@ -536,11 +536,16 @@ function initializeMap(centerCoordinates = null) {
     if (!mapInstance) {
         // Use provided coordinates or detect from current context
         const center = centerCoordinates || detectCityCenter();
-        mapInstance = L.map('map').setView(center, 13);
+        // Increased zoom from 13 to 14 for better precision
+        mapInstance = L.map('map').setView(center, 14);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        // FIXED: Use CartoDB Voyager tiles - lighter, clearer, and free!
+        // Much better than dark OpenStreetMap default
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20, // Increased from 19 for even more detail
+            minZoom: 3   // Prevent zooming out too far
         }).addTo(mapInstance);
 
         // Initialize route layer and bounds
@@ -556,12 +561,19 @@ function detectCityCenter() {
     const destination = urlParams.get('destination') || 'milano';
 
     const cityCoordinates = {
+        'bergamo': [45.6983, 9.6773],      // Added Bergamo!
         'milano': [45.4642, 9.1900],
         'roma': [41.9028, 12.4964],
+        'venezia': [45.4408, 12.3155],
+        'firenze': [43.7696, 11.2558],
+        'napoli': [40.8518, 14.2681],
+        'bologna': [44.4949, 11.3426],
+        'torino': [45.0703, 7.6869],
+        'verona': [45.4384, 10.9916],
+        'genova': [44.4071, 8.9237],
         'new york': [40.7589, -73.9851],
         'paris': [48.8566, 2.3522],
-        'london': [51.5074, -0.1278],
-        'genova': [44.4071, 8.9237]
+        'london': [51.5074, -0.1278]
     };
 
     for (const [city, coords] of Object.entries(cityCoordinates)) {
