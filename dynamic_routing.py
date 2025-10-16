@@ -1166,14 +1166,30 @@ class DynamicRouter:
             print(f"⚠️ Coordinate mismatch for {city}, using fallback geocoding")
             city_coords = self._fallback_geocoding(city)
         
-        # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO + AI per destinazioni mondiali
+        # 🌍 PRIORITÀ 1: SISTEMA ECONOMICO + AI per destinazioni mondiali E ITALIANE
         from cost_effective_scraping import CostEffectiveDataProvider
         from intelligent_content_generator import IntelligentContentGenerator
         
-        is_foreign_destination = any(keyword in city_lower for keyword in ['usa', 'new york', 'japan', 'tokyo', 'germany', 'berlin', 'england', 'london', 'france', 'paris', 'spain', 'madrid'])
+        # 🇮🇹 FIXED: Include Italian cities so they use PostgreSQL cache!
+        use_cost_effective_provider = any(keyword in city_lower for keyword in [
+            # Foreign destinations
+            'usa', 'new york', 'japan', 'tokyo', 'germany', 'berlin', 'england', 'london', 'france', 'paris', 'spain', 'madrid',
+            # Italian cities (so they use cached Apify data!)
+            'bergamo', 'brescia', 'como', 'lecco', 'monza', 'pavia', 'sondrio', 'varese', 'mantova', 'cremona',
+            'trento', 'bolzano', 'udine', 'gorizia', 'pordenone', 'trieste', 'aosta',
+            'alessandria', 'asti', 'biella', 'cuneo', 'novara', 'verbania', 'vercelli',
+            'imperia', 'la spezia', 'savona', 'reggio emilia', 'rimini', 'piacenza', 'parma', 'ferrara', 'modena', 'ravenna',
+            'ancona', 'macerata', 'pesaro', 'ascoli', 'pistoia', 'arezzo', 'grosseto', 'livorno', 'massa', 'prato',
+            'rieti', 'viterbo', 'frosinone', 'latina', 'l\'aquila', 'pescara', 'teramo', 'chieti',
+            'campobasso', 'isernia', 'caserta', 'avellino', 'salerno', 'benevento',
+            'bari', 'brindisi', 'foggia', 'lecce', 'taranto', 'potenza', 'matera',
+            'cosenza', 'catanzaro', 'reggio calabria', 'crotone', 'vibo valentia',
+            'trapani', 'agrigento', 'caltanissetta', 'enna', 'messina', 'ragusa', 'siracusa',
+            'sassari', 'nuoro', 'oristano', 'carbonia', 'olbia', 'alghero'
+        ])
         
-        if is_foreign_destination:
-            print(f"🌍 DESTINAZIONE MONDIALE: {city} - Usando sistema economico + AI")
+        if use_cost_effective_provider:
+            print(f"🌍 Using cost-effective provider (with PostgreSQL cache priority) for {city}")
             cost_provider = CostEffectiveDataProvider()
             ai_generator = IntelligentContentGenerator()
             
