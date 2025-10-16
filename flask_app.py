@@ -7,6 +7,7 @@ from flask import Flask, session, jsonify
 from datetime import timedelta
 from ai_companion_routes import ai_companion_bp
 from detail_handler import detail_bp
+from admin_routes import admin_bp
 import os
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
@@ -105,6 +106,7 @@ def create_tables():
 app.register_blueprint(detail_bp)
 app.register_blueprint(ai_companion_bp)
 app.register_blueprint(dashboard_bp)
+app.register_blueprint(admin_bp)  # Admin routes for cache population
 
 
 # Debug middleware to log session info on every request
