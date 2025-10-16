@@ -5,6 +5,7 @@
 **Path C (Hybrid) + Selective Apify = Maximum Value, Minimum Cost**
 
 Instead of using Apify for ALL categories (~$0.75), we use:
+
 - ✅ **HuggingFace hotels** (FREE - already loaded)
 - ✅ **Existing data** (restaurants, attractions - already cached)
 - 💰 **Apify for gaps** (cafes, museums, monuments, nightlife, bars, bakeries)
@@ -21,6 +22,7 @@ curl -X GET "http://localhost:5001/admin/cache-status?city=bergamo"
 ```
 
 **Expected Result**:
+
 ```json
 {
   "city": "bergamo",
@@ -50,6 +52,7 @@ python HuggingFace_DataSets_Insertion.py
 ```
 
 This will:
+
 1. Load 38,105 Italian hotel reviews
 2. **Sync hotels to `place_cache`** (Path C hybrid approach)
 3. Make hotels available in Bergamo (if any Italian hotels in dataset)
@@ -77,17 +80,17 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
 
 ### Category Breakdown
 
-| Category | Why Apify? | Expected Cost |
-|----------|-----------|---------------|
-| ✅ restaurant | **SKIP** - Already cached (170 places) | $0 |
-| ✅ tourist_attraction | **SKIP** - Already cached (20 places) | $0 |
-| ✅ hotel | **SKIP** - HuggingFace data available | $0 |
-| 💰 cafe | Need - Not cached | ~$0.06 |
-| 💰 museum | Need - Cultural data important | ~$0.06 |
-| 💰 monument | Need - Historical context | ~$0.06 |
-| 💰 nightlife | Need - Evening recommendations | ~$0.06 |
-| 💰 bar | Need - Social venues | ~$0.06 |
-| 💰 bakery | Need - Local food culture | ~$0.06 |
+| Category              | Why Apify?                             | Expected Cost |
+| --------------------- | -------------------------------------- | ------------- |
+| ✅ restaurant         | **SKIP** - Already cached (170 places) | $0            |
+| ✅ tourist_attraction | **SKIP** - Already cached (20 places)  | $0            |
+| ✅ hotel              | **SKIP** - HuggingFace data available  | $0            |
+| 💰 cafe               | Need - Not cached                      | ~$0.06        |
+| 💰 museum             | Need - Cultural data important         | ~$0.06        |
+| 💰 monument           | Need - Historical context              | ~$0.06        |
+| 💰 nightlife          | Need - Evening recommendations         | ~$0.06        |
+| 💰 bar                | Need - Social venues                   | ~$0.06        |
+| 💰 bakery             | Need - Local food culture              | ~$0.06        |
 
 **Total Estimated Cost**: 6 categories × ~$0.06 = **~$0.36-$0.40**
 
@@ -105,6 +108,7 @@ curl -X GET "http://localhost:5001/admin/cache-status?city=bergamo"
 ```
 
 **Expected Result** (after selective population):
+
 ```json
 {
   "city": "bergamo",
@@ -144,6 +148,7 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ```
 
 **Quality Checks**:
+
 - ✅ No repetition of places
 - ✅ Multiple categories used (restaurants, cafes, museums, monuments)
 - ✅ Hotels suggested from HuggingFace data (with reviews!)
@@ -155,6 +160,7 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## Path C Benefits Verification
 
 ### 1. Check hotel_reviews Table
+
 ```sql
 SELECT city, COUNT(*) as hotels, AVG(reviewer_score) as avg_score
 FROM hotel_reviews
@@ -163,6 +169,7 @@ GROUP BY city;
 ```
 
 ### 2. Check place_cache Table
+
 ```sql
 SELECT city, category, COUNT(*) as count
 FROM place_cache
@@ -172,6 +179,7 @@ ORDER BY category;
 ```
 
 ### 3. Test RAG Helper
+
 ```bash
 python -c "
 from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt
@@ -206,11 +214,13 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
 ```
 
 **Pros**:
+
 - ✅ FREE
 - ✅ Good coverage for basic categories
 - ✅ Fast testing
 
 **Cons**:
+
 - ❌ Less detailed than Apify
 - ❌ May miss some niche places
 - ❌ No reviews/ratings from Google Maps
@@ -219,11 +229,11 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
 
 ## Cost Comparison Table
 
-| Approach | Categories | Source | Cost |
-|----------|-----------|--------|------|
-| **Full Apify** | 12 categories | Google Maps scraping | ~$0.75 |
-| **Point 5 Approach 2** | 9 total (3 free + 6 paid) | HuggingFace + Apify | ~$0.40 |
-| **Free Tier Only** | 9 categories | HuggingFace + OSM + Geoapify | $0 |
+| Approach               | Categories                | Source                       | Cost   |
+| ---------------------- | ------------------------- | ---------------------------- | ------ |
+| **Full Apify**         | 12 categories             | Google Maps scraping         | ~$0.75 |
+| **Point 5 Approach 2** | 9 total (3 free + 6 paid) | HuggingFace + Apify          | ~$0.40 |
+| **Free Tier Only**     | 9 categories              | HuggingFace + OSM + Geoapify | $0     |
 
 **Recommendation**: Use **Point 5 Approach 2** for best quality-to-cost ratio.
 
@@ -232,6 +242,7 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
 ## Next Steps After Population
 
 1. **Test AI Companion** with Milan/Rome (we have hotel data!)
+
    ```bash
    # Piano B test
    curl -X POST "http://localhost:5001/api/ai-companion/piano-b" \
@@ -243,11 +254,13 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
    ```
 
 2. **Verify hotel integration**
+
    - Check if AI suggests hotels with real reviews
    - Verify no hallucinations
    - Confirm hotel descriptions match HuggingFace data
 
 3. **Generate Bergamo routes**
+
    - Test with different preferences
    - Verify category diversity
    - Check route quality
@@ -262,6 +275,7 @@ curl -X POST "http://localhost:5001/admin/populate-city" \
 ## Troubleshooting
 
 ### Hotels not showing in place_cache?
+
 ```bash
 # Re-run the sync function
 python -c "
@@ -288,12 +302,14 @@ conn.close()
 ```
 
 ### Apify population failing?
+
 - Check `APIFY_API_KEY` in `.env`
 - Verify admin token: `viamigo_admin_2024`
 - Check Apify account balance
 - Review logs for specific errors
 
 ### RAG not returning hotel context?
+
 ```bash
 # Test RAG helper directly
 python -c "
@@ -311,22 +327,26 @@ print(f'Cities: {[h[\"name\"] for h in result.get(\"hotels\", [])]}')
 ## Success Criteria
 
 ✅ **Path C Hybrid working**:
+
 - hotel_reviews has rich data (38K+ reviews)
 - place_cache has lightweight hotel entries
 - Both sources accessible via RAG
 
 ✅ **Cost Optimization**:
+
 - Spending ~$0.40 instead of ~$0.75
 - HuggingFace hotels integrated (free)
 - Only paying for gaps
 
 ✅ **Quality Maintained**:
+
 - Multiple categories (9+ total)
 - Rich hotel reviews available
 - No hallucinations in AI responses
 - Route diversity improved
 
 ✅ **Ready for Production**:
+
 - Bergamo fully populated
 - AI Companion using real data
 - Hotel recommendations with reviews

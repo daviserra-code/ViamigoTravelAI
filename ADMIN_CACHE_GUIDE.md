@@ -9,6 +9,7 @@ This guide explains how to pre-populate the PostgreSQL database with high-qualit
 The system now supports **12 categories** for comprehensive itineraries:
 
 ### Core Categories (Default)
+
 - ✅ `restaurant` - Best restaurants and trattorias
 - ✅ `tourist_attraction` - Top attractions and sights
 - ✅ `hotel` - Hotels and accommodations
@@ -16,6 +17,7 @@ The system now supports **12 categories** for comprehensive itineraries:
 - ✅ `museum` - Museums and galleries
 
 ### Additional Categories
+
 - ✅ `monument` - Monuments and landmarks
 - ✅ `park` - Parks and gardens
 - ✅ `shopping` - Shopping centers and markets
@@ -25,6 +27,7 @@ The system now supports **12 categories** for comprehensive itineraries:
 - ✅ `church` - Churches and religious sites
 
 **To check supported categories programmatically**:
+
 ```bash
 curl http://localhost:3000/admin/supported-categories
 ```

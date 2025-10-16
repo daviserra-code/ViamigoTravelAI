@@ -15,10 +15,12 @@ Successfully implemented **Path C (Hybrid RAG)** + **Point 5 Approach 2 (Selecti
 ### 1. Path C: Hybrid Hotel Integration ✅
 
 **Dual Storage Strategy**:
+
 - `hotel_reviews` table: Rich review data (38,105 reviews, 169 hotels)
 - `place_cache` table: Lightweight entries compatible with existing routing
 
 **Benefits**:
+
 - ✅ Rich context for AI prompts (reviews, ratings, tags)
 - ✅ Compatible with existing `dynamic_routing.py`
 - ✅ No code refactoring required
@@ -30,7 +32,7 @@ Successfully implemented **Path C (Hybrid RAG)** + **Point 5 Approach 2 (Selecti
 
 ```python
 # Get rich hotel context with reviews
-get_hotel_context(city, min_score=8.0, limit=5) 
+get_hotel_context(city, min_score=8.0, limit=5)
 → Returns top-rated hotels with review highlights
 
 # Format hotel data for AI prompts
@@ -45,12 +47,14 @@ get_hotel_context_prompt(city, min_score, limit)
 ### 3. AI Companion Integration ✅
 
 **Updated Files**:
+
 - `ai_companion_routes.py`:
   - Piano B now injects hotel context
   - Scoperte Intelligenti includes hotel reviews
   - Both features use HuggingFace data
 
 **Code Changes**:
+
 ```python
 # Import hotel context helper
 from simple_rag_helper import get_hotel_context_prompt
@@ -67,6 +71,7 @@ prompt = f"{real_context}\n\n{hotel_context}\n\n..."
 ### 4. HuggingFace Sync Function ✅
 
 **Updated `HuggingFace_DataSets_Insertion.py`**:
+
 - Added `sync_hotels_to_place_cache()` function
 - Converts `hotel_reviews` → `place_cache` format
 - Creates cache_key: `city_hotelname`
@@ -81,17 +86,17 @@ prompt = f"{real_context}\n\n{hotel_context}\n\n..."
 
 Instead of populating ALL categories via Apify (~$0.75), we:
 
-| Category | Source | Cost |
-|----------|--------|------|
-| restaurant | ✅ Already cached | $0 |
-| tourist_attraction | ✅ Already cached | $0 |
-| hotel | ✅ HuggingFace (FREE!) | $0 |
-| cafe | 💰 Apify | ~$0.06 |
-| museum | 💰 Apify | ~$0.06 |
-| monument | 💰 Apify | ~$0.06 |
-| nightlife | 💰 Apify | ~$0.06 |
-| bar | 💰 Apify | ~$0.06 |
-| bakery | 💰 Apify | ~$0.06 |
+| Category           | Source                 | Cost   |
+| ------------------ | ---------------------- | ------ |
+| restaurant         | ✅ Already cached      | $0     |
+| tourist_attraction | ✅ Already cached      | $0     |
+| hotel              | ✅ HuggingFace (FREE!) | $0     |
+| cafe               | 💰 Apify               | ~$0.06 |
+| museum             | 💰 Apify               | ~$0.06 |
+| monument           | 💰 Apify               | ~$0.06 |
+| nightlife          | 💰 Apify               | ~$0.06 |
+| bar                | 💰 Apify               | ~$0.06 |
+| bakery             | 💰 Apify               | ~$0.06 |
 
 **Total Cost**: ~$0.36-$0.40 (vs $0.75)  
 **Savings**: **47%** ($0.35 per city)
@@ -101,6 +106,7 @@ Instead of populating ALL categories via Apify (~$0.75), we:
 See `POINT_5_APPROACH_2_GUIDE.md` for detailed instructions.
 
 **Quick Start**:
+
 ```bash
 # 1. Sync HuggingFace hotels to place_cache
 python HuggingFace_DataSets_Insertion.py
@@ -215,12 +221,15 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## 📁 Files Modified
 
 ### Core Implementation
+
 - ✅ `HuggingFace_DataSets_Insertion.py`:
+
   - Added `sync_hotels_to_place_cache()` function
   - Fixed table structure (cache_key vs category)
   - Auto-sync after dataset load
 
 - ✅ `simple_rag_helper.py`:
+
   - Added `get_hotel_context()` method
   - Added `format_hotel_context_for_prompt()` method
   - Added `get_hotel_context_prompt()` convenience function
@@ -233,13 +242,16 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
   - Total: ~10 lines changed
 
 ### Documentation
+
 - ✅ `POINT_5_APPROACH_2_GUIDE.md` (NEW):
+
   - Complete walkthrough
   - Cost comparison
   - Testing commands
   - Troubleshooting guide
 
 - ✅ `HOTELS_INTEGRATION_SUCCESS.md` (NEW):
+
   - Dataset statistics
   - Integration options
   - Discussion points
@@ -254,24 +266,28 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## ✅ Success Criteria
 
 ### Phase 1: Infrastructure ✅
+
 - [x] hotel_reviews table populated (38,105 reviews)
 - [x] Sync function created and tested
 - [x] RAG helper extended with hotel functions
 - [x] AI Companion integrated with hotel context
 
 ### Phase 2: Testing (NEXT)
+
 - [ ] Hotels appear in place_cache
 - [ ] RAG returns hotel context for Milan/Rome
 - [ ] AI Companion suggests hotels with reviews
 - [ ] No hallucinations in AI responses
 
 ### Phase 3: Bergamo (NEXT)
+
 - [ ] Selective Apify population (~$0.40)
 - [ ] Bergamo routes use multiple categories
 - [ ] Hotel suggestions (if available in dataset)
 - [ ] Quality improvement vs before
 
 ### Phase 4: Production (FUTURE)
+
 - [ ] Expand HuggingFace dataset to more cities
 - [ ] ChromaDB semantic search for hotels
 - [ ] Personalized hotel recommendations
@@ -282,11 +298,13 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## 💰 Cost Analysis
 
 ### Before (Full Apify Approach)
+
 - 12 categories × ~$0.06 = **$0.75 per city**
 - Bergamo: $0.75
 - 10 cities: $7.50
 
 ### After (Point 5 Approach 2)
+
 - 3 categories FREE (restaurant, attraction, hotel)
 - 6 categories paid (cafe, museum, monument, nightlife, bar, bakery)
 - 6 × ~$0.06 = **$0.40 per city**
@@ -300,24 +318,28 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## 🚀 Next Steps
 
 ### Immediate (Now)
+
 1. Run `python HuggingFace_DataSets_Insertion.py` to sync hotels
 2. Verify sync with SQL queries
 3. Test RAG helper with Milan/Rome hotels
 4. Test AI Companion Piano B/Scoperte
 
 ### Short-term (Today)
+
 1. Start dev server: `python run.py`
 2. Populate Bergamo via selective Apify
 3. Generate test routes for Bergamo
 4. Verify quality improvements
 
 ### Medium-term (This Week)
+
 1. Expand HuggingFace dataset to Bergamo
 2. Test with multiple Italian cities
 3. Optimize prompts with hotel context
 4. Gather user feedback on hotel suggestions
 
 ### Long-term (Next Sprint)
+
 1. ChromaDB integration for semantic hotel search
 2. Personalized hotel recommendations (tags-based)
 3. Multi-language hotel reviews
@@ -328,15 +350,18 @@ curl -X POST "http://localhost:5001/api/routes/instant" \
 ## 📊 Expected Results
 
 ### Hotel Data Quality
+
 - **Milan**: 161 hotels, 37,138 reviews, avg 8.35/10
 - **Rome**: 8 hotels, 835 reviews, avg 8.15/10
 - **Top hotels**: Hotel Berna (9.34/10), The Square Milano (9.07/10)
 
 ### AI Companion Enhancement
+
 **Before**: "I suggest staying at Hotel Bergamo Central (hallucination)"
 **After**: "I suggest **Petit Palais Hotel De Charme** (8.72/10, 69 reviews): 'Beautiful boutique hotel in Milan city center...'"
 
 ### Route Diversity
+
 **Before**: 90% restaurants + 10% attractions
 **After**: 40% restaurants, 20% cafes, 20% museums, 10% hotels, 10% monuments
 
@@ -351,7 +376,7 @@ Successfully implemented **Path C (Hybrid) + Point 5 Approach 2** with:
 ✅ **AI Companion integration** (Piano B, Scoperte)  
 ✅ **47% cost savings** via selective Apify  
 ✅ **Zero refactoring** required  
-✅ **Production-ready** architecture  
+✅ **Production-ready** architecture
 
 **Status**: ✅ READY TO TEST
 

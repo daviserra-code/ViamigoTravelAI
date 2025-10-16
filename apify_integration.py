@@ -140,8 +140,9 @@ class ApifyTravelIntegration:
                 'bakery': f"bakeries pastry shops {translated_city}",
                 'church': f"churches cathedrals {translated_city}"
             }
-            
-            search_query = category_queries.get(category, f"{category} in {translated_city}")
+
+            search_query = category_queries.get(
+                category, f"{category} in {translated_city}")
 
             print(
                 f"🔍 Searching Google Maps: {search_query} (tradotto da: {city})")

@@ -31,7 +31,8 @@ SUPPORTED_CATEGORIES = [
 ]
 
 # Default categories for basic population
-DEFAULT_CATEGORIES = ['restaurant', 'tourist_attraction', 'hotel', 'cafe', 'museum']
+DEFAULT_CATEGORIES = ['restaurant',
+                      'tourist_attraction', 'hotel', 'cafe', 'museum']
 
 
 def require_admin(f):
@@ -91,9 +92,10 @@ def populate_city():
 
         if not city:
             return jsonify({'error': 'City parameter is required'}), 400
-        
+
         # Validate categories
-        invalid_categories = [cat for cat in categories if cat not in SUPPORTED_CATEGORIES]
+        invalid_categories = [
+            cat for cat in categories if cat not in SUPPORTED_CATEGORIES]
         if invalid_categories:
             return jsonify({
                 'error': 'Invalid categories',
@@ -391,9 +393,9 @@ def clear_cache():
 def supported_categories():
     """
     Get list of supported categories (no auth required for info endpoint)
-    
+
     GET /admin/supported-categories
-    
+
     Returns: {
         "supported_categories": [...],
         "default_categories": [...],

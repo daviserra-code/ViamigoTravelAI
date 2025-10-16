@@ -17,7 +17,8 @@ from api_error_handler import resilient_api_call, with_cache, cache_openai, cach
 from weather_intelligence import weather_intelligence
 from crowd_prediction import crowd_predictor
 from multi_language_support import multi_language
-from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper  # RAG integration
+# RAG integration
+from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper
 import requests  # Import requests for making HTTP calls
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
@@ -41,6 +42,9 @@ class AICompanionEngine:
             # Check context first
             if 'milano' in context_lower or 'milan' in context_lower or 'duomo milano' in context_lower:
                 city_name = "Milan"
+            # Bergamo detection - CRITICAL: Add before Genoa!
+            elif any(term in context_lower for term in ['bergamo', 'città alta', 'citta alta', 'venetian walls']):
+                city_name = "Bergamo"
             # Torino detection - PRIORITIZE before Roma to avoid "via roma" confusion
             elif any(term in context_lower for term in ['torino', 'turin', 'mole antonelliana',
                                                         '_torino', ',torino']):
@@ -65,6 +69,8 @@ class AICompanionEngine:
                 first_stop = current_itinerary[0].get('title', '').lower()
                 if any(term in first_stop for term in ['milano', 'milan', 'duomo']):
                     city_name = "Milan"
+                elif any(term in first_stop for term in ['bergamo', 'città alta', 'citta alta']):
+                    city_name = "Bergamo"
                 elif any(term in first_stop for term in ['torino', 'turin', 'mole antonelliana']):
                     city_name = "Torino"
                 elif any(term in first_stop for term in ['london', 'piccadilly', 'westminster']):
@@ -93,11 +99,13 @@ class AICompanionEngine:
                 }
 
             # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
-            real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
-            
+            real_context = get_city_context_prompt(
+                city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+
             # 🏨 PATH C: Add hotel context with rich reviews
-            hotel_context = get_hotel_context_prompt(city_name, min_score=8.0, limit=3)
-            
+            hotel_context = get_hotel_context_prompt(
+                city_name, min_score=8.0, limit=3)
+
             print(f"🧠 RAG: Injected {city_name} context into Piano B prompt")
             print(f"🏨 PATH C: Added hotel reviews for {city_name}")
 
@@ -186,6 +194,9 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
 
             if any(term in location_lower for term in ['milano', 'milan', 'duomo', 'navigli']):
                 city_name = "Milan"
+            # Bergamo detection - CRITICAL: Add before Genoa!
+            elif any(term in location_lower for term in ['bergamo', 'città alta', 'citta alta', 'venetian walls']):
+                city_name = "Bergamo"
             # Torino detection - PRIORITIZE before Roma
             elif any(term in location_lower for term in ['torino', 'turin', 'mole antonelliana', '_torino', ',torino']):
                 city_name = "Torino"
@@ -215,11 +226,13 @@ Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare cit
             profile_context = f"Profilo utente: {user_profile}" if user_profile else "Profilo generico"
 
             # 🧠 RAG INTEGRATION: Get real place data from PostgreSQL cache
-            real_context = get_city_context_prompt(city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
-            
+            real_context = get_city_context_prompt(
+                city_name, ["restaurant", "tourist_attraction", "cafe", "museum"])
+
             # 🏨 PATH C: Add hotel context with rich reviews
-            hotel_context = get_hotel_context_prompt(city_name, min_score=8.0, limit=3)
-            
+            hotel_context = get_hotel_context_prompt(
+                city_name, min_score=8.0, limit=3)
+
             print(f"🧠 RAG: Injected {city_name} context into Scoperte prompt")
             print(f"🏨 PATH C: Added hotel reviews for {city_name}")
 
@@ -616,6 +629,7 @@ def get_dynamic_city_coordinates(city_name: str):
     # Fallback coordinates for major cities
     city_coords = {
         'milano': [45.4642, 9.1900],
+        'bergamo': [45.6983, 9.6773],
         'roma': [41.9028, 12.4964],
         'genova': [44.4056, 8.9463],
         'venezia': [45.4408, 12.3155],
@@ -864,6 +878,9 @@ def plan_ai_powered():
                 'milan': ('milano', 'Milano'),
                 'duomo milano': ('milano', 'Milano'),
                 'buenos aires': ('milano', 'Milano'),
+                'bergamo': ('bergamo', 'Bergamo'),
+                'città alta': ('bergamo', 'Bergamo'),
+                'citta alta': ('bergamo', 'Bergamo'),
                 # Piemonte
                 'torino': ('torino', 'Torino'),
                 'turin': ('torino', 'Torino'),
@@ -923,12 +940,13 @@ def plan_ai_powered():
             # NOTE: Exclude 'roma' here because it matches "via roma" street names
             import re
             city_suffix_match = re.search(
-                r'[,_\s](torino|milano|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
+                r'[,_\s](torino|milano|bergamo|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
             if city_suffix_match:
                 city_found = city_suffix_match.group(1)
                 city_mappings_reverse = {
                     'torino': ('torino', 'Torino'),
                     'milano': ('milano', 'Milano'),
+                    'bergamo': ('bergamo', 'Bergamo'),
                     'genova': ('genova', 'Genova'),
                     'venezia': ('venezia', 'Venezia'),
                     'firenze': ('firenze', 'Firenze'),

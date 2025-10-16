@@ -403,10 +403,10 @@
                 const cityCoords = detectCityFromItinerary(currentItineraryData);
                 map = L.map('map').setView([cityCoords.lat, cityCoords.lng], 14);
 
-                // Tile layer con stile scuro
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                // Tile layer con stile CHIARO e leggibile (CartoDB Voyager)
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors © CARTO',
-                    maxZoom: 19
+                    maxZoom: 20
                 }).addTo(map);
 
                 // Aggiungi controlli personalizzati alla mappa
