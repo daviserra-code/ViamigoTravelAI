@@ -1266,6 +1266,38 @@ def plan_ai_powered():
                 # Combine PostgreSQL + scraped data
                 real_attractions.extend(scraped_attractions)
                 real_restaurants.extend(scraped_restaurants)
+                
+                # 🚀 SMART FALLBACK: If scraped data is poor quality, try Apify (premium but reliable)
+                if len(real_attractions) < 3 or any(
+                    attr.get('source') == 'fallback' or 
+                    attr.get('source') == 'openstreetmap_free' 
+                    for attr in real_attractions
+                ):
+                    print(f"⚠️ Scraped data quality is low for {city_name}. Trying Apify for premium data...")
+                    try:
+                        from apify_integration import apify_travel
+                        if apify_travel.is_available():
+                            print(f"🚀 Using Apify for {city_name}")
+                            apify_attractions = apify_travel.get_authentic_places(
+                                city_name, ['tourist_attraction'])
+                            apify_restaurants = apify_travel.get_authentic_places(
+                                city_name, ['restaurant'])
+                            
+                            if apify_attractions and 'tourist_attraction' in apify_attractions:
+                                apify_list = apify_attractions['tourist_attraction']
+                                if len(apify_list) >= 3:
+                                    print(f"✅ Apify returned {len(apify_list)} quality attractions. Replacing scraped data.")
+                                    real_attractions = apify_list[:4]
+                            
+                            if apify_restaurants and 'restaurant' in apify_restaurants:
+                                apify_rest_list = apify_restaurants['restaurant']
+                                if len(apify_rest_list) >= 2:
+                                    print(f"✅ Apify returned {len(apify_rest_list)} quality restaurants. Replacing scraped data.")
+                                    real_restaurants = apify_rest_list[:2]
+                        else:
+                            print(f"⚠️ Apify not available for {city_name}")
+                    except Exception as e:
+                        print(f"⚠️ Apify fallback error for {city_name}: {e}")
             else:
                 print(f"✅ Using PostgreSQL data for {city_name}")
 
