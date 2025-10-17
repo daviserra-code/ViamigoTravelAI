@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import psycopg2
 from functools import lru_cache
 from datetime import datetime, timedelta
+import chromadb
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -27,8 +28,14 @@ class OptimizedRAGHelper:
             'total_queries': 0,
             'cache_hits': 0,
             'db_queries': 0,
-            'avg_response_time': 0
+            'avg_response_time': 0,
+            'semantic_queries': 0
         }
+
+        # Initialize ChromaDB for semantic search
+        self._chroma_client = None
+        self._chroma_collection = None
+        self._init_chromadb()
 
     def _is_cache_valid(self, cache_key: str) -> bool:
         """Check if cached data is still valid"""
@@ -40,6 +47,297 @@ class OptimizedRAGHelper:
             return False
 
         return (datetime.now() - cached_time).seconds < self._cache_ttl
+
+    def _init_chromadb(self):
+        """Initialize ChromaDB connection for semantic search"""
+        try:
+            self._chroma_client = chromadb.PersistentClient(
+                path="./chromadb_data")
+            self._chroma_collection = self._chroma_client.get_collection(
+                "viamigo_travel_data")
+            logger.info("🔗 ChromaDB initialized for semantic search")
+        except Exception as e:
+            logger.warning(f"⚠️ ChromaDB initialization failed: {e}")
+            self._chroma_client = None
+            self._chroma_collection = None
+
+    def semantic_search_places(
+        self,
+        query: str,
+        city: str = None,
+        categories: List[str] = None,
+        n_results: int = 10
+    ) -> List[Dict]:
+        """
+        Semantic search for places using ChromaDB
+
+        Args:
+            query: Natural language query (e.g., "romantic restaurants with view")
+            city: Filter by city (optional)
+            categories: Filter by categories (optional)  
+            n_results: Maximum number of results to return
+
+        Returns:
+            List of matching places with relevance scores
+        """
+        if not self._chroma_collection:
+            logger.warning("🚫 ChromaDB not available for semantic search")
+            return []
+
+        try:
+            self._performance_metrics['semantic_queries'] += 1
+            start_time = time.time()
+
+            # Prepare where filter - ChromaDB only supports one operator at a time
+            where_filter = None
+            if city and categories:
+                # Priority: filter by city first, then post-filter by categories
+                where_filter = {"city": {"$eq": city.lower()}}
+            elif city:
+                where_filter = {"city": {"$eq": city.lower()}}
+            elif categories:
+                where_filter = {"category": {"$in": categories}}
+
+            # Perform semantic search
+            results = self._chroma_collection.query(
+                query_texts=[query],
+                n_results=n_results * 2,  # Get extra to allow for category filtering
+                where=where_filter,
+                include=["documents", "metadatas", "distances"]
+            )
+
+            # Process results
+            places = []
+            if results['documents'] and results['documents'][0]:
+                for i in range(len(results['documents'][0])):
+                    metadata = results['metadatas'][0][i]
+                    distance = results['distances'][0][i]
+                    document = results['documents'][0][i]
+
+                    # Post-filter by categories if needed
+                    if categories and metadata.get('category') not in categories:
+                        continue
+
+                    # Calculate relevance score (1 - distance, normalized)
+                    relevance_score = max(0, 1 - distance)
+
+                    place = {
+                        'name': metadata.get('name', 'Unknown'),
+                        'city': metadata.get('city', 'Unknown'),
+                        'category': metadata.get('category', 'Unknown'),
+                        'description': document,
+                        'relevance_score': round(relevance_score, 3),
+                        'semantic_match': True,
+                        **{k: v for k, v in metadata.items() if k not in ['name', 'city', 'category']}
+                    }
+                    places.append(place)
+
+                    # Stop when we have enough results
+                    if len(places) >= n_results:
+                        break
+
+            query_time = time.time() - start_time
+            logger.info(
+                f"🔍 Semantic search '{query}' found {len(places)} results in {query_time:.3f}s")
+
+            return places
+
+        except Exception as e:
+            logger.error(f"❌ Semantic search error: {e}")
+            return []
+
+    def hybrid_search_places(
+        self,
+        query: str,
+        city: str,
+        categories: List[str] = None,
+        semantic_weight: float = 0.3,
+        n_results: int = 15
+    ) -> List[Dict]:
+        """
+        Hybrid search combining PostgreSQL category-based search with ChromaDB semantic search
+
+        Args:
+            query: Natural language query for semantic component
+            city: City to search in
+            categories: Categories for PostgreSQL component
+            semantic_weight: Weight given to semantic results (0.0-1.0)
+            n_results: Total number of results to return
+
+        Returns:
+            Combined and ranked list of places
+        """
+        results = []
+
+        # 1. Get traditional category-based results
+        if categories:
+            city_context = self.get_city_context(city, categories)
+            traditional_places = []
+
+            for category, data in city_context.get('categories', {}).items():
+                for place in data.get('places', []):
+                    place_copy = place.copy()
+                    place_copy['search_source'] = 'traditional'
+                    place_copy['category_match'] = category
+                    traditional_places.append(place_copy)
+
+            # Sort traditional results by quality
+            traditional_places = self._sort_places_by_quality(
+                traditional_places)
+            results.extend(traditional_places[:int(
+                n_results * (1 - semantic_weight))])
+
+        # 2. Get semantic search results
+        semantic_places = self.semantic_search_places(
+            query=query,
+            city=city,
+            categories=categories,
+            # Get extra to account for deduplication
+            n_results=int(n_results * semantic_weight) + 5
+        )
+
+        # Mark semantic results
+        for place in semantic_places:
+            place['search_source'] = 'semantic'
+
+        # 3. Combine and deduplicate results
+        combined_places = self._merge_search_results(results, semantic_places)
+
+        # 4. Final ranking considering both quality and semantic relevance
+        final_results = self._rank_hybrid_results(
+            combined_places, semantic_weight)
+
+        logger.info(
+            f"🔄 Hybrid search for '{query}' in {city}: {len(final_results)} combined results")
+
+        return final_results[:n_results]
+
+    def _merge_search_results(self, traditional: List[Dict], semantic: List[Dict]) -> List[Dict]:
+        """
+        Merge traditional and semantic search results, removing duplicates
+
+        Args:
+            traditional: Results from category-based search
+            semantic: Results from semantic search
+
+        Returns:
+            Merged list with duplicates removed
+        """
+        # Create lookup for traditional results by name (case-insensitive)
+        traditional_names = {
+            place.get('name', '').lower(): place for place in traditional}
+        merged = traditional.copy()
+
+        # Add semantic results that don't duplicate traditional ones
+        for semantic_place in semantic:
+            name_key = semantic_place.get('name', '').lower()
+
+            if name_key not in traditional_names:
+                merged.append(semantic_place)
+            else:
+                # Enhance traditional place with semantic data
+                traditional_place = traditional_names[name_key]
+                traditional_place['relevance_score'] = semantic_place.get(
+                    'relevance_score', 0)
+                traditional_place['semantic_enhanced'] = True
+
+        return merged
+
+    def _rank_hybrid_results(self, places: List[Dict], semantic_weight: float) -> List[Dict]:
+        """
+        Rank hybrid search results considering both quality and semantic relevance
+
+        Args:
+            places: Combined list of places
+            semantic_weight: Weight given to semantic relevance (0.0-1.0)
+
+        Returns:
+            Ranked list of places
+        """
+        def hybrid_score(place: Dict) -> float:
+            # Base quality score (0-30 range typically)
+            quality_score = self._calculate_quality_score(place)
+
+            # Semantic relevance score (0-1 range)
+            # Default moderate relevance
+            semantic_score = place.get('relevance_score', 0.5)
+
+            # Combine scores
+            normalized_quality = min(
+                1.0, quality_score / 30.0)  # Normalize to 0-1
+
+            final_score = (
+                (1 - semantic_weight) * normalized_quality +
+                semantic_weight * semantic_score
+            )
+
+            # Bonus for places that appear in both sources
+            if place.get('semantic_enhanced'):
+                final_score += 0.1
+
+            return final_score
+
+        return sorted(places, key=hybrid_score, reverse=True)
+
+    def _calculate_quality_score(self, place: Dict) -> float:
+        """Calculate quality score for a place (extracted from _sort_places_by_quality logic)"""
+        score = 0.0
+
+        # Rating weight (0-5 scale)
+        rating = place.get('rating', 0)
+        if rating:
+            score += float(rating) * 2  # Max 10 points
+
+        # Review count weight (logarithmic scale)
+        review_count = place.get('user_ratings_total', 0)
+        if review_count:
+            score += min(10, review_count / 10)  # Max 10 points
+
+        # Wikipedia/external info weight
+        if place.get('wikipedia') or place.get('wikidata'):
+            score += 5
+
+        # Description quality weight
+        description = place.get('description', '')
+        if len(description) > 50:
+            score += 3
+        elif len(description) > 20:
+            score += 1
+
+        # Name quality (avoid empty/generic names)
+        name = place.get('name', '')
+        if name and len(name) > 3 and name != 'Unknown':
+            score += 2
+
+        # Historic/tourism type bonus
+        if place.get('historic_type') or place.get('tourism_type'):
+            score += 2
+
+        return score
+
+    def search_places_by_description(
+        self,
+        description: str,
+        city: str = None,
+        limit: int = 10
+    ) -> List[Dict]:
+        """
+        Find places by natural language description
+
+        Args:
+            description: Natural language description (e.g., "museum with ancient art")
+            city: Filter by city (optional)
+            limit: Maximum number of results
+
+        Returns:
+            List of matching places with relevance scores
+        """
+        # Use semantic search for description matching
+        return self.semantic_search_places(
+            query=description,
+            city=city,
+            n_results=limit
+        )
 
     def _get_from_cache(self, cache_key: str) -> Optional[Dict]:
         """Get data from in-memory cache if valid"""
@@ -67,6 +365,94 @@ class OptimizedRAGHelper:
             'cache_hit_rate': (cache_hits / total_queries * 100) if total_queries > 0 else 0,
             'cache_size': len(self._cache)
         }
+
+    def get_city_context_with_semantic(
+        self,
+        city: str,
+        categories: List[str] = None,
+        semantic_query: str = None,
+        include_semantic: bool = True,
+        semantic_weight: float = 0.2
+    ) -> Dict:
+        """
+        Enhanced city context retrieval with optional semantic search integration
+
+        Args:
+            city: City name (e.g., 'Bergamo', 'Milan', 'Rome')
+            categories: List of categories to retrieve (default: all available)
+            semantic_query: Natural language query for semantic enhancement
+            include_semantic: Whether to include semantic search results
+            semantic_weight: Weight given to semantic results (0.0-1.0)
+
+        Returns:
+            Dictionary with place data organized by category, optionally enhanced with semantic results
+        """
+        # Get base context using traditional method
+        base_context = self.get_city_context(city, categories)
+
+        if not include_semantic or not semantic_query or not self._chroma_collection:
+            return base_context
+
+        try:
+            # Enhance with semantic search results
+            semantic_places = self.semantic_search_places(
+                query=semantic_query,
+                city=city,
+                categories=categories,
+                n_results=10
+            )
+
+            if semantic_places:
+                # Add semantic results to context
+                if 'semantic_results' not in base_context:
+                    base_context['semantic_results'] = {
+                        'query': semantic_query,
+                        'places': semantic_places,
+                        'count': len(semantic_places)
+                    }
+
+                # Enhance existing categories with semantic relevance scores
+                for category, data in base_context.get('categories', {}).items():
+                    enhanced_places = []
+
+                    for place in data.get('places', []):
+                        place_name = place.get('name', '').lower()
+
+                        # Find semantic match for this place
+                        semantic_match = None
+                        for sem_place in semantic_places:
+                            if sem_place.get('name', '').lower() == place_name:
+                                semantic_match = sem_place
+                                break
+
+                        # Enhance place with semantic data
+                        enhanced_place = place.copy()
+                        if semantic_match:
+                            enhanced_place['semantic_relevance'] = semantic_match.get(
+                                'relevance_score', 0)
+                            enhanced_place['semantic_enhanced'] = True
+                        else:
+                            # Default neutral relevance
+                            enhanced_place['semantic_relevance'] = 0.5
+
+                        enhanced_places.append(enhanced_place)
+
+                    # Re-sort by hybrid score (quality + semantic relevance)
+                    enhanced_places = self._rank_hybrid_results(
+                        enhanced_places, semantic_weight)
+                    data['places'] = enhanced_places
+
+                base_context['semantic_enhanced'] = True
+                base_context['semantic_query'] = semantic_query
+                logger.info(
+                    f"🔍 Enhanced {city} context with semantic query: '{semantic_query}'")
+
+            return base_context
+
+        except Exception as e:
+            logger.error(
+                f"❌ Error enhancing context with semantic search: {e}")
+            return base_context
 
     def get_city_context(self, city: str, categories: List[str] = None) -> Dict:
         """
@@ -674,3 +1060,48 @@ def get_hotel_context_prompt(city: str, min_score: float = 8.0, limit: int = 5) 
     """
     hotel_context = rag_helper.get_hotel_context(city, min_score, limit)
     return rag_helper.format_hotel_context_for_prompt(hotel_context)
+
+
+# New semantic search convenience functions
+def semantic_search_places(query: str, city: str = None, categories: List[str] = None, n_results: int = 10) -> List[Dict]:
+    """
+    Convenience function for semantic search of places
+
+    Usage:
+        places = semantic_search_places("romantic restaurants with view", "Rome")
+        places = semantic_search_places("museums with ancient art", "Florence", ["museum"])
+    """
+    return rag_helper.semantic_search_places(query, city, categories, n_results)
+
+
+def hybrid_search_places(query: str, city: str, categories: List[str] = None, semantic_weight: float = 0.3, n_results: int = 15) -> List[Dict]:
+    """
+    Convenience function for hybrid search combining traditional + semantic
+
+    Usage:
+        places = hybrid_search_places("cozy authentic pizza places", "Naples", ["restaurant"])
+        places = hybrid_search_places("historic churches", "Rome", ["tourist_attraction"], semantic_weight=0.4)
+    """
+    return rag_helper.hybrid_search_places(query, city, categories, semantic_weight, n_results)
+
+
+def search_places_by_description(description: str, city: str = None, limit: int = 10) -> List[Dict]:
+    """
+    Convenience function to search places by natural language description
+
+    Usage:
+        places = search_places_by_description("museum with ancient Roman artifacts", "Rome")
+        places = search_places_by_description("traditional osteria with local wine")
+    """
+    return rag_helper.search_places_by_description(description, city, limit)
+
+
+def get_city_context_with_semantic(city: str, categories: List[str] = None, semantic_query: str = None) -> Dict:
+    """
+    Convenience function for enhanced city context with semantic search
+
+    Usage:
+        context = get_city_context_with_semantic("Milan", ["restaurant"], "romantic dinner spots")
+        context = get_city_context_with_semantic("Florence", ["museum"], "Renaissance art collections")
+    """
+    return rag_helper.get_city_context_with_semantic(city, categories, semantic_query)
