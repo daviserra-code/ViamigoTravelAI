@@ -30,13 +30,13 @@ class SafeTourismDataLoader:
         database_url = os.getenv('DATABASE_URL')
         if not database_url:
             raise ValueError("❌ DATABASE_URL not found in .env file")
-        
+
         # Add SSL requirement for cloud databases (Neon, Supabase, etc.)
         if '?' in database_url:
             database_url += '&sslmode=require'
         else:
             database_url += '?sslmode=require'
-        
+
         self.pg_conn = psycopg2.connect(database_url)
         self.pg_cursor = self.pg_conn.cursor()
         self.chroma_client = chromadb.PersistentClient(path=chroma_path)
@@ -299,7 +299,7 @@ class SafeTourismDataLoader:
                     last_accessed = NOW(),
                     access_count = place_cache.access_count + 1
             """, (cache_key, place_name, city, 'Italy', json.dumps(place_data), 'standard'))
-            
+
             # DEBUG: Confirm insert
             # print(f"  🔹 Inserted with key: {cache_key}")
 

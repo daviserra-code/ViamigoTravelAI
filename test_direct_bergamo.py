@@ -2,6 +2,7 @@
 Direct test of Safe_Data_Loader - Just Bergamo
 """
 
+from Safe_Data_Loader import SafeTourismDataLoader
 import os
 from dotenv import load_dotenv
 import psycopg2
@@ -9,7 +10,6 @@ import psycopg2
 load_dotenv()
 
 # Import the loader
-from Safe_Data_Loader import SafeTourismDataLoader
 
 print("🧪 Direct Test: Loading Bergamo Only\n")
 

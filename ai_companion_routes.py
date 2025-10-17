@@ -940,7 +940,7 @@ def plan_ai_powered():
             # NOTE: Exclude 'roma' here because it matches "via roma" street names
             import re
             city_suffix_match = re.search(
-                r'[,_\s](torino|milano|bergamo|genova|venezia|firenze|napoli|palermo|catania|london)\b', location_lower)
+                r'[,_\s](torino|milano|bergamo|genova|portofino|cinqueterre|venezia|firenze|napoli|palermo|catania|taormina|siracusa|olbia|portorotondo|portocervo|costasmeralda|santeodoro|golfoaranci|london)\b', location_lower)
             if city_suffix_match:
                 city_found = city_suffix_match.group(1)
                 city_mappings_reverse = {
@@ -948,11 +948,21 @@ def plan_ai_powered():
                     'milano': ('milano', 'Milano'),
                     'bergamo': ('bergamo', 'Bergamo'),
                     'genova': ('genova', 'Genova'),
+                    'portofino': ('portofino', 'Portofino'),
+                    'cinqueterre': ('cinqueterre', 'Cinque Terre'),
                     'venezia': ('venezia', 'Venezia'),
                     'firenze': ('firenze', 'Firenze'),
                     'napoli': ('napoli', 'Napoli'),
                     'palermo': ('palermo', 'Palermo'),
                     'catania': ('catania', 'Catania'),
+                    'taormina': ('taormina', 'Taormina'),
+                    'siracusa': ('siracusa', 'Siracusa'),
+                    'olbia': ('olbia', 'Olbia'),
+                    'portorotondo': ('portorotondo', 'Porto Rotondo'),
+                    'portocervo': ('portocervo', 'Porto Cervo'),
+                    'costasmeralda': ('costasmeralda', 'Costa Smeralda'),
+                    'santeodoro': ('santeodoro', 'San Teodoro'),
+                    'golfoaranci': ('golfoaranci', 'Golfo Aranci'),
                     'london': ('london', 'London')
                 }
                 if city_found in city_mappings_reverse:

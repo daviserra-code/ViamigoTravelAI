@@ -46,7 +46,7 @@
                         </button>
                         <div class="overflow-hidden">
                             <p class="text-xs text-gray-400 truncate">Il tuo itinerario intelligente</p>
-                            <h2 id="itinerary-title" class="font-bold text-white text-lg truncate">Pomeriggio culturale a Genova</h2>
+                            <h2 id="itinerary-title" class="font-bold text-white text-lg truncate">Itinerario intelligente</h2>
                         </div>
                     </div>
                 </div>
@@ -135,7 +135,7 @@
                                 <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                                 <span class="text-xs text-green-400 font-semibold">IN CORSO</span>
                             </div>
-                            <h3 class="font-bold text-white text-lg">Pomeriggio culturale a Genova</h3>
+                            <h3 id="plan-b-title" class="font-bold text-white text-lg">Itinerario intelligente</h3>
                             <p class="text-xs text-gray-400 mb-2">27 Agosto 2025 • Oggi</p>
                             <p class="text-sm text-gray-300 mb-3">Stai esplorando il cuore storico di Genova. L'AI sta registrando le tue impressioni e creando il ricordo perfetto del tuo viaggio...</p>
                             <div class="flex justify-between text-xs text-gray-400 border-t border-gray-700/50 pt-2 mt-2">
@@ -371,16 +371,46 @@
         function detectCityFromLocation(locationText) {
             // City detection with proper priority
             const cityMappings = [
-                // Priority 1: Explicit city suffixes
-                { patterns: ['_torino', ',torino', 'torino'], displayName: 'Torino', key: 'torino' },
-                { patterns: ['_milano', ',milano', 'milano'], displayName: 'Milano', key: 'milano' },
-                { patterns: ['_genova', ',genova', 'genova'], displayName: 'Genova', key: 'genova' },
-                { patterns: ['_roma', ',roma'], displayName: 'Roma', key: 'roma' },  // Strict check for Roma
-                { patterns: ['_venezia', ',venezia', 'venezia'], displayName: 'Venezia', key: 'venezia' },
-                { patterns: ['_firenze', ',firenze', 'firenze'], displayName: 'Firenze', key: 'firenze' },
-                { patterns: ['_napoli', ',napoli', 'napoli'], displayName: 'Napoli', key: 'napoli' },
-                { patterns: ['_palermo', ',palermo', 'palermo'], displayName: 'Palermo', key: 'palermo' },
-                { patterns: ['_london', ',london', 'london'], displayName: 'London', key: 'london' },
+                // Lombardia
+                { patterns: ['_milano', ',milano', 'milano', 'milan', 'duomo milano', 'buenos aires'], displayName: 'Milano', key: 'milano' },
+                { patterns: ['_bergamo', ',bergamo', 'bergamo', 'città alta', 'citta alta'], displayName: 'Bergamo', key: 'bergamo' },
+                
+                // Piemonte
+                { patterns: ['_torino', ',torino', 'torino', 'turin', 'mole antonelliana'], displayName: 'Torino', key: 'torino' },
+                
+                // Liguria
+                { patterns: ['_genova', ',genova', 'genova', 'genoa'], displayName: 'Genova', key: 'genova' },
+                { patterns: ['_portofino', ',portofino', 'portofino'], displayName: 'Portofino', key: 'portofino' },
+                { patterns: ['_cinqueterre', ',cinqueterre', 'cinque terre'], displayName: 'Cinque Terre', key: 'cinqueterre' },
+                
+                // Lazio - MUST check for context to avoid "via roma" match
+                { patterns: ['_roma', ',roma', 'colosseo', 'colosseum', 'vaticano', 'fontana di trevi', 'trevi'], displayName: 'Roma', key: 'roma' },
+                
+                // Veneto
+                { patterns: ['_venezia', ',venezia', 'venezia', 'venice', 'san marco', 'rialto'], displayName: 'Venezia', key: 'venezia' },
+                
+                // Toscana
+                { patterns: ['_firenze', ',firenze', 'firenze', 'florence'], displayName: 'Firenze', key: 'firenze' },
+                
+                // Campania
+                { patterns: ['_napoli', ',napoli', 'napoli', 'naples', 'spaccanapoli'], displayName: 'Napoli', key: 'napoli' },
+                
+                // Sicilia
+                { patterns: ['_palermo', ',palermo', 'palermo', 'pretoria', 'villena', 'quattro canti'], displayName: 'Palermo', key: 'palermo' },
+                { patterns: ['_catania', ',catania', 'catania'], displayName: 'Catania', key: 'catania' },
+                { patterns: ['_taormina', ',taormina', 'taormina'], displayName: 'Taormina', key: 'taormina' },
+                { patterns: ['_siracusa', ',siracusa', 'siracusa'], displayName: 'Siracusa', key: 'siracusa' },
+                
+                // Sardegna - Costa Smeralda & Olbia
+                { patterns: ['_olbia', ',olbia', 'olbia'], displayName: 'Olbia', key: 'olbia' },
+                { patterns: ['_portorotondo', ',portorotondo', 'portorotondo', 'porto rotondo', 'rotondo'], displayName: 'Porto Rotondo', key: 'portorotondo' },
+                { patterns: ['_portocervo', ',portocervo', 'porto cervo', 'portocervo', 'cervo'], displayName: 'Porto Cervo', key: 'portocervo' },
+                { patterns: ['_costasmeralda', ',costasmeralda', 'costa smeralda'], displayName: 'Costa Smeralda', key: 'costasmeralda' },
+                { patterns: ['_santeodoro', ',santeodoro', 'san teodoro'], displayName: 'San Teodoro', key: 'santeodoro' },
+                { patterns: ['_golfoaranci', ',golfoaranci', 'golfo aranci'], displayName: 'Golfo Aranci', key: 'golfoaranci' },
+                
+                // UK
+                { patterns: ['_london', ',london', 'london', 'londra', 'big ben', 'tower bridge'], displayName: 'London', key: 'london' },
             ];
             
             for (const city of cityMappings) {
@@ -395,10 +425,16 @@
         }
         
         function updatePageContent(cityData) {
-            // Update title
+            // Update main title
             const title = document.getElementById('itinerary-title');
             if (title) {
                 title.textContent = `Itinerario intelligente a ${cityData.displayName}`;
+            }
+            
+            // Update Plan B title
+            const planBTitle = document.getElementById('plan-b-title');
+            if (planBTitle) {
+                planBTitle.textContent = `Itinerario intelligente a ${cityData.displayName}`;
             }
             
             // Update timeline with city-specific content
@@ -420,6 +456,11 @@
                     { time: '16:45 - 17:30 (45 min)', title: 'Galleria Vittorio Emanuele II', description: 'Storica galleria commerciale del 1865, il salotto di Milano.' },
                     { time: '17:30 - 18:30 (1 ora)', title: 'Castello Sforzesco', description: 'Fortezza storica con musei e giardini.' }
                 ],
+                'bergamo': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Basilica di Santa Maria Maggiore', description: 'Capolavoro romanico-gotico con incredibili intarsi lignei.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Cappella Colleoni', description: 'Gioiello del Rinascimento progettato da Amadeo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Città Alta', description: 'Passeggiata tra le mura veneziane patrimonio UNESCO.' }
+                ],
                 'genova': [
                     { time: '14:30 - 16:30 (2 ore)', title: 'Palazzo Ducale', description: 'Mostra su Van Gogh. Orario di punta - possibile affollamento.' },
                     { time: '16:45 - 17:30 (45 min)', title: 'Via Garibaldi', description: 'Palazzi dei Rolli UNESCO - passeggiata tra i palazzi storici.' },
@@ -434,6 +475,81 @@
                     { time: '14:30 - 16:30 (2 ore)', title: 'Piazza San Marco', description: 'Il salotto di Venezia con la Basilica e il Campanile.' },
                     { time: '16:45 - 17:30 (45 min)', title: 'Ponte di Rialto', description: 'Ponte storico sul Canal Grande, icona veneziana.' },
                     { time: '17:30 - 18:30 (1 ora)', title: 'Palazzo Ducale', description: 'Capolavoro gotico veneziano, sede del potere.' }
+                ],
+                'firenze': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Duomo di Firenze', description: 'Cattedrale di Santa Maria del Fiore con la cupola del Brunelleschi.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Ponte Vecchio', description: 'Ponte medievale con botteghe orafe storiche.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Palazzo Pitti', description: 'Residenza granducale con Giardini di Boboli.' }
+                ],
+                'napoli': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Spaccanapoli', description: 'Decumano inferiore nel cuore del centro storico UNESCO.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Castel dell\'Ovo', description: 'Castello sul mare con vista panoramica sul Golfo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Cappella Sansevero', description: 'Cristo Velato e altre sculture straordinarie.' }
+                ],
+                'palermo': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Cappella Palatina', description: 'Capolavoro dell\'arte arabo-normanna con mosaici bizantini.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Quattro Canti', description: 'Piazza barocca ottagonale nel cuore della città.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Mercato di Ballarò', description: 'Mercato storico con street food tipico siciliano.' }
+                ],
+                'catania': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Piazza del Duomo', description: 'Cuore barocco con la Fontana dell\'Elefante.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Via Etnea', description: 'Via principale con vista sull\'Etna.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Teatro Romano', description: 'Anfiteatro romano ben conservato.' }
+                ],
+                'taormina': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Teatro Greco', description: 'Teatro antico con vista mozzafiato su Etna e mare.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Corso Umberto', description: 'Passeggiata pedonale con boutique e caffè.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Giardini della Villa Comunale', description: 'Giardini panoramici con vista sulla costa.' }
+                ],
+                'siracusa': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Ortigia', description: 'Isola storica con il Duomo e la Fonte Aretusa.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Teatro Greco di Siracusa', description: 'Uno dei teatri greci più grandi al mondo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Parco Archeologico', description: 'Area archeologica con l\'Orecchio di Dionisio.' }
+                ],
+                'portofino': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Piazzetta di Portofino', description: 'Piccola piazza sul porto con case colorate.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Chiesa di San Giorgio', description: 'Chiesa panoramica con vista sul golfo.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Castello Brown', description: 'Fortezza con giardini e vista mare.' }
+                ],
+                'cinqueterre': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Monterosso al Mare', description: 'Il più grande dei borghi con spiaggia sabbiosa.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Vernazza', description: 'Borgo marinaro con case a torre colorate.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Sentiero dell\'Amore', description: 'Passeggiata romantica tra Riomaggiore e Manarola.' }
+                ],
+                'olbia': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Basilica di San Simplicio', description: 'Chiesa romanica più importante della Sardegna.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Centro Storico', description: 'Passeggiata tra via Umberto e piazza Regina Margherita.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Museo Archeologico', description: 'Reperti della civiltà nuragica.' }
+                ],
+                'portorotondo': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Marina di Porto Rotondo', description: 'Porto turistico con yacht di lusso.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Piazzetta San Marco', description: 'Cuore mondano con boutique esclusive.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Chiesa di San Lorenzo', description: 'Architettura moderna vista mare.' }
+                ],
+                'portocervo': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Promenade du Port', description: 'Passeggiata esclusiva tra yacht e boutique di lusso.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Chiesa Stella Maris', description: 'Chiesa contemporanea progettata da Busiri Vici.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Belvedere', description: 'Vista panoramica sulla Costa Smeralda.' }
+                ],
+                'costasmeralda': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Spiaggia del Principe', description: 'Una delle spiagge più belle al mondo.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Cala di Volpe', description: 'Baia esclusiva con acque cristalline.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Pevero Golf Club', description: 'Campo da golf panoramico vista mare.' }
+                ],
+                'santeodoro': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Spiaggia La Cinta', description: 'Lunga spiaggia di sabbia bianca finissima.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Stagno di San Teodoro', description: 'Oasi naturale con fenicotteri rosa.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Centro storico', description: 'Passeggiata tra le vie del borgo marinaro.' }
+                ],
+                'golfoaranci': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Spiaggia Sos Aranzos', description: 'Spiaggia di sabbia dorata protetta da scogli granitici.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Promontorio di Capo Figari', description: 'Area naturale con vista su Corsica e Tavolara.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Porto di Golfo Aranci', description: 'Porto turistico e commerciale.' }
+                ],
+                'london': [
+                    { time: '14:30 - 16:30 (2 ore)', title: 'Tower of London', description: 'Fortezza storica con i gioielli della Corona.' },
+                    { time: '16:45 - 17:30 (45 min)', title: 'Tower Bridge', description: 'Ponte vittoriano simbolo di Londra.' },
+                    { time: '17:30 - 18:30 (1 ora)', title: 'Borough Market', description: 'Mercato gastronomico storico.' }
                 ]
             };
             
@@ -464,9 +580,25 @@
             const discoveries = {
                 'torino': 'Sei a 2 minuti da "Caffè Al Bicerin", storico caffè torinese. Corrisponde al tuo interesse \'Cultura locale\'.',
                 'milano': 'Sei a 5 minuti da "Luini", famosa per i panzerotti dal 1949. Corrisponde al tuo interesse \'Cibo locale\'.',
+                'bergamo': 'Sei a 3 minuti da "Polenta e Osei", dolce tipico bergamasco. Corrisponde al tuo interesse \'Tradizioni locali\'.',
                 'genova': 'Sei a 2 minuti da "Pestobene", bottega storica. Corrisponde al tuo interesse \'Cibo locale\'.',
                 'roma': 'Sei a 3 minuti da "Tazza d\'Oro", caffè storico dal 1946. Corrisponde al tuo interesse \'Cultura locale\'.',
-                'venezia': 'Sei a 4 minuti da "Caffè Florian", caffè più antico d\'Italia (1720). Corrisponde al tuo interesse \'Storia\'.'
+                'venezia': 'Sei a 4 minuti da "Caffè Florian", caffè più antico d\'Italia (1720). Corrisponde al tuo interesse \'Storia\'.',
+                'firenze': 'Sei a 3 minuti da "Vivoli", gelateria storica dal 1930. Corrisponde al tuo interesse \'Dolci tipici\'.',
+                'napoli': 'Sei a 2 minuti da "Da Michele", pizzeria storica dal 1870. Corrisponde al tuo interesse \'Cibo autentico\'.',
+                'palermo': 'Sei a 4 minuti da "Antica Focacceria San Francesco", dal 1834. Corrisponde al tuo interesse \'Tradizioni siciliane\'.',
+                'catania': 'Sei a 3 minuti da "Pasticceria Savia", cannoli siciliani autentici. Corrisponde al tuo interesse \'Dolci locali\'.',
+                'taormina': 'Sei a 2 minuti da "Bam Bar", granita siciliana artigianale. Corrisponde al tuo interesse \'Specialità estive\'.',
+                'siracusa': 'Sei a 5 minuti da "Caseificio Borderi", ricotta fresca siciliana. Corrisponde al tuo interesse \'Prodotti tipici\'.',
+                'portofino': 'Sei a 1 minuto da "Il Pitosforo", focaccia ligure vista mare. Corrisponde al tuo interesse \'Cucina ligure\'.',
+                'cinqueterre': 'Sei a 3 minuti da "Cantina del Macellaio", vini delle 5 Terre. Corrisponde al tuo interesse \'Vini locali\'.',
+                'olbia': 'Sei a 4 minuti da "Agriturismo Stazzu", pecorino sardo DOP. Corrisponde al tuo interesse \'Formaggi tipici\'.',
+                'portorotondo': 'Sei a 2 minuti da "Ristorante Da Giovannino", crudo di ricciola. Corrisponde al tuo interesse \'Pesce fresco\'.',
+                'portocervo': 'Sei a 3 minuti da "Pevero Hotel", aperitivo vista Costa Smeralda. Corrisponde al tuo interesse \'Luxury experience\'.',
+                'costasmeralda': 'Sei a 5 minuti da "Hotel Pitrizza", cocktail esclusivi vista mare. Corrisponde al tuo interesse \'Relax di lusso\'.',
+                'santeodoro': 'Sei a 2 minuti da "Agriturismo L\'Agnata", malloreddus sardi. Corrisponde al tuo interesse \'Cucina tradizionale\'.',
+                'golfoaranci': 'Sei a 4 minuti da "Ristorante Terza Spiaggia", spaghetti ai ricci. Corrisponde al tuo interesse \'Frutti di mare\'.',
+                'london': 'You are 3 minutes from "Borough Market", historic food market since 1754. Matches your interest in \'Local food culture\'.'
             };
             
             const discoveryText = document.getElementById('discovery-text');
