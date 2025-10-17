@@ -444,7 +444,27 @@
             updateDiscoveryForCity(cityData);
         }
         
-        function updateTimelineForCity(cityData) {
+        async function updateTimelineForCity(cityData) {
+            // 🎯 NEW: Dynamic RAG-powered attractions instead of hardcoded
+            try {
+                console.log(`🔄 Fetching dynamic attractions for ${cityData.displayName}...`);
+                
+                const response = await fetch(`/api/get_city_attractions?city=${cityData.displayName}&location=${encodeURIComponent(window.location.search.split('location=')[1] || '')}`);
+                const data = await response.json();
+                
+                if (data.success && data.attractions && data.attractions.length > 0) {
+                    console.log(`✅ RAG: Retrieved ${data.attractions.length} attractions from ${data.source} (${data.total_places_in_db} places in DB)`);
+                    updateTimelineHTML(data.attractions);
+                    return;
+                }
+                
+                console.log(`⚠️ Falling back to static data for ${cityData.displayName}`);
+                
+            } catch (error) {
+                console.error(`❌ Error fetching attractions for ${cityData.displayName}:`, error);
+            }
+            
+            // Fallback to static attractions if API fails
             const cityAttractions = {
                 'torino': [
                     { time: '14:30 - 16:30 (2 ore)', title: 'Mole Antonelliana', description: 'Museo del Cinema. Vista panoramica su Torino e le Alpi.' },
@@ -554,6 +574,10 @@
             };
             
             const attractions = cityAttractions[cityData.key] || cityAttractions['genova'];
+            updateTimelineHTML(attractions);
+        }
+        
+        function updateTimelineHTML(attractions) {
             const timeline = document.getElementById('smart-timeline');
             
             if (timeline) {
@@ -563,6 +587,7 @@
                         <p class="text-xs text-gray-400 mb-1">${attr.time}</p>
                         <h3 class="font-semibold text-white">${attr.title}</h3>
                         <p class="text-sm text-gray-300">${attr.description}</p>
+                        ${attr.source ? `<span class="text-xs text-violet-400 mt-1 block">📊 ${attr.source}</span>` : ''}
                         ${index === 0 ? `
                             <button onclick="triggerPlanB()" class="mt-3 text-xs text-amber-400 font-semibold flex items-center space-x-1 bg-amber-400/10 px-3 py-2 rounded-full hover:bg-amber-400/20 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

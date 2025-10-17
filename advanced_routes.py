@@ -1,3 +1,4 @@
+from simple_rag_helper import rag_helper
 from openai import OpenAI
 from flask import Blueprint, request, jsonify, send_from_directory
 import json
@@ -15,8 +16,145 @@ def advanced_features_page():
     return send_from_directory('static', 'advanced_features.html')
 
 
+@advanced_bp.route('/api/get_city_attractions')
+def get_city_attractions():
+    """Get dynamic attractions for a city using RAG + PostgreSQL + ChromaDB"""
+    try:
+        city = request.args.get('city', 'Milano')
+        location = request.args.get('location', '')
+
+        print(f"🎯 API: Getting attractions for {city} (location: {location})")
+
+        # Use RAG to get real place data from PostgreSQL
+        city_context = rag_helper.get_city_context(
+            city,
+            categories=['tourist_attraction', 'museum', 'monument']
+        )
+
+        attractions = []
+
+        # Convert PostgreSQL data to timeline format
+        for category, data in city_context.get('categories', {}).items():
+            places = data.get('places', [])
+
+            for i, place in enumerate(places[:3]):  # Top 3 per category
+                name = place.get('name', place.get(
+                    'title', 'Attrazione locale'))
+
+                # Generate contextual description using ChatGPT + RAG data
+                description = generate_attraction_description(place, city)
+
+                # Create timeline entry
+                time_slots = [
+                    '14:30 - 16:30 (2 ore)', '16:45 - 17:30 (45 min)', '17:30 - 18:30 (1 ora)']
+
+                attractions.append({
+                    'time': time_slots[min(len(attractions), 2)],
+                    'title': name,
+                    'description': description,
+                    'category': category,
+                    'source': 'rag_postgresql'
+                })
+
+                if len(attractions) >= 3:  # Limit to 3 attractions
+                    break
+
+            if len(attractions) >= 3:
+                break
+
+        # Fallback to default if no RAG data
+        if not attractions:
+            attractions = get_fallback_attractions(city)
+
+        return jsonify({
+            'success': True,
+            'city': city,
+            'attractions': attractions,
+            'source': 'rag_postgresql' if city_context.get('total_places', 0) > 0 else 'fallback',
+            'total_places_in_db': city_context.get('total_places', 0)
+        })
+
+    except Exception as e:
+        print(f"❌ Error getting attractions for {city}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'attractions': get_fallback_attractions(city),
+            'source': 'error_fallback'
+        })
+
+
+def generate_attraction_description(place_data: dict, city: str) -> str:
+    """Generate contextual description using ChatGPT + real place data"""
+    try:
+        name = place_data.get('name', place_data.get('title', 'Attrazione'))
+
+        # Extract real data from place_data
+        description = place_data.get('description', '')
+        category = place_data.get('category', place_data.get('type', ''))
+
+        # Use ChatGPT for rich descriptions with real context
+        prompt = f"""
+        Crea una descrizione coinvolgente (max 80 caratteri) per questa attrazione di {city}:
+        
+        Nome: {name}
+        Categoria: {category}
+        Descrizione originale: {description}
+        
+        Deve essere informativa, coinvolgente e adatta per un itinerario turistico.
+        Rispondi solo con la descrizione, senza virgolette o prefissi.
+        """
+
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=100,
+            temperature=0.7
+        )
+
+        generated_description = response.choices[0].message.content.strip()
+        return generated_description[:120]  # Ensure max length
+
+    except Exception as e:
+        # Fallback to original description
+        return place_data.get('description', f'Attrazione storica di {city}.')[:120]
+
+
+def get_fallback_attractions(city: str) -> list:
+    """Fallback attractions when RAG data is not available"""
+    fallback_data = {
+        'bergamo': [
+            {'time': '14:30 - 16:30 (2 ore)', 'title': 'Basilica di Santa Maria Maggiore',
+             'description': 'Capolavoro romanico-gotico con incredibili intarsi lignei.'},
+            {'time': '16:45 - 17:30 (45 min)', 'title': 'Cappella Colleoni',
+             'description': 'Gioiello del Rinascimento progettato da Amadeo.'},
+            {'time': '17:30 - 18:30 (1 ora)', 'title': 'Città Alta',
+             'description': 'Passeggiata tra le mura veneziane patrimonio UNESCO.'}
+        ],
+        'milano': [
+            {'time': '14:30 - 16:30 (2 ore)', 'title': 'Duomo di Milano',
+             'description': 'Magnifica cattedrale gotica. Terrazza panoramica inclusa.'},
+            {'time': '16:45 - 17:30 (45 min)', 'title': 'Galleria Vittorio Emanuele II',
+             'description': 'Storica galleria commerciale del 1865, il salotto di Milano.'},
+            {'time': '17:30 - 18:30 (1 ora)', 'title': 'Castello Sforzesco',
+             'description': 'Fortezza storica con musei e giardini.'}
+        ]
+    }
+
+    return fallback_data.get(city.lower(), [
+        {'time': '14:30 - 16:30 (2 ore)', 'title': f'Centro storico di {city}',
+         'description': f'Esplora il cuore di {city} con i suoi monumenti principali.'},
+        {'time': '16:45 - 17:30 (45 min)', 'title': f'Musei di {city}',
+         'description': f'Visita i principali musei e attrazioni culturali.'},
+        {'time': '17:30 - 18:30 (1 ora)', 'title': f'Passeggiata a {city}',
+         'description': f'Rilassante passeggiata per le vie caratteristiche.'}
+    ])
+
+
 # Initialize OpenAI client
 openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+# RAG integration for dynamic attractions
 
 
 @advanced_bp.route('/piano_b', methods=['POST'])
