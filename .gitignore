@@ -40,6 +40,7 @@ yarn-error.log*
 
 # IDE
 .vscode/
+.vs/
 .idea/
 *.swp
 *.swo
