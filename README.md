@@ -95,10 +95,13 @@ ViamigoTravelAI/
 ## Contributing
 
 Contributions welcome! Please:
-1. Read [SETUP.md](SETUP.md) for local development setup
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
+2. Read [SETUP.md](SETUP.md) for local development setup
+3. Create a feature branch
+4. Make your changes
+5. Submit a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## License
 
