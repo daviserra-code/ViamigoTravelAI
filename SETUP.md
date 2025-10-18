@@ -2,6 +2,28 @@
 
 This guide will help you set up the Viamigo Travel AI project on your local machine.
 
+## 🚀 Quick Start (TL;DR)
+
+```bash
+# Clone and setup
+git clone https://github.com/daviserra-code/ViamigoTravelAI.git
+cd ViamigoTravelAI
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+npm install
+
+# Configure
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run
+python3 run.py
+# Open http://localhost:5000
+```
+
+---
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
@@ -36,8 +58,19 @@ venv\Scripts\activate
 
 ## Step 3: Install Python Dependencies
 
+### Option A: Using pip (Recommended)
+
 ```bash
 pip install -r requirements.txt
+```
+
+### Option B: Using uv (Faster Alternative)
+
+If you have [uv](https://github.com/astral-sh/uv) installed:
+
+```bash
+pip install uv
+uv sync
 ```
 
 This will install all required Python packages including:
@@ -173,6 +206,71 @@ The application will be available at `http://localhost:5000` (or the PORT specif
 ./start.sh
 ```
 
+## Step 10: Verify Installation (Optional)
+
+Run basic tests to ensure everything is working:
+
+```bash
+# Test database connection
+python3 -c "from flask_app import create_tables; create_tables(); print('✅ Database setup successful')"
+
+# Test ChromaDB
+python3 -c "import chromadb; print('✅ ChromaDB working')"
+
+# Test API routes (after starting the server)
+curl http://localhost:5000/
+```
+
+You can also run existing test files:
+
+```bash
+python3 test_dynamic_routing.py
+python3 test_enhancements.py
+```
+
+## Alternative: Using Docker
+
+If you prefer using Docker for a containerized setup:
+
+### Prerequisites
+- Docker installed on your system - [Get Docker](https://docs.docker.com/get-docker/)
+
+### Build and Run
+
+1. **Build the Docker image**:
+   ```bash
+   docker build -t viamigo-travel-ai .
+   ```
+
+2. **Run the container**:
+   ```bash
+   docker run -p 5000:5000 --env-file .env viamigo-travel-ai
+   ```
+
+3. **Access the app**: Open http://localhost:5000 in your browser
+
+### Using Docker Compose (Optional)
+
+Create a `docker-compose.yml` file for easier management:
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./chromadb_data:/app/chromadb_data
+```
+
+Then run:
+```bash
+docker-compose up
+```
+
 ## Troubleshooting
 
 ### Port Already in Use
@@ -274,6 +372,69 @@ ViamigoTravelAI/
    - Browser DevTools
 
 4. **Monitoring Logs**: Check console output for debugging information
+
+5. **Virtual Environment**: Always activate your virtual environment before working:
+   ```bash
+   source venv/bin/activate  # Linux/Mac
+   venv\Scripts\activate      # Windows
+   ```
+
+## Common Development Workflows
+
+### Making Changes and Testing
+
+```bash
+# 1. Activate virtual environment
+source venv/bin/activate
+
+# 2. Make your code changes
+# (edit files in your editor)
+
+# 3. Run the application
+python3 run.py
+
+# 4. Test in browser
+# Open http://localhost:5000
+
+# 5. Check logs in terminal for errors
+```
+
+### Adding New Dependencies
+
+```bash
+# 1. Install the package
+pip install package-name
+
+# 2. Update requirements.txt
+pip freeze > requirements.txt
+
+# 3. Commit the changes
+git add requirements.txt
+git commit -m "Add package-name dependency"
+```
+
+### Working with Database
+
+```bash
+# Reset database (caution: deletes all data)
+python3 -c "from flask_app import db, app; app.app_context().push(); db.drop_all(); db.create_all()"
+
+# Load sample data
+python3 seed_italian_data.py
+```
+
+### Using the Data Loader
+
+```bash
+# Quick setup with guided script
+./setup_data_loader.sh
+
+# Load data for specific cities
+python3 -c "from Viamigo_Data_Loader_Fixed import ViaMigoDataLoader; loader = ViaMigoDataLoader(); loader.load_city_data('Milan', 'it'); loader.close()"
+
+# Verify loaded data
+python3 -c "from simple_rag_helper import get_city_context; print(get_city_context('Milan', limit=10))"
+```
 
 ## Additional Resources
 
