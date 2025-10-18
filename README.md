@@ -47,6 +47,8 @@ An AI-powered travel companion that helps you plan personalized itineraries for 
 
 For detailed setup instructions, including database configuration and API key setup, see **[SETUP.md](SETUP.md)**.
 
+**Setup Checklist**: Use [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) to verify your installation is complete.
+
 ### For Deployment (Replit/Production)
 
 The project includes deployment configurations:

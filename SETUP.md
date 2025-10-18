@@ -208,6 +208,8 @@ The application will be available at `http://localhost:5000` (or the PORT specif
 
 ## Step 10: Verify Installation (Optional)
 
+**💡 Pro Tip**: Use the [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) for a comprehensive verification guide.
+
 Run basic tests to ensure everything is working:
 
 ```bash
