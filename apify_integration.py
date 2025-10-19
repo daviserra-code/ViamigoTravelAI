@@ -11,6 +11,7 @@ from cost_effective_scraping import CostEffectiveDataProvider
 from models import db, PlaceCache
 from datetime import datetime, timedelta
 from api_error_handler import resilient_api_call, with_cache, cache_apify
+from typing import Any
 
 
 class ApifyTravelIntegration:
@@ -23,7 +24,7 @@ class ApifyTravelIntegration:
 
     def is_available(self) -> bool:
         """Verifica se Apify è configurato e disponibile"""
-        available = self.client is not None and self.api_token is not None and len(
+        available = bool(self.client) and self.api_token is not None and len(
             self.api_token) > 10
         print(
             f"🔍 Apify is_available check: client={self.client is not None}, token_exists={bool(self.api_token)}, token_length={len(self.api_token) if self.api_token else 0}, result={available}")
@@ -32,38 +33,52 @@ class ApifyTravelIntegration:
     def get_cached_places(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
         """Recupera luoghi dal cache locale con cache più aggressivo per Londra"""
         try:
-            # Usa cache_key invece di city + category separati
-            cache_key = f"{city.lower()}_{category}"
-            cached = PlaceCache.query.filter_by(cache_key=cache_key).first()
+            # Try to import Flask app context
+            try:
+                from flask_app import app
+                with app.app_context():
+                    return self._get_cached_places_with_context(city, category)
+            except:
+                # Fallback if no Flask context available
+                return self._get_cached_places_with_context(city, category)
 
-            # Per Londra, usa cache più lungo (24 ore) per evitare chiamate Apify lente
-            cache_duration = timedelta(hours=24) if city.lower(
-            ) == 'london' else self.cache_duration
-
-            if cached and cached.created_at > datetime.now() - cache_duration:
-                place_data = json.loads(cached.place_data)
-                # Check if we have sufficient data - riduci threshold per Londra
-                min_places = 2 if city.lower() == 'london' else 3
-                if isinstance(place_data, list) and len(place_data) >= min_places:
-                    print(
-                        f"✅ Cache hit per {city} - {len(place_data)} luoghi trovati (cache {cache_duration})")
-                    return place_data
-                else:
-                    print(
-                        f"⚠️ Cache insufficient per {city} - solo {len(place_data) if isinstance(place_data, list) else 1} luoghi")
-                    # Per Londra, mantieni cache anche se insufficiente per evitare Apify lento
-                    if city.lower() == 'london' and isinstance(place_data, list) and len(place_data) > 0:
-                        print(
-                            f"🚀 Using existing London cache to avoid slow Apify call")
-                        return place_data
-                    # Delete insufficient cache per altre città
-                    PlaceCache.query.filter_by(cache_key=cache_key).delete()
-                    db.session.commit()
-                    return []
-            return []
         except Exception as e:
             print(f"⚠️ Errore cache lookup: {e}")
             return []
+
+    def _get_cached_places_with_context(self, city: str, category: str = 'tourist_attraction') -> List[Dict]:
+        """Internal method that performs the actual cache lookup"""
+        # Usa cache_key invece di city + category separati
+        cache_key = f"{city.lower()}_{category}"
+        # Query may return None; keep type safe for static analysis
+        cached = PlaceCache.query.filter_by(
+            cache_key=cache_key).first()  # type: Any
+
+        # Per Londra, usa cache più lungo (24 ore) per evitare chiamate Apify lente
+        cache_duration = timedelta(hours=24) if city.lower(
+        ) == 'london' else self.cache_duration
+
+        if cached is not None and getattr(cached, 'created_at', None) and cached.created_at > datetime.now() - cache_duration:
+            place_data = json.loads(cached.place_data)
+            # Check if we have sufficient data - riduci threshold per Londra
+            min_places = 2 if city.lower() == 'london' else 3
+            if isinstance(place_data, list) and len(place_data) >= min_places:
+                print(
+                    f"✅ Cache hit per {city} - {len(place_data)} luoghi trovati (cache {cache_duration})")
+                return place_data
+            else:
+                print(
+                    f"⚠️ Cache insufficient per {city} - solo {len(place_data) if isinstance(place_data, list) else 1} luoghi")
+                # Per Londra, mantieni cache anche se insufficiente per evitare Apify lento
+                if city.lower() == 'london' and isinstance(place_data, list) and len(place_data) > 0:
+                    print(
+                        f"🚀 Using existing London cache to avoid slow Apify call")
+                    return place_data
+                # Delete insufficient cache per altre città
+                PlaceCache.query.filter_by(cache_key=cache_key).delete()
+                db.session.commit()
+                return []
+        return []
 
     def cache_places(self, city: str, category: str, places: List[Dict]) -> None:
         """Salva luoghi nel cache locale"""
@@ -95,7 +110,11 @@ class ApifyTravelIntegration:
 
         except Exception as e:
             print(f"⚠️ Errore cache per {city}: {e}")
-            db.session.rollback()
+            try:
+                db.session.rollback()
+            except Exception:
+                # If db is not configured in this environment, avoid crashing static checks
+                pass
 
     # Increased timeout for Apify (60s+)
     @resilient_api_call('apify', timeout=90, fallback_data=[])
@@ -296,7 +315,7 @@ class ApifyTravelIntegration:
             print(f"❌ Errore TripAdvisor search per {city}: {e}")
             return []
 
-    def get_authentic_places(self, city: str, categories: List[str] = None) -> Dict[str, List[Dict]]:
+    def get_authentic_places(self, city: str, categories: Optional[List[str]] = None) -> Dict[str, List[Dict]]:
         """Ottiene luoghi autentici per una città usando cache + Apify"""
         if categories is None:
             categories = ['tourist_attraction', 'restaurant', 'hotel']

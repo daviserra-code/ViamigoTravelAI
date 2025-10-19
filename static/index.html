@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viamigo - Travel App v2.0</title>
+    <!-- Official Viamigo Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/static/icon-192x192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Suppress Tailwind CDN warning in production
@@ -23,6 +28,19 @@
     <!-- Libreria Leaflet.js per le mappe -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/api/app/manifest">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Viamigo">
+    
+    <!-- UX Enhancements -->
+    <script defer src="/static/ux_enhancements.js"></script>
+    <script defer src="/static/interactive_map.js"></script>
+    <!-- Viamigo Image Management System -->
+    <script defer src="/static/js/viamigo-images.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
         .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
@@ -30,7 +48,7 @@
         .page { display: none; }
         .page.active { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
         .bottom-nav button.active svg, .bottom-nav button.active span { color: white; }
-        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .interest-tag.selected, .segmented-control button.selected { background-color: #a78bfa; color: #111827; font-weight: 600; }
         .timeline { position: relative; padding-left: 24px; }
         .timeline::before { content: ''; position: absolute; left: 5px; top: 10px; bottom: 10px; width: 2px; background-color: #374151; }
@@ -55,6 +73,27 @@
         #modal-container.hidden #modal-overlay { opacity: 0; }
         #modal-container.hidden #modal { opacity: 0; transform: scale(0.95); }
         .content-blur { filter: blur(4px); }
+        
+        /* Auto-suggestion dropdown styles */
+        #start-suggestions, #end-suggestions {
+            position: absolute;
+            z-index: 9999 !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4B5563 #1F2937;
+        }
+        #start-suggestions::-webkit-scrollbar, #end-suggestions::-webkit-scrollbar {
+            width: 6px;
+        }
+        #start-suggestions::-webkit-scrollbar-track, #end-suggestions::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        #start-suggestions::-webkit-scrollbar-thumb, #end-suggestions::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body class="flex justify-center items-center p-4">
@@ -64,8 +103,21 @@
             <!-- PAGINA HOME -->
             <div id="page-home" class="page active">
                 <div id="home-header" class="flex justify-between items-center mb-6 px-2 h-12 flex-shrink-0 mt-6">
-                    <h1 class="text-3xl font-bold self-end mb-1 viamigo-font">Viamigo</h1>
                     <div class="flex items-center space-x-3">
+                        <img src="/static/images/viamigologo_real.png" alt="Viamigo Logo" class="w-8 h-8">
+                        <h1 class="text-3xl font-bold self-end mb-1 viamigo-font">Viamigo</h1>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button id="analytics-button" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors" title="Analytics Dashboard">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </button>
+                        <button id="mobile-admin-button" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors" title="Mobile Admin">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                        </button>
                         <button id="dashboard-button" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors" title="Dashboard">
                             <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
@@ -78,14 +130,16 @@
                     <div id="home-planner-view">
                         <div class="space-y-6">
                             <div class="bg-gray-800 rounded-xl p-2 border border-gray-700">
-                                <div class="flex items-center">
+                                <div class="flex items-center relative">
                                     <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input type="text" id="start-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Partenza" value="Piazza De Ferrari, Genova">
+                                    <input type="text" id="start-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Partenza" value="Piazza De Ferrari, Genova" autocomplete="off">
+                                    <div id="start-suggestions" class="absolute top-full left-0 right-0 bg-gray-800 border border-gray-700 rounded-b-xl z-10 hidden max-h-48 overflow-y-auto"></div>
                                 </div>
                                 <div class="h-px bg-gray-700 my-1"></div>
-                                <div class="flex items-center">
+                                <div class="flex items-center relative">
                                     <svg class="w-5 h-5 text-gray-400 mx-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    <input type="text" id="end-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Destinazione" value="Acquario di Genova">
+                                    <input type="text" id="end-location" class="w-full bg-transparent text-white p-2 focus:outline-none" placeholder="Destinazione" value="Acquario di Genova" autocomplete="off">
+                                    <div id="end-suggestions" class="absolute top-full left-0 right-0 bg-gray-800 border border-gray-700 rounded-b-xl z-10 hidden max-h-48 overflow-y-auto"></div>
                                 </div>
                             </div>
                             <button id="plan-button" class="w-full font-bold py-4 rounded-xl text-lg bg-violet-500 text-white">Pianifica il mio giorno</button>
@@ -191,10 +245,151 @@
         let map = null, mapInitialized = false, routeLayer = null, currentItineraryData = null;
         const themeColors = { base: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500', bgTip: 'bg-violet-900/50', selectedClass: 'bg-violet-400' };
 
+        // City suggestions system
+        function setupCityAutocomplete() {
+            console.log('🔍 Setting up city autocomplete...');
+            const startInput = document.getElementById('start-location');
+            const endInput = document.getElementById('end-location');
+            const startSuggestions = document.getElementById('start-suggestions');
+            const endSuggestions = document.getElementById('end-suggestions');
+            
+            console.log('🔍 Elements found:', {
+                startInput: !!startInput, 
+                endInput: !!endInput,
+                startSuggestions: !!startSuggestions,
+                endSuggestions: !!endSuggestions
+            });
+            
+            if (!startInput || !endInput || !startSuggestions || !endSuggestions) {
+                console.error('❌ Auto-suggestion elements not found!');
+                return;
+            }
+            
+            let searchTimeout;
+            
+            function searchCities(query) {
+                console.log('🔍 Searching cities for:', query);
+                return fetch(`/api/cities/search?query=${encodeURIComponent(query)}`)
+                    .then(response => {
+                        console.log('📡 API response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📊 API response data:', data);
+                        // Combine cities and places for comprehensive results
+                        const results = [];
+                        
+                        // Add cities first
+                        if (data.cities && data.cities.length > 0) {
+                            results.push(...data.cities.map(city => ({ name: city, type: 'city' })));
+                        }
+                        
+                        // Add places/attractions
+                        if (data.places && data.places.length > 0) {
+                            results.push(...data.places.map(place => ({ 
+                                name: place.name, 
+                                type: 'place',
+                                city: place.city 
+                            })));
+                        }
+                        
+                        console.log(`✅ Found ${results.length} results (${data.cities?.length || 0} cities, ${data.places?.length || 0} places)`);
+                        return results;
+                    })
+                    .catch(error => {
+                        console.error('❌ City search error:', error);
+                        return [];
+                    });
+            }
+            
+            function showSuggestions(input, suggestionsContainer, results) {
+                console.log('🎨 Showing suggestions:', results.length);
+                
+                if (results.length === 0) {
+                    console.log('❌ No results, hiding suggestions');
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                suggestionsContainer.innerHTML = results.map(result => {
+                    const icon = result.type === 'city' 
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>';
+                    
+                    const label = result.type === 'place' && result.city 
+                        ? `${result.name} <span class="text-gray-500 text-sm">• ${result.city}</span>`
+                        : result.name;
+                    
+                    return `<div class="px-4 py-3 hover:bg-gray-700 cursor-pointer text-white border-b border-gray-700 last:border-b-0 transition-colors" data-name="${result.name}" data-type="${result.type}">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                ${icon}
+                            </svg>
+                            <span class="flex-1">${label}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                
+                console.log('✅ Rendered suggestions HTML, showing dropdown');
+                suggestionsContainer.classList.remove('hidden');
+                
+                // Add click handlers
+                suggestionsContainer.querySelectorAll('[data-name]').forEach(item => {
+                    item.addEventListener('click', () => {
+                        console.log('👆 Suggestion clicked:', item.dataset.name);
+                        input.value = item.dataset.name;
+                        suggestionsContainer.classList.add('hidden');
+                    });
+                });
+            }
+            
+            function handleInput(input, suggestionsContainer) {
+                clearTimeout(searchTimeout);
+                const query = input.value.trim();
+                
+                console.log('⌨️ Input changed:', query);
+                
+                if (query.length < 2) {
+                    console.log('❌ Query too short, hiding suggestions');
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                console.log('⏰ Setting search timeout...');
+                searchTimeout = setTimeout(() => {
+                    console.log('🚀 Executing search for:', query);
+                    searchCities(query).then(cities => {
+                        console.log('✅ Got cities:', cities);
+                        showSuggestions(input, suggestionsContainer, cities);
+                    });
+                }, 300);
+            }
+            
+            // Setup event listeners
+            startInput.addEventListener('input', () => handleInput(startInput, startSuggestions));
+            endInput.addEventListener('input', () => handleInput(endInput, endSuggestions));
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!startInput.contains(e.target) && !startSuggestions.contains(e.target)) {
+                    startSuggestions.classList.add('hidden');
+                }
+                if (!endInput.contains(e.target) && !endSuggestions.contains(e.target)) {
+                    endSuggestions.classList.add('hidden');
+                }
+            });
+        }
+
         console.log('🔧 VIAMIGO v2.0 - Inizializzazione script, elementi trovati:');
         console.log('- timelineContainer:', timelineContainer);
         console.log('- planButton:', planButton);
         console.log('- itineraryTitle:', itineraryTitle);
+
+        // CONTROLLO RIPRISTINO CONTESTO DA ADVANCED FEATURES
+        checkAndRestoreContext();
+
+        // Setup city autocomplete system
+        setupCityAutocomplete();
 
         // OVERRIDE: Forza il caricamento del JavaScript corretto
         window.VIAMIGO_DEBUG = true;
@@ -215,6 +410,22 @@
         if (dashboardButton) {
             dashboardButton.addEventListener('click', () => {
                 window.location.href = '/dashboard';
+            });
+        }
+
+        // --- GESTIONE ANALYTICS DASHBOARD ---
+        const analyticsButton = document.getElementById('analytics-button');
+        if (analyticsButton) {
+            analyticsButton.addEventListener('click', () => {
+                window.location.href = '/analytics_dashboard';
+            });
+        }
+
+        // --- GESTIONE MOBILE ADMIN ---
+        const mobileAdminButton = document.getElementById('mobile-admin-button');
+        if (mobileAdminButton) {
+            mobileAdminButton.addEventListener('click', () => {
+                window.location.href = '/mobile_admin';
             });
         }
 
@@ -341,6 +552,13 @@
                         // Aggiorna i dati e renderizza
                         currentItineraryData = data.itinerary;
                         itineraryTitle.textContent = `Da ${start} a ${end}`;
+                        
+                        // Salva l'itinerario nella cronologia
+                        saveRouteToHistory(data, start, end);
+                        
+                        // Save current session state  
+                        saveCurrentSession();
+                        
                         console.log('🔄 Chiamata renderItinerary con:', data);
                         renderItinerary(data);
 
@@ -857,17 +1075,31 @@
                     // Genera un trigger contestuale intelligente per ogni tappa
                     const contextualTrigger = generateContextualTrigger(item);
                     const triggerClass = contextualTrigger.active ? 'border-l-4 border-red-500 bg-red-900/20' : '';
+                    
+                    // Create unique identifier for this attraction
+                    const attractionId = `attraction-${Math.random().toString(36).substr(2, 9)}`;
 
                     timelineContainer.innerHTML += `
                         <div class="timeline-item relative pb-8 ${triggerClass}">
                             <div class="dot bg-gray-500"></div>
                             <div class="flex justify-between items-start">
                                 <div class="flex-grow">
-                                    <p class="text-xs text-gray-400 mb-1">${item.time}</p>
-                                    <h3 class="font-semibold text-white">${item.title}</h3>
-                                    <p class="text-sm text-gray-300">${item.description}</p>
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <div id="${attractionId}" class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 attraction-image" 
+                                             data-title="${item.title}" data-context="${item.context}">
+                                            <!-- Image will be loaded here, no gray background initially -->
+                                            <div class="w-full h-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-lg">
+                                                ${getAttractionIcon(item.title)}
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <p class="text-xs text-gray-400 mb-1">${item.time}</p>
+                                            <h3 class="font-semibold text-white">${item.title}</h3>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-300 ml-16">${item.description}</p>
                                     ${contextualTrigger.active ? `
-                                        <div class="mt-2 p-2 bg-red-900/30 rounded border border-red-500/30">
+                                        <div class="mt-2 p-2 bg-red-900/30 rounded border border-red-500/30 ml-16">
                                             <div class="flex items-center text-red-300 text-xs mb-1">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
@@ -901,6 +1133,9 @@
                 }
                 });
                 document.querySelectorAll('.ai-button').forEach(btn => btn.addEventListener('click', (e) => openModal(e.currentTarget.dataset.context)));
+                
+                // Load attraction images asynchronously
+                loadTimelineImagesAsync();
             }, 10);
         }
 
@@ -1056,6 +1291,15 @@
             const modal = document.getElementById('modal');
             const modalContainer = document.getElementById('modal-container');
 
+            // Store current route context before showing modal
+            if (currentItineraryData) {
+                localStorage.setItem('viamigo_modal_context', JSON.stringify({
+                    itinerary: currentItineraryData,
+                    title: itineraryTitle.textContent,
+                    timestamp: Date.now()
+                }));
+            }
+
             modal.innerHTML = `
                 <div class="p-4 border-b border-gray-700">
                     <div class="flex justify-between items-center">
@@ -1081,6 +1325,50 @@
             const modalContainer = document.getElementById('modal-container');
             modalContainer.classList.add('hidden');
             mainContent.classList.remove('content-blur');
+            
+            // Restore route context if available
+            restoreRouteContextAfterModal();
+        }
+
+        /**
+         * Restore route context after closing modal
+         */
+        function restoreRouteContextAfterModal() {
+            try {
+                const contextData = localStorage.getItem('viamigo_modal_context');
+                if (contextData) {
+                    const context = JSON.parse(contextData);
+                    
+                    // Check if context is recent (within 5 minutes)
+                    const isRecent = (Date.now() - context.timestamp) < 300000;
+                    
+                    if (isRecent && context.itinerary) {
+                        // Restore the route data if not already present
+                        if (!currentItineraryData || currentItineraryData.length === 0) {
+                            console.log('🔄 Restoring route context after modal close');
+                            currentItineraryData = context.itinerary;
+                            
+                            if (itineraryTitle && context.title) {
+                                itineraryTitle.textContent = context.title;
+                            }
+                            
+                            // Re-render the itinerary
+                            renderItinerary({ itinerary: currentItineraryData });
+                            
+                            // Ensure we're on the itinerary page
+                            const currentPage = document.querySelector('.page.active');
+                            if (!currentPage || currentPage.id !== 'page-itinerary') {
+                                document.querySelector('.nav-button[data-page="itinerary"]').click();
+                            }
+                        }
+                    }
+                    
+                    // Clean up stored context
+                    localStorage.removeItem('viamigo_modal_context');
+                }
+            } catch (error) {
+                console.warn('Error restoring route context:', error);
+            }
         }
 
         // Chiudi modal cliccando sull'overlay
@@ -1155,6 +1443,13 @@
                 timestamp: new Date().toISOString()
             }));
 
+            // IMPORTANT: Save current route state before leaving
+            if (currentItineraryData && window.currentCityName) {
+                const routeData = { itinerary: currentItineraryData };
+                saveRouteToHistory(routeData, 'Start', window.currentCityName);
+                console.log('💾 Current route saved before opening AI companion (triggered)');
+            }
+
             // Apri il Compagno AI
             window.location.href = '/advanced-features?trigger=' + eventType + '&location=' + encodeURIComponent(location);
         };
@@ -1163,6 +1458,7 @@
         window.openAICompanionForLocation = function(location) {
             console.log(`🧠 Apertura Compagno AI per: ${location}`);
 
+            // Save AI companion context
             localStorage.setItem('aiCompanionContext', JSON.stringify({
                 trigger: false,
                 location: location,
@@ -1170,17 +1466,512 @@
                 timestamp: new Date().toISOString()
             }));
 
+            // IMPORTANT: Save current route state before leaving
+            if (currentItineraryData && window.currentCityName) {
+                const routeData = { itinerary: currentItineraryData };
+                saveRouteToHistory(routeData, 'Start', window.currentCityName);
+                console.log('💾 Current route saved before opening AI companion');
+            }
+
             window.location.href = '/advanced-features?location=' + encodeURIComponent(location);
         };
 
         // Compagno AI generico
         window.openAICompanion = function() {
             console.log(`🧠 Apertura Compagno AI generico`);
+            
+            // IMPORTANT: Save current route state before leaving
+            if (currentItineraryData && window.currentCityName) {
+                const routeData = { itinerary: currentItineraryData };
+                saveRouteToHistory(routeData, 'Start', window.currentCityName);
+                console.log('💾 Current route saved before opening AI companion');
+            }
+            
             window.location.href = '/advanced-features';
         };
 
         // Carica il profilo utente all'avvio
         loadUserProfile();
+
+        /**
+         * Load timeline images asynchronously using enhanced image service
+         */
+        async function loadTimelineImagesAsync() {
+            const imageElements = document.querySelectorAll('.attraction-image[data-title][data-context]');
+            
+            // Load all images in parallel
+            const promises = Array.from(imageElements).map(element => 
+                loadEnhancedImageForElement(element, element.dataset.title, element.dataset.context)
+            );
+            
+            try {
+                await Promise.allSettled(promises);
+                console.log(`✅ Loaded enhanced images for ${imageElements.length} attractions`);
+            } catch (error) {
+                console.warn('⚠️ Some timeline images failed to load:', error);
+            }
+        }
+
+        /**
+         * Load enhanced image for a specific element using the new API
+         */
+        async function loadEnhancedImageForElement(element, title, context) {
+            try {
+                // Use the enhanced classification API
+                const response = await fetch('/api/images/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        context: context
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.image && data.image.url) {
+                    // Create and test image loading
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        // Replace with actual image on successful load
+                        element.innerHTML = `<img src="${data.image.url}" alt="${title}" class="w-full h-full object-cover" loading="lazy">`;
+                        element.classList.add('image-loaded');
+                        
+                        // Add confidence indicator for high confidence images
+                        if (data.classification && data.classification.confidence > 0.8) {
+                            element.style.borderColor = '#10b981'; // Green border for high confidence
+                            element.style.borderWidth = '2px';
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        // Keep the icon fallback on error - no gray circle
+                        console.warn(`Failed to load image for ${title}, keeping icon fallback`);
+                        element.classList.add('image-error');
+                    };
+                    
+                    img.src = data.image.url;
+                } else {
+                    // API succeeded but no image - keep the icon fallback
+                    console.log(`No image available for ${title}, keeping icon fallback`);
+                    element.classList.add('image-no-data');
+                }
+            } catch (error) {
+                console.warn(`Failed to load enhanced image for ${title}:`, error);
+                // Keep the icon fallback - no gray circle
+                element.classList.add('image-error');
+            }
+        }
+
+        // --- HELPER FUNCTIONS FOR ATTRACTION IMAGES ---
+        
+        /**
+         * Get attraction image URL based on attraction name and context
+         * Now uses the Viamigo Image Management System with database-backed images
+         */
+        async function getAttractionImage(title, context) {
+            // Extract city from context
+            const city = extractCityFromContext(context || '');
+            
+            // Use ViamigoImages system if available
+            if (window.ViamigoImages) {
+                try {
+                    // Get fallback URL from our static collection
+                    const fallbackUrl = getStaticFallbackImage(title);
+                    
+                    // Use the database-backed image system
+                    const imageUrl = await window.ViamigoImages.getImageUrl(city, title, fallbackUrl);
+                    
+                    return {
+                        url: imageUrl,
+                        fallback: getAttractionFallbackText(title)
+                    };
+                } catch (error) {
+                    console.warn('Error getting image for', title, ':', error);
+                }
+            }
+            
+            // Fallback to static system if ViamigoImages not available
+            return getStaticAttractionImage(title);
+        }
+
+        /**
+         * Extract city name from context string
+         */
+        function extractCityFromContext(context) {
+            const cities = ['Roma', 'Firenze', 'Venezia', 'Milano', 'Napoli', 'Genova', 'Pisa', 'Bologna', 'Torino', 'Palermo'];
+            
+            for (const city of cities) {
+                if (context.toLowerCase().includes(city.toLowerCase())) {
+                    return city;
+                }
+            }
+            
+            // Try to extract from common patterns
+            const match = context.match(/(?:a|in|di|nel)\s+([A-Z][a-z]+)/);
+            if (match) {
+                return match[1];
+            }
+            
+            return 'Italia'; // Default fallback
+        }
+
+        /**
+         * Get static fallback image URL for attractions
+         */
+        function getStaticFallbackImage(title) {
+            const titleLower = title.toLowerCase();
+            
+            // High-quality Unsplash images as fallbacks
+            const imageMap = {
+                'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400',
+                'fontana di trevi': 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400',
+                'pantheon': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400',
+                'duomo': 'https://images.unsplash.com/photo-1543832923-44667a44c804?w=400',
+                'ponte vecchio': 'https://images.unsplash.com/photo-1518307697693-e7a7e6e36b2d?w=400',
+                'piazza san marco': 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=400',
+                'ponte di rialto': 'https://images.unsplash.com/photo-1522199670076-2ac386793d85?w=400',
+                'duomo di milano': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=400',
+                'basilica': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
+                'palazzo': 'https://images.unsplash.com/photo-1574020976853-5b78b8e8b7c4?w=400'
+            };
+            
+            // Find best match
+            for (const [key, url] of Object.entries(imageMap)) {
+                if (titleLower.includes(key) || key.includes(titleLower)) {
+                    return url;
+                }
+            }
+            
+            // Generic Italian landmark image
+            return 'https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=400';
+        }
+
+        /**
+         * Legacy static attraction image function (kept for compatibility)
+         */
+        function getStaticAttractionImage(title) {
+            const attractions = {
+                // Rome
+                'colosseo': { url: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=200&h=200&fit=crop', fallback: 'COL' },
+                'foro romano': { url: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=200&h=200&fit=crop', fallback: 'FOR' },
+                'pantheon': { url: 'https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=200&h=200&fit=crop', fallback: 'PAN' },
+                'fontana di trevi': { url: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=200&h=200&fit=crop', fallback: 'TRE' },
+                'castel sant angelo': { url: 'https://images.unsplash.com/photo-1534445538805-cb5b5cc9a5c4?w=200&h=200&fit=crop', fallback: 'CAS' },
+                'piazza navona': { url: 'https://images.unsplash.com/photo-1556888896-2adfe8bdc3da?w=200&h=200&fit=crop', fallback: 'NAV' },
+                'basilica di san pietro': { url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop', fallback: 'STP' },
+                'musei vaticani': { url: 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=200&h=200&fit=crop', fallback: 'VAT' },
+
+                // Florence
+                'duomo': { url: 'https://images.unsplash.com/photo-1601985843082-5e1ecdf71b71?w=200&h=200&fit=crop', fallback: 'DUO' },
+                'cupola del brunelleschi': { url: 'https://images.unsplash.com/photo-1601985843082-5e1ecdf71b71?w=200&h=200&fit=crop', fallback: 'CUP' },
+                'uffizi': { url: 'https://images.unsplash.com/photo-1601985843082-5e1ecdf71b71?w=200&h=200&fit=crop', fallback: 'UFF' },
+                'ponte vecchio': { url: 'https://images.unsplash.com/photo-1553346064-aa2d4c36b0ed?w=200&h=200&fit=crop', fallback: 'PON' },
+                'palazzo pitti': { url: 'https://images.unsplash.com/photo-1574020976853-5b78b8e8b7c4?w=200&h=200&fit=crop', fallback: 'PIT' },
+                'piazza della signoria': { url: 'https://images.unsplash.com/photo-1570654399978-1bb2e68c73f2?w=200&h=200&fit=crop', fallback: 'SIG' },
+
+                // Venice
+                'piazza san marco': { url: 'https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=200&h=200&fit=crop', fallback: 'SAN' },
+                'basilica di san marco': { url: 'https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=200&h=200&fit=crop', fallback: 'BAS' },
+                'ponte di rialto': { url: 'https://images.unsplash.com/photo-1518967964467-1d9b5c14c1ac?w=200&h=200&fit=crop', fallback: 'RIA' },
+                'ponte rialto': { url: 'https://images.unsplash.com/photo-1518967964467-1d9b5c14c1ac?w=200&h=200&fit=crop', fallback: 'RIA' },
+                'palazzo ducale': { url: 'https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=200&h=200&fit=crop', fallback: 'DUC' },
+                'canal grande': { url: 'https://images.unsplash.com/photo-1521470027516-c8df11fb5951?w=200&h=200&fit=crop', fallback: 'CAN' },
+                'ponte dei sospiri': { url: 'https://images.unsplash.com/photo-1530841344095-78cfc5ad1b14?w=200&h=200&fit=crop', fallback: 'SOS' },
+                
+                // Milan
+                'duomo di milano': { url: 'https://images.unsplash.com/photo-1543832923-44667a5ab6ea?w=200&h=200&fit=crop', fallback: 'MIL' },
+                'la scala': { url: 'https://images.unsplash.com/photo-1574020976853-5b78b8e8b7c4?w=200&h=200&fit=crop', fallback: 'SCA' },
+                'castello sforzesco': { url: 'https://images.unsplash.com/photo-1513581166391-887ba0ad7c1b?w=200&h=200&fit=crop', fallback: 'SFO' },
+                'navigli': { url: 'https://images.unsplash.com/photo-1572276596237-5db2c3e16c5d?w=200&h=200&fit=crop', fallback: 'NAV' },
+                'quadrilatero della moda': { url: 'https://images.unsplash.com/photo-1555958223-f5c0d5d1b96e?w=200&h=200&fit=crop', fallback: 'MOD' },
+
+                // Naples  
+                'spaccanapoli': { url: 'https://images.unsplash.com/photo-1555758292-972ddd980eb2?w=200&h=200&fit=crop', fallback: 'SPA' },
+                'castel dell ovo': { url: 'https://images.unsplash.com/photo-1555758292-972ddd980eb2?w=200&h=200&fit=crop', fallback: 'OVO' },
+                'quartieri spagnoli': { url: 'https://images.unsplash.com/photo-1555758292-972ddd980eb2?w=200&h=200&fit=crop', fallback: 'SPA' },
+                'museo archeologico': { url: 'https://images.unsplash.com/photo-1555758292-972ddd980eb2?w=200&h=200&fit=crop', fallback: 'ARC' },
+
+                // Genoa and others
+                'via del campo': { url: 'https://images.unsplash.com/photo-1513581166391-887ba0ad7c1b?w=200&h=200&fit=crop', fallback: 'CAM' },
+                'palazzo rosso': { url: 'https://images.unsplash.com/photo-1513581166391-887ba0ad7c1b?w=200&h=200&fit=crop', fallback: 'ROS' },
+                'spianata castelletto': { url: 'https://images.unsplash.com/photo-1513581166391-887ba0ad7c1b?w=200&h=200&fit=crop', fallback: 'CAS' }
+            };
+
+            const titleLower = title.toLowerCase();
+            
+            // Look for exact match or partial match
+            for (const [key, image] of Object.entries(attractions)) {
+                if (titleLower.includes(key) || key.includes(titleLower)) {
+                    return image;
+                }
+            }
+            
+            return null;
+        }
+
+        /**
+         * Get fallback text for attraction
+         */
+        function getAttractionFallbackText(title) {
+            const titleLower = title.toLowerCase();
+            
+            // Create short 3-letter codes for display
+            if (titleLower.includes('colosseo')) return 'COL';
+            if (titleLower.includes('trevi')) return 'TRE';
+            if (titleLower.includes('pantheon')) return 'PAN';
+            if (titleLower.includes('duomo')) return 'DUO';
+            if (titleLower.includes('ponte')) return 'PON';
+            if (titleLower.includes('piazza')) return 'PIZ';
+            if (titleLower.includes('basilica')) return 'BAS';
+            if (titleLower.includes('museo')) return 'MUS';
+            
+            // Use first 3 characters of title as fallback
+            return title.substring(0, 3).toUpperCase();
+        }
+
+        /**
+         * Get attraction icon for attractions without images
+         */
+        function getAttractionIcon(title) {
+            const titleLower = title.toLowerCase();
+            
+            // Monuments and historic sites
+            if (titleLower.includes('duomo') || titleLower.includes('basilica') || titleLower.includes('chiesa')) {
+                return '⛪';
+            }
+            if (titleLower.includes('ponte') || titleLower.includes('bridge')) {
+                return '🌉';
+            }
+            if (titleLower.includes('palazzo') || titleLower.includes('castle') || titleLower.includes('castell')) {
+                return '🏰';
+            }
+            if (titleLower.includes('museo') || titleLower.includes('galleria')) {
+                return '🏛️';
+            }
+            if (titleLower.includes('piazza') || titleLower.includes('square')) {
+                return '🏛️';
+            }
+            if (titleLower.includes('fontana') || titleLower.includes('fountain')) {
+                return '⛲';
+            }
+            if (titleLower.includes('parco') || titleLower.includes('giardino') || titleLower.includes('park')) {
+                return '🌳';
+            }
+            if (titleLower.includes('mercato') || titleLower.includes('market')) {
+                return '🏪';
+            }
+            if (titleLower.includes('porto') || titleLower.includes('port') || titleLower.includes('harbor')) {
+                return '⚓';
+            }
+            if (titleLower.includes('ristorante') || titleLower.includes('trattoria') || titleLower.includes('osteria')) {
+                return '🍽️';
+            }
+            if (titleLower.includes('bar') || titleLower.includes('caffè') || titleLower.includes('café')) {
+                return '☕';
+            }
+            if (titleLower.includes('shopping') || titleLower.includes('negozi')) {
+                return '🛍️';
+            }
+            
+            // Default monument icon
+            return '🏛️';
+        }
+
+        /**
+         * Save route to history for dashboard display
+         */
+        function saveRouteToHistory(routeData, start, end) {
+            try {
+                const route = {
+                    id: Date.now().toString(),
+                    title: `${start} → ${end}`,
+                    city: end,
+                    start: start,
+                    end: end,
+                    date: new Date().toISOString(),
+                    stops: routeData.itinerary ? routeData.itinerary.filter(item => item.type !== 'tip' && item.type !== 'transport').length : 0,
+                    itinerary: routeData.itinerary,
+                    coordinates: routeData.coordinates || null
+                };
+
+                // Get existing history
+                const history = JSON.parse(localStorage.getItem('viamigo_route_history') || '[]');
+                
+                // Add new route to beginning of array (most recent first)
+                history.unshift(route);
+                
+                // Keep only last 20 routes to avoid storage bloat
+                const trimmedHistory = history.slice(0, 20);
+                
+                // Save back to localStorage
+                localStorage.setItem('viamigo_route_history', JSON.stringify(trimmedHistory));
+                
+                console.log(`💾 Route saved to history: ${route.title}`);
+                
+                // Also save to recent searches
+                saveToRecentSearches(end);
+                
+            } catch (error) {
+                console.error('Error saving route to history:', error);
+            }
+        }
+
+        /**
+         * Save search term to recent searches
+         */
+        function saveToRecentSearches(searchTerm) {
+            try {
+                const searches = JSON.parse(localStorage.getItem('viamigo_recent_searches') || '[]');
+                
+                // Remove if already exists to avoid duplicates
+                const filteredSearches = searches.filter(s => s.toLowerCase() !== searchTerm.toLowerCase());
+                
+                // Add to beginning
+                filteredSearches.unshift(searchTerm);
+                
+                // Keep only last 10 searches
+                const trimmedSearches = filteredSearches.slice(0, 10);
+                
+                localStorage.setItem('viamigo_recent_searches', JSON.stringify(trimmedSearches));
+            } catch (error) {
+                console.error('Error saving search to recent:', error);
+            }
+        }
+
+        /**
+         * Check and restore context when returning from advanced features
+         */
+        function checkAndRestoreContext() {
+            try {
+                // Check if we're returning from advanced features
+                const urlParams = new URLSearchParams(window.location.search);
+                const shouldRestore = urlParams.get('restore_context');
+                
+                if (shouldRestore === 'true') {
+                    console.log('🔄 Checking for context to restore...');
+                    
+                    // Get the return context from localStorage
+                    const contextData = localStorage.getItem('viamigo_return_context');
+                    const routeHistory = localStorage.getItem('viamigo_route_history');
+                    
+                    if (contextData && routeHistory) {
+                        const context = JSON.parse(contextData);
+                        const history = JSON.parse(routeHistory);
+                        
+                        console.log('📍 Found context to restore:', context);
+                        
+                        // Get the most recent route (first in array)
+                        if (history.length > 0) {
+                            const lastRoute = history[0];
+                            console.log('🗺️ Restoring last route:', lastRoute.title);
+                            
+                            // Restore the route data
+                            currentItineraryData = lastRoute.itinerary;
+                            
+                            // Update the UI
+                            if (itineraryTitle && lastRoute.title) {
+                                itineraryTitle.textContent = lastRoute.title;
+                            }
+                            
+                            // Set the city context
+                            if (lastRoute.city) {
+                                window.currentCityName = lastRoute.city.toLowerCase();
+                            }
+                            
+                            // Render the restored itinerary
+                            if (currentItineraryData) {
+                                renderItinerary({ itinerary: currentItineraryData });
+                                
+                                // Switch to itinerary view
+                                setTimeout(() => {
+                                    document.querySelector('.nav-button[data-page="itinerary"]').click();
+                                }, 100);
+                            }
+                            
+                            console.log('✅ Route context restored successfully!');
+                        }
+                    }
+                    
+                    // Clean up
+                    localStorage.removeItem('viamigo_return_context');
+                    
+                    // Clean the URL
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState(null, '', cleanUrl);
+                } else {
+                    // Check for general route persistence (page refresh, etc.)
+                    restoreGeneralRouteContext();
+                }
+            } catch (error) {
+                console.error('❌ Error restoring context:', error);
+            }
+        }
+
+        /**
+         * Restore general route context from localStorage
+         */
+        function restoreGeneralRouteContext() {
+            try {
+                const routeHistory = localStorage.getItem('viamigo_route_history');
+                const lastSession = localStorage.getItem('viamigo_last_session');
+                
+                if (routeHistory && lastSession) {
+                    const history = JSON.parse(routeHistory);
+                    const session = JSON.parse(lastSession);
+                    
+                    // Check if the session is recent (within 2 hours)
+                    const isRecentSession = (Date.now() - session.timestamp) < 7200000;
+                    
+                    if (isRecentSession && history.length > 0 && !currentItineraryData) {
+                        const lastRoute = history[0];
+                        console.log('🔄 Restoring recent session route:', lastRoute.title);
+                        
+                        currentItineraryData = lastRoute.itinerary;
+                        
+                        if (itineraryTitle && lastRoute.title) {
+                            itineraryTitle.textContent = lastRoute.title;
+                        }
+                        
+                        if (lastRoute.city) {
+                            window.currentCityName = lastRoute.city.toLowerCase();
+                        }
+                        
+                        // Render the restored itinerary
+                        renderItinerary({ itinerary: currentItineraryData });
+                        
+                        console.log('✅ Session route context restored!');
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not restore general route context:', error);
+            }
+        }
+
+        /**
+         * Save current session state
+         */
+        function saveCurrentSession() {
+            try {
+                if (currentItineraryData) {
+                    const sessionData = {
+                        timestamp: Date.now(),
+                        hasRoute: true,
+                        routeTitle: itineraryTitle.textContent
+                    };
+                    localStorage.setItem('viamigo_last_session', JSON.stringify(sessionData));
+                }
+            } catch (error) {
+                console.warn('Could not save session state:', error);
+            }
+        }
 
         // Funzione per caricare il profilo utente completo
         async function loadUserProfile() {
