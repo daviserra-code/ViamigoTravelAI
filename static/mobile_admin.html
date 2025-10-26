@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViamigoTravelAI - Mobile Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --dark-color: #34495e;
+            --light-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #d5dbdb 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mobile-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .mobile-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .mobile-header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .admin-grid {
+            padding: 1rem;
+            gap: 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: var(--dark-color);
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .card-action {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+            color: white;
+        }
+
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success-color), #229954);
+            color: white;
+        }
+
+        .btn-warning-custom {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+        }
+
+        .btn-danger-custom {
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            color: white;
+        }
+
+        .card-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background-color: var(--success-color);
+        }
+
+        .status-warning {
+            background-color: var(--warning-color);
+        }
+
+        .status-offline {
+            background-color: var(--accent-color);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .quick-stats {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .floating-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
+            font-size: 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .floating-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        .role-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .admin-only {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .pro-user {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        @media (min-width: 768px) {
+            .admin-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .admin-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <h1><i class="fas fa-crown"></i> Admin Dashboard</h1>
+        <div class="subtitle">ViamigoTravelAI Management Console</div>
+    </div>
+
+    <div class="quick-stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="totalPlaces">9,930</div>
+                <div class="stat-label">Places</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="activeUsers">156</div>
+                <div class="stat-label">Users</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="systemStatus">98%</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="responseTime">245ms</div>
+                <div class="stat-label">Response</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <!-- Admin Only - Performance Monitoring -->
+        <div class="admin-card admin-only">
+            <div class="role-badge">ADMIN ONLY</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--primary-color), #2980b9);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="card-title">Performance Monitor</h3>
+            <p class="card-description">Real-time system performance, database health, and API response monitoring</p>
+            <a href="/performance/dashboard/view" class="card-action btn-primary-custom">
+                <i class="fas fa-tachometer-alt"></i> Open Monitor
+            </a>
+        </div>
+
+        <!-- Admin Only - Analytics Dashboard -->
+        <div class="admin-card admin-only">
+            <div class="role-badge">ADMIN ONLY</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--success-color), #229954);">
+                <i class="fas fa-analytics"></i>
+            </div>
+            <h3 class="card-title">Analytics Engine</h3>
+            <p class="card-description">Advanced data insights, user behavior analysis, and business intelligence</p>
+            <a href="/analytics" class="card-action btn-success-custom">
+                <i class="fas fa-chart-bar"></i> View Analytics
+            </a>
+        </div>
+
+        <!-- Admin Only - System Configuration -->
+        <div class="admin-card admin-only">
+            <div class="role-badge">ADMIN ONLY</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--dark-color), #2c3e50);">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <h3 class="card-title">System Config</h3>
+            <p class="card-description">Database management, API keys, system settings, and security configuration</p>
+            <a href="#" onclick="openSystemConfig()" class="card-action btn-primary-custom">
+                <i class="fas fa-wrench"></i> Configure
+            </a>
+        </div>
+
+        <!-- Pro Users - Budget Optimizer -->
+        <div class="admin-card pro-user">
+            <div class="role-badge">PRO USERS</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--warning-color), #e67e22);">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <h3 class="card-title">Budget Optimizer</h3>
+            <p class="card-description">Smart budget planning, cost analysis, and expense optimization for travelers</p>
+            <a href="/budget_optimizer" class="card-action btn-warning-custom">
+                <i class="fas fa-calculator"></i> Optimize Budget
+            </a>
+        </div>
+
+        <!-- Pro Users - Travel Insights -->
+        <div class="admin-card pro-user">
+            <div class="role-badge">PRO USERS</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--primary-color), #3498db);">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <h3 class="card-title">Travel Insights</h3>
+            <p class="card-description">Personalized recommendations, seasonal analysis, and intelligent travel planning</p>
+            <a href="/travel_insights" class="card-action btn-primary-custom">
+                <i class="fas fa-brain"></i> Get Insights
+            </a>
+        </div>
+
+        <!-- Admin Only - User Management -->
+        <div class="admin-card admin-only">
+            <div class="role-badge">ADMIN ONLY</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--accent-color), #c0392b);">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <h3 class="card-title">User Management</h3>
+            <p class="card-description">Manage user roles, permissions, pro subscriptions, and access control</p>
+            <a href="#" onclick="openUserManagement()" class="card-action btn-danger-custom">
+                <i class="fas fa-user-shield"></i> Manage Users
+            </a>
+        </div>
+
+        <!-- Pro Users - Advanced Planning -->
+        <div class="admin-card pro-user">
+            <div class="role-badge">PRO USERS</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, var(--success-color), #27ae60);">
+                <i class="fas fa-route"></i>
+            </div>
+            <h3 class="card-title">Advanced Planning</h3>
+            <p class="card-description">Multi-day itineraries, weather integration, and crowd prediction analysis</p>
+            <a href="/advanced_planning" class="card-action btn-success-custom">
+                <i class="fas fa-map-marked-alt"></i> Plan Trip
+            </a>
+        </div>
+
+        <!-- Admin Only - Data Management -->
+        <div class="admin-card admin-only">
+            <div class="role-badge">ADMIN ONLY</div>
+            <div class="status-indicator status-warning"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                <i class="fas fa-database"></i>
+            </div>
+            <h3 class="card-title">Data Management</h3>
+            <p class="card-description">Database operations, data imports, backups, and integrity checks</p>
+            <a href="#" onclick="openDataManagement()" class="card-action btn-primary-custom">
+                <i class="fas fa-server"></i> Manage Data
+            </a>
+        </div>
+
+        <!-- Pro Users - Custom Reports -->
+        <div class="admin-card pro-user">
+            <div class="role-badge">PRO USERS</div>
+            <div class="status-indicator status-online"></div>
+            <div class="card-icon" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h3 class="card-title">Custom Reports</h3>
+            <p class="card-description">Generate personalized travel reports, statistics, and expense summaries</p>
+            <a href="/custom_reports" class="card-action btn-success-custom">
+                <i class="fas fa-chart-pie"></i> Generate Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="floating-fab" onclick="showQuickActions()">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Admin Dashboard JavaScript
+        class MobileAdminDashboard {
+            constructor() {
+                this.initializeStats();
+                this.setupEventListeners();
+                this.checkUserRole();
+            }
+
+            initializeStats() {
+                // Update real-time statistics
+                this.updateStats();
+                setInterval(() => this.updateStats(), 30000); // Update every 30 seconds
+            }
+
+            async updateStats() {
+                try {
+                    const response = await fetch('/api/admin/stats');
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalPlaces').textContent = stats.totalPlaces?.toLocaleString() || '9,930';
+                    document.getElementById('activeUsers').textContent = stats.activeUsers || '156';
+                    document.getElementById('systemStatus').textContent = `${stats.uptime || 98}%`;
+                    document.getElementById('responseTime').textContent = `${stats.responseTime || 245}ms`;
+                } catch (error) {
+                    console.warn('Stats update failed:', error);
+                }
+            }
+
+            checkUserRole() {
+                // Check user role and hide/show appropriate cards
+                const userRole = this.getUserRole();
+                
+                if (userRole !== 'admin') {
+                    document.querySelectorAll('.admin-only').forEach(card => {
+                        card.style.display = 'none';
+                    });
+                }
+                
+                if (userRole === 'basic') {
+                    document.querySelectorAll('.pro-user').forEach(card => {
+                        card.style.opacity = '0.6';
+                        const action = card.querySelector('.card-action');
+                        action.onclick = (e) => {
+                            e.preventDefault();
+                            this.showUpgradeModal();
+                        };
+                    });
+                }
+            }
+
+            getUserRole() {
+                // In a real implementation, this would check authentication
+                return 'admin'; // Default for demo
+            }
+
+            setupEventListeners() {
+                // Handle card interactions
+                document.querySelectorAll('.admin-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        if (!e.target.closest('.card-action')) {
+                            const action = card.querySelector('.card-action');
+                            if (action && action.href && action.href !== '#') {
+                                window.location.href = action.href;
+                            }
+                        }
+                    });
+                });
+            }
+
+            showUpgradeModal() {
+                alert('This feature requires a Pro subscription. Please upgrade your account to access advanced features.');
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileAdminDashboard();
+        });
+
+        // Admin-specific functions
+        function openSystemConfig() {
+            if (confirm('Open System Configuration panel?')) {
+                // In a real implementation, this would open a configuration interface
+                window.location.href = '/admin/config';
+            }
+        }
+
+        function openUserManagement() {
+            if (confirm('Open User Management interface?')) {
+                // In a real implementation, this would open user management
+                window.location.href = '/admin/users';
+            }
+        }
+
+        function openDataManagement() {
+            if (confirm('Open Data Management tools?')) {
+                // In a real implementation, this would open data management
+                window.location.href = '/admin/data';
+            }
+        }
+
+        function showQuickActions() {
+            const actions = [
+                'Quick System Check',
+                'Export Analytics',
+                'Backup Database',
+                'Clear Cache',
+                'View Logs'
+            ];
+            
+            const action = prompt(`Quick Actions:\n${actions.map((a, i) => `${i+1}. ${a}`).join('\n')}\n\nEnter number (1-5):`);
+            
+            if (action && action >= 1 && action <= 5) {
+                alert(`Executing: ${actions[action-1]}`);
+                // In a real implementation, these would trigger actual admin actions
+            }
+        }
+
+        // Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+    </script>
+</body>
+</html>

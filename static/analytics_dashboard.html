@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViamigoTravelAI - Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .card-icon.patterns { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .card-icon.seasonal { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .card-icon.budget { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .card-icon.insights { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .data-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .data-item {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            transition: background-color 0.2s ease;
+        }
+
+        .data-item:hover {
+            background: #f8fafc;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            font-size: 0.9em;
+            color: #718096;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #feb2b2;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #9ae6b4;
+        }
+
+        .recommendation-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .recommendation-city {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-scores {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .score-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .score-weather { background: #fef5e7; color: #d69e2e; }
+        .score-crowd { background: #e6fffa; color: #319795; }
+        .score-price { background: #ebf8ff; color: #3182ce; }
+
+        .recommendation-reasons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .reason-tag {
+            background: #667eea;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <img src="/static/images/viamigologo_real.png" alt="Viamigo Logo" style="width: 32px; height: 32px; margin-right: 12px; vertical-align: middle;">
+                <i class="fas fa-chart-line"></i>
+                Analytics Dashboard
+            </h1>
+            <p>Analisi avanzata dei dati di viaggio e intelligence per 9,930+ luoghi in 56 città italiane</p>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Travel Patterns Card -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-icon patterns">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="card-title">Pattern di Viaggio</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Periodo di Analisi</label>
+                        <select id="periodSelect">
+                            <option value="7_days">Ultimi 7 giorni</option>
+                            <option value="30_days" selected>Ultimi 30 giorni</option>
+                            <option value="90_days">Ultimi 90 giorni</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadTravelPatterns()">
+                        <i class="fas fa-sync-alt"></i> Aggiorna
+                    </button>
+                </div>
+
+                <div class="loading" id="patternsLoading">
+                    <div class="spinner"></div>
+                    <div>Analizzando i pattern di viaggio...</div>
+                </div>
+
+                <div class="stats-grid" id="patternsStats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPatterns">0</div>
+                        <div class="stat-label">Pattern Identificati</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgSatisfaction">0%</div>
+                        <div class="stat-label">Soddisfazione Media</div>
+                    </div>
+                </div>
+
+                <div class="data-list" id="patternsList"></div>
+            </div>
+
+            <!-- Seasonal Recommendations Card -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-icon seasonal">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="card-title">Raccomandazioni Stagionali</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Mese Target</label>
+                        <select id="monthSelect">
+                            <option value="">Mese Corrente</option>
+                            <option value="1">Gennaio</option>
+                            <option value="2">Febbraio</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Aprile</option>
+                            <option value="5">Maggio</option>
+                            <option value="6">Giugno</option>
+                            <option value="7">Luglio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Settembre</option>
+                            <option value="10">Ottobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Dicembre</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadSeasonalRecommendations()">
+                        <i class="fas fa-sync-alt"></i> Aggiorna
+                    </button>
+                </div>
+
+                <div class="loading" id="seasonalLoading">
+                    <div class="spinner"></div>
+                    <div>Generando raccomandazioni stagionali...</div>
+                </div>
+
+                <div class="data-list" id="seasonalList"></div>
+            </div>
+
+            <!-- Budget Optimization Card -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-icon budget">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="card-title">Ottimizzazione Budget</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Budget Totale (€)</label>
+                        <input type="number" id="budgetInput" value="500" min="100" max="5000">
+                    </div>
+                    <div class="control-group">
+                        <label>Destinazione</label>
+                        <select id="destinationSelect">
+                            <option value="Roma">Roma</option>
+                            <option value="Milano">Milano</option>
+                            <option value="Venezia">Venezia</option>
+                            <option value="Firenze">Firenze</option>
+                            <option value="Napoli">Napoli</option>
+                            <option value="Bologna">Bologna</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Durata (giorni)</label>
+                        <input type="number" id="durationInput" value="3" min="1" max="14">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="optimizeBudget()" style="width: 100%; margin-bottom: 20px;">
+                    <i class="fas fa-calculator"></i> Ottimizza Budget
+                </button>
+
+                <div class="loading" id="budgetLoading">
+                    <div class="spinner"></div>
+                    <div>Ottimizzando il budget...</div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="budgetChart" style="display: none;"></canvas>
+                </div>
+
+                <div id="budgetResults"></div>
+            </div>
+
+            <!-- User Insights Card -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-icon insights">
+                        <i class="fas fa-user-chart"></i>
+                    </div>
+                    <div class="card-title">Insights Utenti</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Interessi</label>
+                        <select id="interestsSelect" multiple>
+                            <option value="Arte">Arte</option>
+                            <option value="Cibo">Cibo</option>
+                            <option value="Storia">Storia</option>
+                            <option value="Natura">Natura</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Relax">Relax</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Ritmo di Viaggio</label>
+                        <select id="paceSelect">
+                            <option value="Rilassato">Rilassato</option>
+                            <option value="Moderato" selected>Moderato</option>
+                            <option value="Intenso">Intenso</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="analyzeUserInsights()" style="width: 100%; margin-bottom: 20px;">
+                    <i class="fas fa-brain"></i> Analizza Preferenze
+                </button>
+
+                <div class="loading" id="insightsLoading">
+                    <div class="spinner"></div>
+                    <div>Analizzando le preferenze utente...</div>
+                </div>
+
+                <div id="insightsResults"></div>
+            </div>
+        </div>
+
+        <!-- Overall Statistics -->
+        <div class="analytics-card" style="margin-top: 30px;">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #fc466b, #3f5efb);">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="card-title">Statistiche Generali del Sistema</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">9,930</div>
+                    <div class="stat-label">Luoghi Totali</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">56</div>
+                    <div class="stat-label">Città Coperte</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalAnalyses">0</div>
+                    <div class="stat-label">Analisi Effettuate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lastUpdate">-</div>
+                    <div class="stat-label">Ultimo Aggiornamento</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ViamigoAnalytics {
+            constructor() {
+                this.baseUrl = window.location.origin;
+                this.charts = {};
+                this.initializeAnalytics();
+            }
+
+            async initializeAnalytics() {
+                console.log('🚀 Initializing ViamigoAnalytics Dashboard');
+                await this.loadInitialData();
+                this.updateLastUpdateTime();
+            }
+
+            async loadInitialData() {
+                try {
+                    // Load dashboard overview
+                    const response = await fetch(`${this.baseUrl}/api/analytics/dashboard`);
+                    const data = await response.json();
+                    
+                    if (data.dashboard_data) {
+                        this.updateGeneralStats(data.dashboard_data.stats);
+                        if (data.dashboard_data.top_patterns) {
+                            this.displayTravelPatterns(data.dashboard_data.top_patterns);
+                        }
+                        if (data.dashboard_data.seasonal_highlights) {
+                            this.displaySeasonalRecommendations(data.dashboard_data.seasonal_highlights);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading initial data:', error);
+                    this.showError('Errore nel caricamento dei dati iniziali');
+                }
+            }
+
+            updateGeneralStats(stats) {
+                if (stats.patterns_analyzed) {
+                    document.getElementById('totalAnalyses').textContent = stats.patterns_analyzed;
+                }
+            }
+
+            updateLastUpdateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('it-IT', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                document.getElementById('lastUpdate').textContent = timeString;
+            }
+
+            async loadTravelPatterns() {
+                const period = document.getElementById('periodSelect').value;
+                const loadingEl = document.getElementById('patternsLoading');
+                const statsEl = document.getElementById('patternsStats');
+                const listEl = document.getElementById('patternsList');
+
+                try {
+                    loadingEl.classList.add('active');
+                    statsEl.style.display = 'none';
+
+                    const response = await fetch(`${this.baseUrl}/api/analytics/travel-patterns?period=${period}`);
+                    const data = await response.json();
+
+                    if (data.patterns) {
+                        this.displayTravelPatterns(data.patterns);
+                        
+                        // Update stats
+                        document.getElementById('totalPatterns').textContent = data.total_patterns || 0;
+                        
+                        const avgSatisfaction = data.patterns.length > 0 ? 
+                            (data.patterns.reduce((sum, p) => sum + p.satisfaction_score, 0) / data.patterns.length * 100).toFixed(0) : 0;
+                        document.getElementById('avgSatisfaction').textContent = `${avgSatisfaction}%`;
+                        
+                        statsEl.style.display = 'grid';
+                    } else if (data.error) {
+                        this.showError(data.error);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error loading travel patterns:', error);
+                    this.showError('Errore nel caricamento dei pattern di viaggio');
+                } finally {
+                    loadingEl.classList.remove('active');
+                }
+            }
+
+            displayTravelPatterns(patterns) {
+                const listEl = document.getElementById('patternsList');
+                
+                if (!patterns || patterns.length === 0) {
+                    listEl.innerHTML = '<div class="data-item">Nessun pattern di viaggio trovato</div>';
+                    return;
+                }
+
+                listEl.innerHTML = patterns.map(pattern => `
+                    <div class="data-item">
+                        <div class="item-title">${pattern.route}</div>
+                        <div class="item-details">
+                            <span><i class="fas fa-chart-bar"></i> Frequenza: ${pattern.frequency}</span>
+                            <span><i class="fas fa-clock"></i> Durata: ${pattern.avg_duration}h</span>
+                            <span><i class="fas fa-star"></i> Soddisfazione: ${(pattern.satisfaction_score * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="item-details" style="margin-top: 5px;">
+                            <span><i class="fas fa-calendar"></i> Mesi popolari: ${pattern.popular_months?.join(', ') || 'N/A'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadSeasonalRecommendations() {
+                const month = document.getElementById('monthSelect').value;
+                const loadingEl = document.getElementById('seasonalLoading');
+                const listEl = document.getElementById('seasonalList');
+
+                try {
+                    loadingEl.classList.add('active');
+
+                    const url = month ? 
+                        `${this.baseUrl}/api/analytics/seasonal-recommendations?month=${month}` :
+                        `${this.baseUrl}/api/analytics/seasonal-recommendations`;
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.recommendations) {
+                        this.displaySeasonalRecommendations(data.recommendations);
+                    } else if (data.error) {
+                        this.showError(data.error);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error loading seasonal recommendations:', error);
+                    this.showError('Errore nel caricamento delle raccomandazioni stagionali');
+                } finally {
+                    loadingEl.classList.remove('active');
+                }
+            }
+
+            displaySeasonalRecommendations(recommendations) {
+                const listEl = document.getElementById('seasonalList');
+                
+                if (!recommendations || recommendations.length === 0) {
+                    listEl.innerHTML = '<div class="data-item">Nessuna raccomandazione stagionale disponibile</div>';
+                    return;
+                }
+
+                listEl.innerHTML = recommendations.map(rec => `
+                    <div class="recommendation-item">
+                        <div class="recommendation-city">${rec.city} - ${rec.month}</div>
+                        <div class="recommendation-scores">
+                            <span class="score-badge score-weather">Meteo: ${(rec.weather_score * 100).toFixed(0)}%</span>
+                            <span class="score-badge score-crowd">Folla: ${(rec.crowd_score * 100).toFixed(0)}%</span>
+                            <span class="score-badge score-price">Prezzo: ${(rec.price_score * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="recommendation-reasons">
+                            ${rec.reasons?.map(reason => `<span class="reason-tag">${reason}</span>`).join('') || ''}
+                        </div>
+                        ${rec.recommended_places?.length ? `
+                            <div style="margin-top: 10px; font-size: 0.9em; color: #718096;">
+                                <i class="fas fa-map-marker-alt"></i> ${rec.recommended_places.join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            async optimizeBudget() {
+                const budget = parseFloat(document.getElementById('budgetInput').value);
+                const destination = document.getElementById('destinationSelect').value;
+                const duration = parseInt(document.getElementById('durationInput').value);
+                
+                const loadingEl = document.getElementById('budgetLoading');
+                const resultsEl = document.getElementById('budgetResults');
+                const chartEl = document.getElementById('budgetChart');
+
+                try {
+                    loadingEl.classList.add('active');
+                    chartEl.style.display = 'none';
+
+                    const response = await fetch(`${this.baseUrl}/api/analytics/budget-optimization`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            budget: budget,
+                            destination: destination,
+                            duration: duration,
+                            preferences: {
+                                interests: ['Arte', 'Cibo'],  // Default interests
+                                pace: 'Moderato'
+                            }
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.optimization) {
+                        this.displayBudgetOptimization(data.optimization);
+                        this.createBudgetChart(data.optimization.recommended_allocation);
+                        chartEl.style.display = 'block';
+                    } else if (data.error) {
+                        this.showError(data.error);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error optimizing budget:', error);
+                    this.showError('Errore nell\'ottimizzazione del budget');
+                } finally {
+                    loadingEl.classList.remove('active');
+                }
+            }
+
+            displayBudgetOptimization(optimization) {
+                const resultsEl = document.getElementById('budgetResults');
+                
+                const tipsHtml = optimization.cost_saving_tips?.length ? `
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 10px; color: #2d3748;">💡 Consigli per Risparmiare:</h4>
+                        <ul style="padding-left: 20px; line-height: 1.6;">
+                            ${optimization.cost_saving_tips.slice(0, 5).map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : '';
+
+                const alternativesHtml = optimization.alternative_options?.length ? `
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 10px; color: #2d3748;">🔄 Opzioni Alternative:</h4>
+                        ${optimization.alternative_options.map(alt => `
+                            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <strong>${alt.alternative}</strong> - ${alt.savings} risparmio<br>
+                                <small style="color: #718096;">${alt.description}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '';
+
+                resultsEl.innerHTML = `
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: #2d3748;">💰 Budget Ottimizzato: €${optimization.total_budget}</h4>
+                        ${tipsHtml}
+                        ${alternativesHtml}
+                    </div>
+                `;
+            }
+
+            createBudgetChart(allocation) {
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (this.charts.budget) {
+                    this.charts.budget.destroy();
+                }
+
+                const labels = Object.keys(allocation).map(key => {
+                    const translations = {
+                        'accommodation': 'Alloggio',
+                        'food': 'Cibo',
+                        'attractions': 'Attrazioni',
+                        'transport': 'Trasporti',
+                        'shopping': 'Shopping'
+                    };
+                    return translations[key] || key;
+                });
+
+                const values = Object.values(allocation);
+
+                this.charts.budget = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#f093fb',
+                                '#f5576c',
+                                '#4facfe'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed;
+                                        return `${context.label}: €${value.toFixed(0)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            async analyzeUserInsights() {
+                const interests = Array.from(document.getElementById('interestsSelect').selectedOptions)
+                    .map(option => option.value);
+                const pace = document.getElementById('paceSelect').value;
+                
+                const loadingEl = document.getElementById('insightsLoading');
+                const resultsEl = document.getElementById('insightsResults');
+
+                try {
+                    loadingEl.classList.add('active');
+
+                    const response = await fetch(`${this.baseUrl}/api/analytics/user-insights`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            interests: interests,
+                            pace: pace,
+                            session_duration: 1200,  // Simulated
+                            places_viewed: 15,       // Simulated
+                            itineraries_created: 2   // Simulated
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.insights) {
+                        this.displayUserInsights(data.insights);
+                    } else if (data.error) {
+                        this.showError(data.error);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error analyzing user insights:', error);
+                    this.showError('Errore nell\'analisi delle preferenze utente');
+                } finally {
+                    loadingEl.classList.remove('active');
+                }
+            }
+
+            displayUserInsights(insights) {
+                const resultsEl = document.getElementById('insightsResults');
+                
+                const preferencesHtml = insights.preference_score ? Object.entries(insights.preference_score)
+                    .map(([key, value]) => {
+                        const translations = {
+                            'culture': 'Cultura',
+                            'food': 'Cibo',
+                            'nature': 'Natura',
+                            'history': 'Storia',
+                            'shopping': 'Shopping',
+                            'relaxation': 'Relax'
+                        };
+                        const label = translations[key] || key;
+                        const percentage = (value * 100).toFixed(0);
+                        return `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>${label}</span>
+                                <span style="font-weight: 600;">${percentage}%</span>
+                            </div>
+                        `;
+                    }).join('') : '';
+
+                const traitsHtml = insights.behavioral_traits?.length ? 
+                    insights.behavioral_traits.map(trait => `<span class="reason-tag">${trait}</span>`).join(' ') : '';
+
+                resultsEl.innerHTML = `
+                    <div>
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2d3748; margin-bottom: 10px;">👤 Segmento Utente</h4>
+                            <div style="background: #667eea; color: white; padding: 10px; border-radius: 8px; font-weight: 600;">
+                                ${insights.user_segment}
+                            </div>
+                        </div>
+
+                        ${preferencesHtml ? `
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Punteggi Preferenze</h4>
+                                <div style="background: #f8fafc; padding: 15px; border-radius: 8px;">
+                                    ${preferencesHtml}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2d3748; margin-bottom: 10px;">🎯 Previsioni</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div style="background: #c6f6d5; padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.2em; font-weight: 600; color: #22543d;">
+                                        ${(insights.predicted_satisfaction * 100).toFixed(0)}%
+                                    </div>
+                                    <div style="font-size: 0.9em; color: #22543d;">Soddisfazione Prevista</div>
+                                </div>
+                                <div style="background: #ebf8ff; padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 1.2em; font-weight: 600; color: #3182ce;">
+                                        ${(insights.recommendation_confidence * 100).toFixed(0)}%
+                                    </div>
+                                    <div style="font-size: 0.9em; color: #3182ce;">Confidenza Raccomandazioni</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${traitsHtml ? `
+                            <div>
+                                <h4 style="color: #2d3748; margin-bottom: 10px;">🧠 Tratti Comportamentali</h4>
+                                <div>${traitsHtml}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            showError(message) {
+                // Create or update error display
+                let errorEl = document.querySelector('.error-message');
+                if (!errorEl) {
+                    errorEl = document.createElement('div');
+                    errorEl.className = 'error-message';
+                    document.querySelector('.analytics-container').appendChild(errorEl);
+                }
+                errorEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    if (errorEl.parentNode) {
+                        errorEl.parentNode.removeChild(errorEl);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Global functions for button clicks
+        let analytics;
+
+        function loadTravelPatterns() {
+            analytics.loadTravelPatterns();
+        }
+
+        function loadSeasonalRecommendations() {
+            analytics.loadSeasonalRecommendations();
+        }
+
+        function optimizeBudget() {
+            analytics.optimizeBudget();
+        }
+
+        function analyzeUserInsights() {
+            analytics.analyzeUserInsights();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            analytics = new ViamigoAnalytics();
+        });
+    </script>
+</body>
+</html>

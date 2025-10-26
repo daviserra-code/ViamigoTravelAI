@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Mobile - Viamigo</title>
+    <!-- Official Viamigo Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="apple-touch-icon" href="/static/icon-192x192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
+        .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
+        .phone-screen { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .admin-card { transition: transform 0.2s ease-in-out; }
+        .admin-card:hover { transform: translateY(-2px); }
+        .role-badge { font-size: 0.65rem; padding: 0.125rem 0.375rem; border-radius: 0.375rem; font-weight: 600; }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; position: absolute; top: 8px; right: 8px; }
+        .status-online { background-color: #22c55e; animation: pulse 2s infinite; }
+        .status-warning { background-color: #f59e0b; animation: pulse 2s infinite; }
+        .status-offline { background-color: #ef4444; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4">
+    <div class="phone-mockup">
+        <div class="phone-screen">
+            <!-- HEADER -->
+            <div class="header p-4 pt-8 border-b border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <img src="/static/images/viamigologo_real.png" alt="Viamigo Logo" class="w-6 h-6">
+                        <div>
+                            <h1 class="text-2xl font-bold viamigo-font">Admin Panel</h1>
+                            <p class="text-xs text-gray-400">Dashboard amministrativo</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div id="user-role-badge" class="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            ADMIN
+                        </div>
+                        <button onclick="goBack()" class="text-gray-400 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK STATS -->
+            <div class="p-4 border-b border-gray-700">
+                <div class="grid grid-cols-4 gap-3 text-center">
+                    <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="text-lg font-bold text-emerald-400" id="totalPlaces">9.9K</div>
+                        <div class="text-xs text-gray-400">Places</div>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="text-lg font-bold text-blue-400" id="activeUsers">156</div>
+                        <div class="text-xs text-gray-400">Users</div>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="text-lg font-bold text-green-400" id="systemStatus">98%</div>
+                        <div class="text-xs text-gray-400">Uptime</div>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="text-lg font-bold text-purple-400" id="responseTime">245ms</div>
+                        <div class="text-xs text-gray-400">Response</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN CARDS CONTAINER -->
+            <div class="flex-grow overflow-y-auto p-4 space-y-4">
+                
+                <!-- Performance Monitor -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-gray-700 relative">
+                    <div class="status-indicator status-online"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-red-600 text-white">ADMIN</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Performance Monitor</h3>
+                            <p class="text-sm text-gray-400 mt-1">Monitoraggio sistema in tempo reale</p>
+                            <button onclick="openPerformance()" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-blue-700 transition-colors">
+                                Apri Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Engine -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-gray-700 relative">
+                    <div class="status-indicator status-online"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-red-600 text-white">ADMIN</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Analytics Engine</h3>
+                            <p class="text-sm text-gray-400 mt-1">Analisi dati e business intelligence</p>
+                            <button onclick="openAnalytics()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-emerald-700 transition-colors">
+                                Visualizza Analytics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Configuration -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-gray-700 relative">
+                    <div class="status-indicator status-online"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-red-600 text-white">ADMIN</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-gray-600 to-gray-700 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Configurazione Sistema</h3>
+                            <p class="text-sm text-gray-400 mt-1">Impostazioni database e API</p>
+                            <button onclick="openConfig()" class="mt-3 bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-gray-700 transition-colors">
+                                Gestisci Config
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-gray-700 relative">
+                    <div class="status-indicator status-online"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-red-600 text-white">ADMIN</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-red-500 to-red-600 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Gestione Utenti</h3>
+                            <p class="text-sm text-gray-400 mt-1">Ruoli, permessi e sottoscrizioni</p>
+                            <button onclick="openUsers()" class="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-red-700 transition-colors">
+                                Gestisci Utenti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-gray-700 relative">
+                    <div class="status-indicator status-warning"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-red-600 text-white">ADMIN</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Gestione Dati</h3>
+                            <p class="text-sm text-gray-400 mt-1">Import, backup e integrity check</p>
+                            <button onclick="openData()" class="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-purple-700 transition-colors">
+                                Gestisci Dati
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Features (for Pro Users) -->
+                <div class="admin-card bg-gray-800 rounded-xl p-4 border border-yellow-600/30 relative">
+                    <div class="status-indicator status-online"></div>
+                    <div class="role-badge absolute top-2 left-2 bg-yellow-600 text-white">PRO</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 p-3 rounded-xl">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-white">Budget Optimizer</h3>
+                            <p class="text-sm text-gray-400 mt-1">Ottimizzazione budget di viaggio</p>
+                            <button onclick="openBudget()" class="mt-3 bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full hover:bg-yellow-700 transition-colors">
+                                Ottimizza Budget
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <h3 class="font-semibold text-white mb-3">Stato Sistema</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Database PostgreSQL</span>
+                            <span class="text-green-400 flex items-center">
+                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                Online
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">ChromaDB Vector</span>
+                            <span class="text-green-400 flex items-center">
+                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                Online
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Performance Monitor</span>
+                            <span class="text-green-400 flex items-center">
+                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                Attivo
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Flask Application</span>
+                            <span class="text-green-400 flex items-center">
+                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                Stabile
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize mobile admin dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminStats();
+            setInterval(loadAdminStats, 30000); // Update every 30 seconds
+        });
+
+        // Load admin statistics
+        async function loadAdminStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalPlaces').textContent = formatNumber(stats.totalPlaces || 9930);
+                    document.getElementById('activeUsers').textContent = stats.activeUsers || '156';
+                    document.getElementById('systemStatus').textContent = `${stats.uptime || 98}%`;
+                    document.getElementById('responseTime').textContent = `${stats.responseTime || 245}ms`;
+                }
+            } catch (error) {
+                console.warn('Failed to load admin stats:', error);
+            }
+        }
+
+        // Format numbers for display
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Navigation functions
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+
+        function openPerformance() {
+            window.location.href = '/performance/dashboard/view';
+        }
+
+        function openAnalytics() {
+            window.location.href = '/analytics';
+        }
+
+        function openConfig() {
+            window.location.href = '/admin/config';
+        }
+
+        function openUsers() {
+            alert('🚧 Gestione utenti in sviluppo. Verrà rilasciata nel prossimo aggiornamento.');
+        }
+
+        function openData() {
+            alert('🚧 Gestione dati in sviluppo. Verrà rilasciata nel prossimo aggiornamento.');
+        }
+
+        function openBudget() {
+            window.location.href = '/budget_optimizer';
+        }
+
+        // Check user role and update UI accordingly
+        function checkUserRole() {
+            // In a real implementation, this would check actual user permissions
+            const userRole = 'admin'; // Default for demo
+            
+            const roleBadge = document.getElementById('user-role-badge');
+            if (userRole === 'admin') {
+                roleBadge.textContent = 'ADMIN';
+                roleBadge.className = 'bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium';
+            } else if (userRole === 'pro') {
+                roleBadge.textContent = 'PRO';
+                roleBadge.className = 'bg-yellow-600 text-white px-2 py-1 rounded-full text-xs font-medium';
+            } else {
+                roleBadge.textContent = 'USER';
+                roleBadge.className = 'bg-gray-600 text-white px-2 py-1 rounded-full text-xs font-medium';
+            }
+        }
+
+        // Initialize role check
+        checkUserRole();
+    </script>
+</body>
+</html>

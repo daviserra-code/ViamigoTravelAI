@@ -39,14 +39,20 @@
             <div id="page-itinerary" class="page active">
                 <div class="header p-4 pt-8 border-b border-gray-700 bg-gray-900">
                     <div class="flex items-center space-x-3">
-                        <button onclick="goBack()" class="text-gray-400 hover:text-white">
+                        <button onclick="goBack()" class="text-gray-400 hover:text-white" title="Torna al pianificatore">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
                         </button>
-                        <div class="overflow-hidden">
-                            <p class="text-xs text-gray-400 truncate">Il tuo itinerario intelligente</p>
+                        <img src="/static/images/viamigologo_real.png" alt="Viamigo Logo" class="w-5 h-5">
+                        <div class="overflow-hidden flex-grow">
+                            <p class="text-xs text-gray-400 truncate">Pianificatore → Compagno AI</p>
                             <h2 id="itinerary-title" class="font-bold text-white text-lg truncate">Itinerario intelligente</h2>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -332,8 +338,31 @@
         }
 
         function goBack() {
-            // Torna alla homepage di Viamigo
-            window.location.href = '/dashboard';
+            // Torna al pianificatore di viaggio mantenendo il contesto della rotta
+            const urlParams = new URLSearchParams(window.location.search);
+            const location = urlParams.get('location');
+            
+            // Se c'è un parametro location, salva il contesto per il restore
+            if (location) {
+                // Estrae informazioni dalla location per mantenere il contesto
+                console.log(`🔄 Returning to planner from ${location}`);
+                
+                // Salva il contesto attuale in localStorage per il restore
+                const contextData = {
+                    from_advanced_features: true,
+                    location: location,
+                    timestamp: new Date().toISOString(),
+                    return_to_route: true
+                };
+                
+                localStorage.setItem('viamigo_return_context', JSON.stringify(contextData));
+                
+                // Ritorna al pianificatore con parametro che indica di ripristinare la rotta
+                window.location.href = '/planner?restore_context=true';
+            } else {
+                // Ritorna semplicemente al pianificatore
+                window.location.href = '/planner';
+            }
         }
 
         // Simulazione scoperte intelligenti durante il viaggio

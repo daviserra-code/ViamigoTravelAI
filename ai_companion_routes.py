@@ -31,6 +31,164 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")  # Ensure this is available
 class AICompanionEngine:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=3)
+        self.db_url = os.getenv('DATABASE_URL')
+    
+    def _query_attractions_from_db(self, city_name: str, city_key: str, limit: int = 6) -> List[Dict]:
+        """
+        🚀 DYNAMIC DATABASE QUERY - Query PostgreSQL for REAL attractions
+        Queries both comprehensive_attractions and place_cache tables
+        """
+        import psycopg2
+        import json as json_module
+        
+        attractions = []
+        
+        try:
+            conn = psycopg2.connect(self.db_url)
+            cursor = conn.cursor()
+            
+            # Priority 1: Query place_cache (best curated data)
+            print(f"📊 Querying place_cache for {city_name}...")
+            cursor.execute("""
+                SELECT place_name, city, place_data, cache_key
+                FROM place_cache
+                WHERE LOWER(city) = LOWER(%s)
+                ORDER BY priority_level DESC, access_count DESC
+                LIMIT %s
+            """, (city_name, limit))
+            
+            place_cache_results = cursor.fetchall()
+            
+            for row in place_cache_results:
+                place_name, city, place_data_json, cache_key = row
+                place_data = json_module.loads(place_data_json) if place_data_json else {}
+                
+                attractions.append({
+                    'name': place_data.get('name', place_name),
+                    'latitude': place_data.get('lat') or place_data.get('latitude'),
+                    'longitude': place_data.get('lon') or place_data.get('lng') or place_data.get('longitude'),
+                    'description': place_data.get('description', f'{place_name} a {city_name}'),
+                    'image_url': place_data.get('image_url'),
+                    'source': 'PostgreSQL place_cache'
+                })
+            
+            # Priority 2: If insufficient data, query comprehensive_attractions
+            if len(attractions) < limit:
+                print(f"📊 Querying comprehensive_attractions for {city_name}...")
+                cursor.execute("""
+                    SELECT name, city, category, description, latitude, longitude, image_url
+                    FROM comprehensive_attractions
+                    WHERE LOWER(city) = LOWER(%s)
+                      AND latitude IS NOT NULL
+                      AND longitude IS NOT NULL
+                    ORDER BY CASE 
+                        WHEN image_url IS NOT NULL THEN 1 
+                        ELSE 2 
+                    END,
+                    RANDOM()
+                    LIMIT %s
+                """, (city_name, limit - len(attractions)))
+                
+                db_results = cursor.fetchall()
+                
+                for row in db_results:
+                    name, city, category, description, lat, lng, image_url = row
+                    attractions.append({
+                        'name': name,
+                        'latitude': lat,
+                        'longitude': lng,
+                        'description': description or f'{name} a {city_name}',
+                        'image_url': image_url,
+                        'source': 'PostgreSQL comprehensive_attractions'
+                    })
+            
+            cursor.close()
+            conn.close()
+            
+            print(f"✅ Found {len(attractions)} attractions from database for {city_name}")
+            return attractions
+            
+        except Exception as e:
+            print(f"❌ Database query error for {city_name}: {e}")
+            return []
+    
+    def _query_restaurants_from_db(self, city_name: str, city_key: str, limit: int = 3) -> List[Dict]:
+        """
+        🚀 DYNAMIC DATABASE QUERY - Query PostgreSQL for REAL restaurants
+        Queries both comprehensive_attractions and place_cache tables
+        """
+        import psycopg2
+        import json as json_module
+        
+        restaurants = []
+        
+        try:
+            conn = psycopg2.connect(self.db_url)
+            cursor = conn.cursor()
+            
+            # Priority 1: Query place_cache for restaurants
+            print(f"📊 Querying place_cache for restaurants in {city_name}...")
+            cursor.execute("""
+                SELECT place_name, city, place_data, cache_key
+                FROM place_cache
+                WHERE LOWER(city) = LOWER(%s)
+                  AND (place_data::jsonb->>'type' = 'restaurant' 
+                       OR cache_key LIKE '%restaurant%')
+                ORDER BY priority_level DESC, access_count DESC
+                LIMIT %s
+            """, (city_name, limit))
+            
+            place_cache_results = cursor.fetchall()
+            
+            for row in place_cache_results:
+                place_name, city, place_data_json, cache_key = row
+                place_data = json_module.loads(place_data_json) if place_data_json else {}
+                
+                restaurants.append({
+                    'name': place_data.get('name', place_name),
+                    'latitude': place_data.get('lat') or place_data.get('latitude'),
+                    'longitude': place_data.get('lon') or place_data.get('lng') or place_data.get('longitude'),
+                    'description': place_data.get('description', f'Ristorante a {city_name}'),
+                    'image_url': place_data.get('image_url'),
+                    'source': 'PostgreSQL place_cache'
+                })
+            
+            # Priority 2: If insufficient, query comprehensive_attractions for food places
+            if len(restaurants) < limit:
+                print(f"📊 Querying comprehensive_attractions for restaurants in {city_name}...")
+                cursor.execute("""
+                    SELECT name, city, category, description, latitude, longitude, image_url
+                    FROM comprehensive_attractions
+                    WHERE LOWER(city) = LOWER(%s)
+                      AND (category ILIKE '%restaurant%' OR category ILIKE '%food%' OR category ILIKE '%cafe%')
+                      AND latitude IS NOT NULL
+                      AND longitude IS NOT NULL
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (city_name, limit - len(restaurants)))
+                
+                db_results = cursor.fetchall()
+                
+                for row in db_results:
+                    name, city, category, description, lat, lng, image_url = row
+                    restaurants.append({
+                        'name': name,
+                        'latitude': lat,
+                        'longitude': lng,
+                        'description': description or f'Ristorante a {city_name}',
+                        'image_url': image_url,
+                        'source': 'PostgreSQL comprehensive_attractions'
+                    })
+            
+            cursor.close()
+            conn.close()
+            
+            print(f"✅ Found {len(restaurants)} restaurants from database for {city_name}")
+            return restaurants
+            
+        except Exception as e:
+            print(f"❌ Database query error for {city_name}: {e}")
+            return []
 
     def generate_piano_b(self, current_itinerary, context, emergency_type="weather"):
         """Real AI Piano B generation with fast timeout"""
@@ -1150,162 +1308,26 @@ def plan_ai_powered():
                 # No restaurants from AI in this fallback scenario
 
         else:  # Not a foreign destination, proceed with standard logic
-            print(
-                f"🏛️ Domestic destination: {city_name}. Checking PostgreSQL first.")
-            # Add hardcoded attractions for major cities
-            city_attractions = {
-                'milano': [
-                    {'name': 'Duomo di Milano', 'latitude': 45.4642, 'longitude': 9.1900,
-                        'description': 'Magnifica cattedrale gotica nel cuore di Milano'},
-                    {'name': 'Galleria Vittorio Emanuele II', 'latitude': 45.4656,
-                        'longitude': 9.1901, 'description': 'Storica galleria commerciale del 1865'},
-                    {'name': 'Castello Sforzesco', 'latitude': 45.4703, 'longitude': 9.1794,
-                        'description': 'Fortezza storica con musei e giardini'},
-                    {'name': 'Navigli', 'latitude': 45.4502, 'longitude': 9.1812,
-                        'description': 'Quartiere dei canali con ristoranti e vita notturna'}
-                ],
-                'roma': [
-                    {'name': 'Colosseo', 'latitude': 41.8902, 'longitude': 12.4922,
-                        'description': 'Anfiteatro Flavio, simbolo di Roma antica'},
-                    {'name': 'Fontana di Trevi', 'latitude': 41.9009, 'longitude': 12.4833,
-                        'description': 'Fontana barocca più famosa al mondo'},
-                    {'name': 'Pantheon', 'latitude': 41.8986, 'longitude': 12.4769,
-                        'description': 'Tempio romano meglio conservato'},
-                    {'name': 'Piazza Navona', 'latitude': 41.8992, 'longitude': 12.4730,
-                        'description': 'Piazza barocca con fontana del Bernini'}
-                ],
-                'venezia': [
-                    {'name': 'Piazza San Marco', 'latitude': 45.4345, 'longitude': 12.3387,
-                        'description': 'Il salotto di Venezia con la Basilica'},
-                    {'name': 'Ponte di Rialto', 'latitude': 45.4380, 'longitude': 12.3360,
-                        'description': 'Ponte storico sul Canal Grande'},
-                    {'name': 'Palazzo Ducale', 'latitude': 45.4334, 'longitude': 12.3406,
-                        'description': 'Capolavoro gotico veneziano'},
-                    {'name': 'Canal Grande', 'latitude': 45.4370, 'longitude': 12.3327,
-                        'description': 'Arteria principale di Venezia'}
-                ],
-                'napoli': [
-                    {'name': 'Spaccanapoli', 'latitude': 40.8518, 'longitude': 14.2581,
-                        'description': 'Via storica che taglia il centro antico'},
-                    {'name': 'Castel dell\'Ovo', 'latitude': 40.8280, 'longitude': 14.2478,
-                        'description': 'Castello sul mare nel Borgo Marinari'},
-                    {'name': 'Piazza del Plebiscito', 'latitude': 40.8359,
-                        'longitude': 14.2487, 'description': 'Grande piazza con Palazzo Reale'},
-                    {'name': 'Quartieri Spagnoli', 'latitude': 40.8455, 'longitude': 14.2490,
-                        'description': 'Vicoli caratteristici napoletani'}
-                ],
-                'palermo': [
-                    {'name': 'Cattedrale di Palermo', 'latitude': 38.1145, 'longitude': 13.3561,
-                        'description': 'Maestosa cattedrale normanna con cripta reale'},
-                    {'name': 'Teatro Massimo', 'latitude': 38.1203, 'longitude': 13.3571,
-                        'description': 'Il più grande teatro lirico d\'Italia'},
-                    {'name': 'Mercato di Ballarò', 'latitude': 38.1109, 'longitude': 13.3590,
-                        'description': 'Mercato storico con street food siciliano'},
-                    {'name': 'Palazzo dei Normanni', 'latitude': 38.1109, 'longitude': 13.3530,
-                        'description': 'Palazzo reale con Cappella Palatina'},
-                    {'name': 'Quattro Canti', 'latitude': 38.1157, 'longitude': 13.3613,
-                        'description': 'Piazza barocca ottagonale al centro'},
-                    {'name': 'Piazza Pretoria', 'latitude': 38.1159, 'longitude': 13.3620,
-                        'description': 'Piazza con fontana monumentale'}
-                ],
-                'olbia': [
-                    {'name': 'Basilica di San Simplicio', 'latitude': 40.9239, 'longitude': 9.5002,
-                        'description': 'Chiesa romanica del XI secolo, monumento più importante di Olbia'},
-                    {'name': 'Porto di Olbia', 'latitude': 40.9250, 'longitude': 9.5150,
-                        'description': 'Porto turistico con vista sull\'isola di Tavolara'},
-                    {'name': 'Museo Archeologico', 'latitude': 40.9231, 'longitude': 9.4968,
-                        'description': 'Reperti nuragici e relitti di navi romane'},
-                    {'name': 'Corso Umberto', 'latitude': 40.9240, 'longitude': 9.4978,
-                        'description': 'Via principale dello shopping e aperitivi'}
-                ],
-                'portorotondo': [
-                    {'name': 'Piazzetta San Marco', 'latitude': 41.0165, 'longitude': 9.5353,
-                        'description': 'Piazza centrale in stile veneziano con caffè e boutique'},
-                    {'name': 'Marina di Porto Rotondo', 'latitude': 41.0170, 'longitude': 9.5370,
-                        'description': 'Porto turistico esclusivo con yacht di lusso'},
-                    {'name': 'Chiesa di San Lorenzo', 'latitude': 41.0158, 'longitude': 9.5345,
-                        'description': 'Chiesa moderna con sculture di Mario Ceroli'},
-                    {'name': 'Spiaggia Ira', 'latitude': 41.0120, 'longitude': 9.5400,
-                        'description': 'Spiaggia di sabbia bianca con acque cristalline'},
-                    {'name': 'Teatro di Porto Rotondo', 'latitude': 41.0155, 'longitude': 9.5360,
-                        'description': 'Anfiteatro all\'aperto per eventi estivi'}
-                ],
-                'portocervo': [
-                    {'name': 'Piazzetta di Porto Cervo', 'latitude': 41.1366,
-                        'longitude': 9.5353, 'description': 'Centro mondano della Costa Smeralda'},
-                    {'name': 'Marina di Porto Cervo', 'latitude': 41.1370, 'longitude': 9.5370,
-                        'description': 'Porto più esclusivo del Mediterraneo'},
-                    {'name': 'Chiesa Stella Maris', 'latitude': 41.1350, 'longitude': 9.5340,
-                        'description': 'Chiesa moderna con vista panoramica'},
-                    {'name': 'Pevero Golf Club', 'latitude': 41.1300, 'longitude': 9.5200,
-                        'description': 'Campo da golf più prestigioso della Sardegna'}
-                ],
-                'genova': [
-                    {'name': 'Palazzo Ducale', 'latitude': 44.4076, 'longitude': 8.9336,
-                        'description': 'Centro culturale storico di Genova, mostre ed eventi'},
-                    {'name': 'Via Garibaldi e Palazzi dei Rolli', 'latitude': 44.4089, 'longitude': 8.9321,
-                        'description': 'Strada UNESCO con palazzi nobiliari rinascimentali'},
-                    {'name': 'Acquario di Genova', 'latitude': 44.4109, 'longitude': 8.9326,
-                        'description': 'Acquario più grande d\'Europa al Porto Antico'},
-                    {'name': 'Piazza De Ferrari', 'latitude': 44.4074, 'longitude': 8.9343,
-                        'description': 'Piazza centrale con fontana monumentale'},
-                    {'name': 'Cattedrale di San Lorenzo', 'latitude': 44.4069, 'longitude': 8.9303,
-                        'description': 'Duomo di Genova in stile romanico-gotico'},
-                    {'name': 'Boccadasse', 'latitude': 44.3924, 'longitude': 8.9959,
-                        'description': 'Antico borgo marinaro con case colorate'}
-                ]
-            }
+            print(f"🏛️ Domestic destination: {city_name}. Querying PostgreSQL database...")
+            
+            # 🚀 DYNAMIC DATABASE QUERY - NO HARDCODED DATA!
+            # Query comprehensive_attractions table for REAL data
+            postgres_attractions = ai_engine._query_attractions_from_db(city_name, city_key)
+            
+            if postgres_attractions:
+                print(f"✅ Found {len(postgres_attractions)} attractions from database for {city_name}")
+            else:
+                print(f"⚠️ No attractions found in database for {city_name}")
+            
+            # Query restaurants from database too
+            postgres_restaurants = ai_engine._query_restaurants_from_db(city_name, city_key)
+            
+            if postgres_restaurants:
+                print(f"✅ Found {len(postgres_restaurants)} restaurants from database for {city_name}")
+            else:
+                print(f"⚠️ No restaurants found in database for {city_name}")
 
-            if city_key in city_attractions:
-                postgres_attractions = [
-                    {**attr, 'source': 'Local Knowledge'}
-                    for attr in city_attractions[city_key]
-                ]
-
-            try:
-                # Query PostgreSQL for cached data - filter by type in Python
-                all_city_places = PlaceCache.query.filter(
-                    PlaceCache.city.ilike(f'%{city_name}%')
-                ).all()
-
-                # Filter attractions
-                for cache_entry in all_city_places:
-                    place_data = cache_entry.get_place_data()
-                    if place_data and place_data.get('type') == 'attraction':
-                        postgres_attractions.append({
-                            'name': place_data.get('name', cache_entry.place_name),
-                            'latitude': place_data.get('latitude', 45.4642),
-                            'longitude': place_data.get('longitude', 9.1900),
-                            'description': place_data.get('description', f'Historic attraction in {city_name}'),
-                            'source': 'PostgreSQL Database'
-                        })
-                        if len(postgres_attractions) >= 4:
-                            break
-
-                print(
-                    f"🏛️ Found {len(postgres_attractions)} attractions in PostgreSQL")
-
-                # Filter restaurants
-                for cache_entry in all_city_places:
-                    place_data = cache_entry.get_place_data()
-                    if place_data and place_data.get('type') == 'restaurant':
-                        postgres_restaurants.append({
-                            'name': place_data.get('name', cache_entry.place_name),
-                            'latitude': place_data.get('latitude', 45.4642),
-                            'longitude': place_data.get('longitude', 9.1900),
-                            'description': place_data.get('description', f'Restaurant in {city_name}'),
-                            'source': 'PostgreSQL Database'
-                        })
-                        if len(postgres_restaurants) >= 2:
-                            break
-
-                print(
-                    f"🏛️ Found {len(postgres_restaurants)} restaurants in PostgreSQL")
-
-            except Exception as e:
-                print(f"⚠️ PostgreSQL query error: {e}")
-
-            # If insufficient data from hardcoded/cached, use cost-effective scraping
+            # If insufficient data from database, use cost-effective scraping
             real_attractions = postgres_attractions
             real_restaurants = postgres_restaurants
 

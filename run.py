@@ -7,6 +7,8 @@ from pure_instant_routes import pure_instant_bp
 from ai_companion_routes import ai_companion_bp
 from advanced_routes import advanced_bp
 from dashboard_routes import dashboard_bp
+from image_storage_routes import image_routes_bp
+from demo_routes import demo_bp
 import os
 import sys
 from dotenv import load_dotenv
@@ -33,6 +35,8 @@ app.register_blueprint(create_profile_bp)
 app.register_blueprint(pure_instant_bp)
 # app.register_blueprint(ai_companion_bp)  # Removed duplicate registration
 app.register_blueprint(advanced_bp)
+app.register_blueprint(image_routes_bp)
+app.register_blueprint(demo_bp)
 
 if __name__ == "__main__":
     # Create tables after all imports are complete

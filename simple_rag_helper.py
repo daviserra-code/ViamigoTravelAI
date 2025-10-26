@@ -122,12 +122,13 @@ class OptimizedRAGHelper:
                     relevance_score = max(0, 1 - distance)
 
                     place = {
-                        'name': metadata.get('name', 'Unknown'),
+                        'name': metadata.get('place_name', metadata.get('name', 'Unknown')),
                         'city': metadata.get('city', 'Unknown'),
                         'category': metadata.get('category', 'Unknown'),
                         'description': document,
                         'relevance_score': round(relevance_score, 3),
                         'semantic_match': True,
+                        'distance': distance,
                         **{k: v for k, v in metadata.items() if k not in ['name', 'city', 'category']}
                     }
                     places.append(place)

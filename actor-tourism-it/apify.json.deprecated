@@ -1,0 +1,8 @@
+{
+  "name": "tourism-it-attractions",
+  "version": "0.1",
+  "buildTag": "latest",
+  "title": "Italian City Attractions Collector (OSM + Wikidata + Commons)",
+  "description": "Collects tourist attractions for Italian cities using Overpass (OSM) + Wikidata/Wikipedia enrichment and Wikimedia Commons images. Saves into Apify Dataset and optional Postgres.",
+  "dockerfile": "./Dockerfile"
+}

@@ -1,0 +1,68 @@
+{
+  "actorSpecification": 1,
+  "name": "tourism-it-attractions",
+  "title": "Italian City Attractions Collector (OSM + Wikidata + Commons)",
+  "version": "0.1",
+  "buildTag": "latest",
+
+  "input": {
+    "schemaVersion": 1,
+    "type": "object",
+    "title": "Input",
+    "properties": {
+      "cities": {
+        "type": "array",
+        "title": "Italian cities",
+        "description": "List of Italian cities to collect attraction data for",
+        "editor": "stringList",
+        "items": {
+          "type": "string"
+        }
+      },
+      "limitPerCity": {
+        "type": "integer",
+        "title": "Limit per city",
+        "description": "Maximum number of attractions to collect per city",
+        "editor": "number",
+        "minimum": 1,
+        "maximum": 2000,
+        "default": 300
+      },
+      "overpassTimeoutSec": {
+        "type": "integer",
+        "title": "Overpass timeout",
+        "description": "Timeout in seconds for Overpass API queries",
+        "editor": "number",
+        "minimum": 30,
+        "maximum": 300,
+        "default": 60
+      },
+      "downloadImages": {
+        "type": "boolean",
+        "title": "Download images",
+        "description": "Whether to download images from Wikimedia Commons",
+        "editor": "checkbox",
+        "default": true
+      },
+      "thumbWidth": {
+        "type": "integer",
+        "title": "Thumbnail width",
+        "description": "Width in pixels for downloaded thumbnail images",
+        "editor": "number",
+        "minimum": 400,
+        "maximum": 2000,
+        "default": 1280
+      },
+      "saveToPostgres": {
+        "type": "boolean",
+        "title": "Save to PostgreSQL",
+        "description": "Whether to save results directly to PostgreSQL database",
+        "editor": "checkbox",
+        "default": false
+      }
+    },
+    "required": [
+      "cities"
+    ]
+  }
+}

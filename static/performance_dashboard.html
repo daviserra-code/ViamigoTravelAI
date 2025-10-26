@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViamigoTravelAI - Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card.success {
+            border-left-color: #27ae60;
+        }
+        
+        .metric-card.warning {
+            border-left-color: #f39c12;
+        }
+        
+        .metric-card.danger {
+            border-left-color: #e74c3c;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            height: 400px;
+        }
+        
+        .status-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .status-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-indicator.healthy {
+            background: #27ae60;
+        }
+        
+        .status-indicator.unhealthy {
+            background: #e74c3c;
+        }
+        
+        .status-indicator.warning {
+            background: #f39c12;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn.danger {
+            background: #e74c3c;
+        }
+        
+        .btn.danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn.success {
+            background: #27ae60;
+        }
+        
+        .btn.success:hover {
+            background: #229954;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+            background: #fdf2f2;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ViamigoTravelAI Performance Dashboard</h1>
+            <p>Real-time monitoring for 9,930+ places across 56 Italian cities</p>
+            <p id="lastUpdated" style="font-size: 0.9rem; color: #95a5a6;"></p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="refreshDashboard()">🔄 Refresh</button>
+            <button class="btn success" onclick="optimizePerformance()">⚡ Optimize</button>
+            <button class="btn danger" onclick="clearCache()">🗑️ Clear Cache</button>
+        </div>
+        
+        <div id="loadingIndicator" class="loading">
+            <h3>Loading performance data...</h3>
+        </div>
+        
+        <div id="errorIndicator" class="error" style="display: none;">
+            <h3>❌ Error loading performance data</h3>
+            <p id="errorMessage"></p>
+        </div>
+        
+        <div id="dashboardContent" style="display: none;">
+            <!-- Metrics Overview -->
+            <div class="metrics-grid">
+                <div class="metric-card" id="responseTimeCard">
+                    <div class="metric-label">Average Response Time</div>
+                    <div class="metric-value" id="avgResponseTime">-</div>
+                    <div style="font-size: 0.8rem; color: #7f8c8d;">seconds</div>
+                </div>
+                
+                <div class="metric-card" id="cacheHitCard">
+                    <div class="metric-label">Cache Hit Rate</div>
+                    <div class="metric-value" id="cacheHitRate">-</div>
+                    <div style="font-size: 0.8rem; color: #7f8c8d;">percent</div>
+                </div>
+                
+                <div class="metric-card" id="errorRateCard">
+                    <div class="metric-label">Error Rate</div>
+                    <div class="metric-value" id="errorRate">-</div>
+                    <div style="font-size: 0.8rem; color: #7f8c8d;">percent</div>
+                </div>
+                
+                <div class="metric-card" id="totalRequestsCard">
+                    <div class="metric-label">Total Requests (1h)</div>
+                    <div class="metric-value" id="totalRequests">-</div>
+                    <div style="font-size: 0.8rem; color: #7f8c8d;">requests</div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3 style="margin-top: 0; text-align: center;">System Resources</h3>
+                    <canvas id="systemChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-top: 0; text-align: center;">Database Performance</h3>
+                    <canvas id="databaseChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Status Section -->
+            <div class="status-section">
+                <div class="status-card">
+                    <h3>
+                        <span class="status-indicator" id="dbIndicator"></span>
+                        Database Status
+                    </h3>
+                    <div id="dbStatus"></div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>
+                        <span class="status-indicator" id="chromaIndicator"></span>
+                        ChromaDB Status
+                    </h3>
+                    <div id="chromaStatus"></div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>
+                        <span class="status-indicator" id="systemIndicator"></span>
+                        System Health
+                    </h3>
+                    <div id="systemStatus"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let systemChart, databaseChart;
+        
+        async function loadDashboard() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('errorIndicator').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'none';
+                
+                const response = await fetch('/api/performance/dashboard');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updateDashboard(data);
+                    document.getElementById('dashboardContent').style.display = 'block';
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('errorIndicator').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+        
+        function updateDashboard(data) {
+            // Update overview metrics
+            document.getElementById('avgResponseTime').textContent = data.overview.avg_response_time;
+            document.getElementById('cacheHitRate').textContent = data.overview.cache_hit_rate + '%';
+            document.getElementById('errorRate').textContent = data.overview.error_rate + '%';
+            document.getElementById('totalRequests').textContent = data.overview.total_requests;
+            
+            // Update metric card styles based on performance
+            updateMetricCard('responseTimeCard', data.overview.avg_response_time, [0.5, 2.0]);
+            updateMetricCard('cacheHitCard', data.overview.cache_hit_rate, [80, 50]);
+            updateMetricCard('errorRateCard', data.overview.error_rate, [1, 5], true);
+            
+            // Update system charts
+            updateSystemChart(data.system);
+            updateDatabaseChart(data.database, data.chromadb);
+            
+            // Update status indicators
+            updateStatusIndicators(data);
+        }
+        
+        function updateMetricCard(cardId, value, thresholds, reverse = false) {
+            const card = document.getElementById(cardId);
+            card.className = 'metric-card';
+            
+            if (reverse) {
+                // For error rates - lower is better
+                if (value <= thresholds[0]) card.classList.add('success');
+                else if (value <= thresholds[1]) card.classList.add('warning');
+                else card.classList.add('danger');
+            } else {
+                // For normal metrics - higher is better
+                if (value >= thresholds[0]) card.classList.add('success');
+                else if (value >= thresholds[1]) card.classList.add('warning');
+                else card.classList.add('danger');
+            }
+        }
+        
+        function updateSystemChart(systemData) {
+            const ctx = document.getElementById('systemChart').getContext('2d');
+            
+            if (systemChart) {
+                systemChart.destroy();
+            }
+            
+            systemChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CPU Usage', 'Memory Usage', 'Available'],
+                    datasets: [{
+                        data: [
+                            systemData.cpu_usage,
+                            systemData.memory_usage,
+                            100 - Math.max(systemData.cpu_usage, systemData.memory_usage)
+                        ],
+                        backgroundColor: [
+                            systemData.cpu_usage > 80 ? '#e74c3c' : systemData.cpu_usage > 60 ? '#f39c12' : '#27ae60',
+                            systemData.memory_usage > 85 ? '#e74c3c' : systemData.memory_usage > 70 ? '#f39c12' : '#27ae60',
+                            '#ecf0f1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateDatabaseChart(dbData, chromaData) {
+            const ctx = document.getElementById('databaseChart').getContext('2d');
+            
+            if (databaseChart) {
+                databaseChart.destroy();
+            }
+            
+            databaseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['PostgreSQL Places', 'PostgreSQL Cities', 'ChromaDB Docs'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [
+                            dbData.total_places || 0,
+                            dbData.total_cities || 0,
+                            chromaData.total_documents || 0
+                        ],
+                        backgroundColor: [
+                            '#3498db',
+                            '#2ecc71',
+                            '#9b59b6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateStatusIndicators(data) {
+            // Database status
+            const dbIndicator = document.getElementById('dbIndicator');
+            const dbStatus = document.getElementById('dbStatus');
+            
+            if (data.database.status === 'connected') {
+                dbIndicator.className = 'status-indicator healthy';
+                dbStatus.innerHTML = `
+                    <p><strong>Status:</strong> Connected</p>
+                    <p><strong>Places:</strong> ${data.database.total_places?.toLocaleString()}</p>
+                    <p><strong>Cities:</strong> ${data.database.total_cities}</p>
+                    <p><strong>Table Size:</strong> ${data.database.table_size}</p>
+                `;
+            } else {
+                dbIndicator.className = 'status-indicator unhealthy';
+                dbStatus.innerHTML = `<p><strong>Status:</strong> ${data.database.status}</p>`;
+            }
+            
+            // ChromaDB status
+            const chromaIndicator = document.getElementById('chromaIndicator');
+            const chromaStatus = document.getElementById('chromaStatus');
+            
+            if (data.chromadb.status === 'connected') {
+                chromaIndicator.className = 'status-indicator healthy';
+                chromaStatus.innerHTML = `
+                    <p><strong>Status:</strong> Connected</p>
+                    <p><strong>Documents:</strong> ${data.chromadb.total_documents?.toLocaleString()}</p>
+                    <p><strong>Collection:</strong> ${data.chromadb.collection_name}</p>
+                `;
+            } else {
+                chromaIndicator.className = 'status-indicator unhealthy';
+                chromaStatus.innerHTML = `<p><strong>Status:</strong> ${data.chromadb.status}</p>`;
+            }
+            
+            // System status
+            const systemIndicator = document.getElementById('systemIndicator');
+            const systemStatus = document.getElementById('systemStatus');
+            
+            const cpuHigh = data.system.cpu_usage > 80;
+            const memoryHigh = data.system.memory_usage > 85;
+            
+            if (cpuHigh || memoryHigh) {
+                systemIndicator.className = 'status-indicator warning';
+            } else {
+                systemIndicator.className = 'status-indicator healthy';
+            }
+            
+            systemStatus.innerHTML = `
+                <p><strong>CPU Usage:</strong> ${data.system.cpu_usage}%</p>
+                <p><strong>Memory Usage:</strong> ${data.system.memory_usage}%</p>
+                <p><strong>Cache Size:</strong> ${data.system.cache_size} items</p>
+            `;
+        }
+        
+        function refreshDashboard() {
+            loadDashboard();
+        }
+        
+        async function optimizePerformance() {
+            try {
+                const response = await fetch('/api/performance/optimize', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert('✅ Performance optimization completed!\n\nOptimizations:\n' + 
+                          data.optimizations.join('\n'));
+                    loadDashboard();
+                } else {
+                    alert('❌ Optimization failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Optimization error: ' + error.message);
+            }
+        }
+        
+        async function clearCache() {
+            if (!confirm('Are you sure you want to clear the performance cache?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/performance/cache/clear', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert('✅ Cache cleared successfully!');
+                    loadDashboard();
+                } else {
+                    alert('❌ Cache clear failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Cache clear error: ' + error.message);
+            }
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+        
+        // Initial load
+        loadDashboard();
+    </script>
+</body>
+</html>

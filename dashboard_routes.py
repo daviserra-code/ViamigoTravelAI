@@ -109,13 +109,37 @@ def dashboard():
                         </button>
                     </div>
 
+                    <!-- Route History & Photo Gallery -->
+                    <div class="bg-gray-800 rounded-xl p-4">
+                        <h3 class="text-white font-medium text-sm mb-3">🗺️ Cronologia Itinerari</h3>
+                        <div id="route-history" class="space-y-3">
+                            <!-- Route history will be populated here -->
+                        </div>
+                        <button onclick="viewAllRoutes()" class="w-full mt-3 bg-purple-600 text-white py-2 rounded-lg text-sm font-medium">
+                            Visualizza Tutti gli Itinerari
+                        </button>
+                    </div>
+
+                    <!-- Photo Gallery -->
+                    <div class="bg-gray-800 rounded-xl p-4">
+                        <h3 class="text-white font-medium text-sm mb-3">📸 Galleria Viaggi</h3>
+                        <div id="photo-gallery" class="grid grid-cols-3 gap-2 mb-3">
+                            <!-- Photo gallery will be populated here -->
+                        </div>
+                        <button onclick="openPhotoGallery()" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">
+                            Esplora Galleria Completa
+                        </button>
+                    </div>
+
                     <!-- Recent Activity -->
                     <div class="bg-gray-800 rounded-xl p-4">
                         <h3 class="text-white font-medium text-sm mb-3">📈 Attività Recente</h3>
-                        <p class="text-gray-400 text-xs text-center py-6">
-                            Nessuna attività recente.<br>
-                            Inizia pianificando il tuo primo viaggio!
-                        </p>
+                        <div id="recent-activity">
+                            <p class="text-gray-400 text-xs text-center py-6">
+                                Nessuna attività recente.<br>
+                                Inizia pianificando il tuo primo viaggio!
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -123,6 +147,230 @@ def dashboard():
     </div>
 
     <script>
+        // Load dashboard data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRouteHistory();
+            loadPhotoGallery();
+            loadRecentActivity();
+        });
+
+        // Load route history from localStorage and server
+        async function loadRouteHistory() {
+            const routeHistoryContainer = document.getElementById('route-history');
+            
+            try {
+                // First try to load from localStorage for immediate feedback
+                const localRoutes = JSON.parse(localStorage.getItem('viamigo_route_history') || '[]');
+                
+                if (localRoutes.length > 0) {
+                    displayRouteHistory(localRoutes.slice(0, 3)); // Show last 3 routes
+                } else {
+                    routeHistoryContainer.innerHTML = `
+                        <p class="text-gray-400 text-xs text-center py-4">
+                            Nessun itinerario salvato.<br>
+                            Crea il tuo primo itinerario!
+                        </p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading route history:', error);
+                routeHistoryContainer.innerHTML = `
+                    <p class="text-gray-400 text-xs text-center py-4">
+                        Errore nel caricamento degli itinerari.
+                    </p>
+                `;
+            }
+        }
+
+        // Display route history items
+        function displayRouteHistory(routes) {
+            const container = document.getElementById('route-history');
+            container.innerHTML = '';
+            
+            routes.forEach((route, index) => {
+                const routeItem = document.createElement('div');
+                routeItem.className = 'bg-gray-700 rounded-lg p-3 border border-gray-600';
+                routeItem.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex-grow">
+                            <h4 class="text-white text-sm font-medium">${route.title || 'Itinerario'}</h4>
+                            <p class="text-gray-400 text-xs">${route.city || 'Città non specificata'} • ${formatDate(route.date)}</p>
+                            <p class="text-gray-500 text-xs mt-1">${route.stops || 0} tappe</p>
+                        </div>
+                        <button onclick="reopenRoute('${route.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs hover:bg-emerald-700">
+                            Riapri
+                        </button>
+                    </div>
+                `;
+                container.appendChild(routeItem);
+            });
+        }
+
+        // Load photo gallery with travel destination images
+        function loadPhotoGallery() {
+            const galleryContainer = document.getElementById('photo-gallery');
+            
+            // Sample travel photos from popular Italian destinations
+            const samplePhotos = [
+                { src: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=120&h=120&fit=crop', alt: 'Roma - Colosseo', link: 'https://unsplash.com/photos/rome-colosseum' },
+                { src: 'https://images.unsplash.com/photo-1601985843082-5e1ecdf71b71?w=120&h=120&fit=crop', alt: 'Firenze - Duomo', link: 'https://unsplash.com/photos/florence-duomo' },
+                { src: 'https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=120&h=120&fit=crop', alt: 'Venezia - San Marco', link: 'https://unsplash.com/photos/venice-san-marco' },
+                { src: 'https://images.unsplash.com/photo-1543832923-44667a5ab6ea?w=120&h=120&fit=crop', alt: 'Milano - Duomo', link: 'https://unsplash.com/photos/milan-duomo' },
+                { src: 'https://images.unsplash.com/photo-1555758292-972ddd980eb2?w=120&h=120&fit=crop', alt: 'Napoli - Centro', link: 'https://unsplash.com/photos/naples' },
+                { src: 'https://images.unsplash.com/photo-1513581166391-887ba0ad7c1b?w=120&h=120&fit=crop', alt: 'Genova - Porto', link: 'https://unsplash.com/photos/genoa' }
+            ];
+            
+            galleryContainer.innerHTML = '';
+            samplePhotos.slice(0, 6).forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'aspect-square rounded-lg overflow-hidden bg-gray-700 cursor-pointer hover:scale-105 transition-transform';
+                photoItem.innerHTML = `
+                    <img src="${photo.src}" alt="${photo.alt}" class="w-full h-full object-cover" 
+                         onclick="openExternalLink('${photo.link}')"
+                         onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold\\'>Foto</div>'">
+                `;
+                galleryContainer.appendChild(photoItem);
+            });
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            const activityContainer = document.getElementById('recent-activity');
+            
+            try {
+                // Try to get recent activity from localStorage
+                const recentRoutes = JSON.parse(localStorage.getItem('viamigo_route_history') || '[]');
+                const recentSearches = JSON.parse(localStorage.getItem('viamigo_recent_searches') || '[]');
+                
+                if (recentRoutes.length > 0 || recentSearches.length > 0) {
+                    let activityHTML = '<div class="space-y-2">';
+                    
+                    // Show most recent route
+                    if (recentRoutes.length > 0) {
+                        const lastRoute = recentRoutes[0];
+                        activityHTML += `
+                            <div class="text-xs text-gray-400">
+                                ✅ Ultimo itinerario: <span class="text-white">${lastRoute.city}</span>
+                                <span class="text-gray-500">(${formatDate(lastRoute.date)})</span>
+                            </div>
+                        `;
+                    }
+                    
+                    // Show recent searches
+                    if (recentSearches.length > 0) {
+                        const lastSearch = recentSearches[0];
+                        activityHTML += `
+                            <div class="text-xs text-gray-400">
+                                🔍 Ultima ricerca: <span class="text-white">${lastSearch}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    activityHTML += '</div>';
+                    activityContainer.innerHTML = activityHTML;
+                } else {
+                    activityContainer.innerHTML = `
+                        <p class="text-gray-400 text-xs text-center py-6">
+                            Nessuna attività recente.<br>
+                            Inizia pianificando il tuo primo viaggio!
+                        </p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+            }
+        }
+
+        // Helper function to format dates
+        function formatDate(dateString) {
+            if (!dateString) return 'Data non disponibile';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('it-IT', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch (error) {
+                return 'Data non valida';
+            }
+        }
+
+        // View all routes (opens full route history page)
+        function viewAllRoutes() {
+            // For now, redirect to planner with a special parameter
+            window.location.href = '/planner?view=history';
+        }
+
+        // Open photo gallery in full view
+        function openPhotoGallery() {
+            // Create modal for photo gallery
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white font-bold text-lg">🏛️ Galleria Destinazioni Italiane</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="aspect-square rounded-lg overflow-hidden bg-gray-700 cursor-pointer" onclick="openExternalLink('https://unsplash.com/photos/rome-colosseum')">
+                            <img src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=200&h=200&fit=crop" alt="Roma - Colosseo" class="w-full h-full object-cover">
+                        </div>
+                        <div class="aspect-square rounded-lg overflow-hidden bg-gray-700 cursor-pointer" onclick="openExternalLink('https://unsplash.com/photos/florence-duomo')">
+                            <img src="https://images.unsplash.com/photo-1601985843082-5e1ecdf71b71?w=200&h=200&fit=crop" alt="Firenze - Duomo" class="w-full h-full object-cover">
+                        </div>
+                        <div class="aspect-square rounded-lg overflow-hidden bg-gray-700 cursor-pointer" onclick="openExternalLink('https://unsplash.com/photos/venice-san-marco')">
+                            <img src="https://images.unsplash.com/photo-1523906921802-b5d2d899e93b?w=200&h=200&fit=crop" alt="Venezia - San Marco" class="w-full h-full object-cover">
+                        </div>
+                        <div class="aspect-square rounded-lg overflow-hidden bg-gray-700 cursor-pointer" onclick="openExternalLink('https://unsplash.com/photos/milan-duomo')">
+                            <img src="https://images.unsplash.com/photo-1543832923-44667a5ab6ea?w=200&h=200&fit=crop" alt="Milano - Duomo" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-xs text-center mb-4">
+                        Esplora le bellezze d'Italia. Clicca sulle immagini per vederle a grandezza reale.
+                    </p>
+                    <button onclick="window.location.href='/planner'" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium">
+                        Pianifica un Viaggio
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Open external link in new tab
+        function openExternalLink(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        // Reopen a saved route
+        function reopenRoute(routeId) {
+            if (!routeId) {
+                window.location.href = '/planner';
+                return;
+            }
+            
+            try {
+                const routes = JSON.parse(localStorage.getItem('viamigo_route_history') || '[]');
+                const route = routes.find(r => r.id === routeId);
+                
+                if (route) {
+                    // Store the route data for the planner to pick up
+                    localStorage.setItem('viamigo_restore_route', JSON.stringify(route));
+                    window.location.href = '/planner?restore=' + routeId;
+                } else {
+                    window.location.href = '/planner';
+                }
+            } catch (error) {
+                console.error('Error reopening route:', error);
+                window.location.href = '/planner';
+            }
+        }
+
         async function logout() {
             try {
                 const response = await fetch('/auth/logout', {

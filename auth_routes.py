@@ -1,13 +1,19 @@
-from flask_app import db
 from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template_string, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
-from models import User
 import uuid
 import re
 
 # Blueprint per routes di autenticazione
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+# Import db from flask_app after defining blueprint to avoid circular import
+
+
+def get_db():
+    """Get database instance"""
+    from flask_app import db
+    return db
 
 
 @auth_bp.route('/check-session')
@@ -24,11 +30,15 @@ def check_session():
 
 def get_db_session():
     """Helper per ottenere sessione database"""
-    from flask_app import db
-    return db
+    return get_db()
+
+# Import models here to avoid circular import
 
 
-# Import globale per db
+def get_user_model():
+    """Get User model"""
+    from models import User
+    return User
 
 
 def validate_password(password):

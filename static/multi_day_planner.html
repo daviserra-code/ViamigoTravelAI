@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViamigoAI - Pianificazione Multi-giorno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .viamigo-font { font-family: 'Poppins', sans-serif; background: linear-gradient(to right, #a78bfa, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .day-card { transition: all 0.3s ease; }
+        .day-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3); }
+        .place-item { transition: all 0.2s ease; }
+        .place-item:hover { background-color: rgba(139, 92, 246, 0.1); }
+        .weather-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .crowd-indicator { height: 6px; border-radius: 3px; transition: all 0.3s ease; }
+        .crowd-low { background-color: #10b981; }
+        .crowd-medium { background-color: #f59e0b; }
+        .crowd-high { background-color: #ef4444; }
+        .optimization-badge { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        .timeline { position: relative; }
+        .timeline::before { content: ''; position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #8b5cf6, #a78bfa); }
+        .timeline-item { position: relative; padding-left: 50px; margin-bottom: 2rem; }
+        .timeline-dot { position: absolute; left: 11px; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: #8b5cf6; border: 3px solid #111827; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold viamigo-font">ViamigoAI</h1>
+                    <span class="ml-3 text-gray-400">Pianificazione Multi-giorno</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="save-itinerary" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Salva Itinerario
+                    </button>
+                    <button id="back-home" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Planning Controls -->
+        <div class="bg-gray-800 rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6">🧠 Configurazione Viaggio AI</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Destination & Days -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Destinazione Principale</label>
+                        <input type="text" id="destination" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" placeholder="es. Roma, Milano..." value="Roma">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Numero di Giorni</label>
+                        <select id="days-count" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                            <option value="1">1 Giorno</option>
+                            <option value="2" selected>2 Giorni</option>
+                            <option value="3">3 Giorni</option>
+                            <option value="4">4 Giorni</option>
+                            <option value="5">5 Giorni</option>
+                            <option value="7">1 Settimana</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Interessi Principali</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" class="interest-checkbox mr-2" value="Arte" checked> Arte
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" class="interest-checkbox mr-2" value="Cibo"> Cibo
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" class="interest-checkbox mr-2" value="Storia" checked> Storia
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" class="interest-checkbox mr-2" value="Natura"> Natura
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Ritmo di Viaggio</label>
+                        <select id="travel-pace" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                            <option value="Rilassato">Rilassato</option>
+                            <option value="Moderato" selected>Moderato</option>
+                            <option value="Intenso">Intenso</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- AI Options -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Ottimizzazioni AI</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" id="weather-optimization" class="mr-2" checked> Considera Meteo
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" id="crowd-optimization" class="mr-2" checked> Evita Affollamenti
+                            </label>
+                            <label class="flex items-center text-sm">
+                                <input type="checkbox" id="distance-optimization" class="mr-2" checked> Ottimizza Distanze
+                            </label>
+                        </div>
+                    </div>
+                    <button id="generate-itinerary" class="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 optimization-badge">
+                        🚀 Genera Itinerario AI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather & Context Info -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div id="weather-card" class="weather-card rounded-xl p-6 text-white">
+                <h3 class="text-lg font-semibold mb-3">🌤️ Meteo</h3>
+                <div id="weather-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold">--°C</div>
+                            <div class="text-sm opacity-80">Caricamento...</div>
+                        </div>
+                        <div class="text-4xl">☀️</div>
+                    </div>
+                    <div class="mt-3 text-sm opacity-80">
+                        Consiglio: In aggiornamento...
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold mb-3">📍 Info Destinazione</h3>
+                <div id="destination-info">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Luoghi disponibili:</span>
+                            <span class="font-semibold">9,930+</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Città coperte:</span>
+                            <span class="font-semibold">56</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">AI Enabled:</span>
+                            <span class="text-green-400 font-semibold">✓ Attivo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-xl p-6">
+                <h3 class="text-lg font-semibold mb-3">⚡ Ottimizzazioni</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400 text-sm">Meteo considerato</span>
+                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400 text-sm">Affollamenti analizzati</span>
+                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400 text-sm">Distanze ottimizzate</span>
+                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Day Itinerary -->
+        <div id="itinerary-container" class="space-y-8">
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">🗺️</div>
+                <h3 class="text-xl font-semibold mb-2">Pronto per l'Avventura?</h3>
+                <p class="text-gray-400 mb-6">Clicca "Genera Itinerario AI" per creare il tuo viaggio perfetto</p>
+                <div class="flex justify-center items-center space-x-4 text-sm text-gray-500">
+                    <span>✨ Personalizzato</span>
+                    <span>•</span>
+                    <span>🧠 AI-Powered</span>
+                    <span>•</span>
+                    <span>📱 Mobile-Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-xl p-8 max-w-md text-center">
+                <div class="text-6xl mb-4">🧠</div>
+                <h3 class="text-xl font-semibold mb-2">AI al Lavoro...</h3>
+                <p class="text-gray-400 mb-6">Ottimizzando il tuo itinerario perfetto</p>
+                <div class="flex justify-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
+                </div>
+                <div class="mt-4 text-sm text-gray-500">
+                    Considerando meteo, affollamenti e le tue preferenze...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ViamigoMultiDayPlanner {
+            constructor() {
+                this.currentItinerary = null;
+                this.weatherData = null;
+                this.initializeEventListeners();
+                this.loadWeatherData();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('generate-itinerary').addEventListener('click', () => {
+                    this.generateItinerary();
+                });
+
+                document.getElementById('save-itinerary').addEventListener('click', () => {
+                    this.saveItinerary();
+                });
+
+                document.getElementById('back-home').addEventListener('click', () => {
+                    window.location.href = '/static/index.html';
+                });
+            }
+
+            async loadWeatherData() {
+                try {
+                    const destination = document.getElementById('destination').value;
+                    const response = await fetch(`/api/ai/weather/${destination}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.weatherData = data.weather;
+                        this.updateWeatherDisplay(data.weather);
+                    }
+                } catch (error) {
+                    console.error('Weather loading error:', error);
+                }
+            }
+
+            updateWeatherDisplay(weather) {
+                const weatherContent = document.getElementById('weather-content');
+                const temp = Math.round(weather.temperature);
+                const emoji = this.getWeatherEmoji(weather.description);
+                
+                weatherContent.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold">${temp}°C</div>
+                            <div class="text-sm opacity-80">${weather.description}</div>
+                        </div>
+                        <div class="text-4xl">${emoji}</div>
+                    </div>
+                    <div class="mt-3 text-sm opacity-80">
+                        ${weather.recommendation}
+                    </div>
+                `;
+            }
+
+            getWeatherEmoji(description) {
+                const desc = description.toLowerCase();
+                if (desc.includes('sun') || desc.includes('clear') || desc.includes('sole')) return '☀️';
+                if (desc.includes('cloud') || desc.includes('nuvo')) return '☁️';
+                if (desc.includes('rain') || desc.includes('pioggia')) return '🌧️';
+                if (desc.includes('snow') || desc.includes('neve')) return '❄️';
+                return '🌤️';
+            }
+
+            async generateItinerary() {
+                this.showLoading(true);
+                
+                try {
+                    // Collect user preferences
+                    const preferences = this.collectUserPreferences();
+                    const destination = document.getElementById('destination').value;
+                    const days = parseInt(document.getElementById('days-count').value);
+
+                    // Get personalized recommendations first
+                    const recommendationsResponse = await fetch('/api/ai/recommendations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            preferences: preferences,
+                            location: destination,
+                            limit: days * 4 // 4 places per day average
+                        })
+                    });
+
+                    if (!recommendationsResponse.ok) throw new Error('Recommendations failed');
+                    
+                    const recommendationsData = await recommendationsResponse.json();
+                    const places = recommendationsData.recommendations;
+
+                    // Optimize itinerary
+                    const optimizationResponse = await fetch('/api/ai/itinerary/optimize', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            places: places,
+                            days: days,
+                            preferences: preferences,
+                            start_location: destination
+                        })
+                    });
+
+                    if (!optimizationResponse.ok) throw new Error('Optimization failed');
+                    
+                    const itineraryData = await optimizationResponse.json();
+                    this.currentItinerary = itineraryData.optimized_itinerary;
+                    
+                    await this.displayItinerary(this.currentItinerary);
+                    
+                } catch (error) {
+                    console.error('Itinerary generation error:', error);
+                    this.showError('Errore nella generazione dell\'itinerario. Riprova.');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            collectUserPreferences() {
+                const interests = Array.from(document.querySelectorAll('.interest-checkbox:checked'))
+                    .map(cb => cb.value);
+                
+                return {
+                    interests: interests,
+                    pace: document.getElementById('travel-pace').value,
+                    weather_optimization: document.getElementById('weather-optimization').checked,
+                    crowd_optimization: document.getElementById('crowd-optimization').checked,
+                    distance_optimization: document.getElementById('distance-optimization').checked
+                };
+            }
+
+            async displayItinerary(itinerary) {
+                const container = document.getElementById('itinerary-container');
+                container.innerHTML = '';
+
+                // Itinerary header
+                const header = document.createElement('div');
+                header.className = 'bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl p-6 text-white mb-8';
+                header.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2">🎯 Il Tuo Itinerario Ottimizzato</h2>
+                    <p class="opacity-90">Generato con AI per ${Object.keys(itinerary).length} giorni a ${document.getElementById('destination').value}</p>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">✨ Personalizzato</span>
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">🌤️ Meteo Considerato</span>
+                        <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">👥 Affollamenti Analizzati</span>
+                    </div>
+                `;
+                container.appendChild(header);
+
+                // Display each day
+                for (const [dayKey, dayData] of Object.entries(itinerary)) {
+                    const dayNumber = dayKey.replace('day_', '');
+                    const dayCard = await this.createDayCard(dayNumber, dayData);
+                    container.appendChild(dayCard);
+                }
+            }
+
+            async createDayCard(dayNumber, dayData) {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'bg-gray-800 rounded-xl p-6 day-card';
+                
+                // Get crowd predictions for the day
+                let crowdInfo = '';
+                try {
+                    const firstPlace = dayData.places[0];
+                    if (firstPlace) {
+                        const crowdResponse = await fetch(`/api/ai/crowds/${firstPlace.name}`);
+                        if (crowdResponse.ok) {
+                            const crowdData = await crowdResponse.json();
+                            crowdInfo = this.formatCrowdInfo(crowdData);
+                        }
+                    }
+                } catch (error) {
+                    console.log('Crowd data not available');
+                }
+
+                dayCard.innerHTML = `
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold">📅 Giorno ${dayNumber}</h3>
+                        <div class="flex items-center space-x-4 text-sm text-gray-400">
+                            <span>${dayData.estimated_duration}</span>
+                            <span>Start: ${dayData.recommended_start_time}</span>
+                        </div>
+                    </div>
+                    
+                    ${dayData.weather_advice ? `
+                        <div class="bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg p-3 mb-4">
+                            <p class="text-sm">🌤️ ${dayData.weather_advice}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${crowdInfo}
+                    
+                    <div class="timeline">
+                        ${dayData.places.map((place, index) => this.createPlaceItem(place, index)).join('')}
+                    </div>
+                `;
+
+                return dayCard;
+            }
+
+            createPlaceItem(place, index) {
+                const relevanceScore = Math.round((place.relevance_score || 0.5) * 100);
+                const matchingPrefs = place.user_preferences_match || [];
+                
+                return `
+                    <div class="timeline-item place-item rounded-lg p-4 bg-gray-700 bg-opacity-50 hover:bg-opacity-70 transition-all">
+                        <div class="timeline-dot"></div>
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-lg">${place.name}</h4>
+                                <p class="text-gray-400 text-sm mb-2">${place.city}</p>
+                                
+                                ${place.reason ? `
+                                    <p class="text-gray-300 text-sm mb-3">${place.reason}</p>
+                                ` : ''}
+                                
+                                <div class="flex flex-wrap gap-2 mb-3">
+                                    ${matchingPrefs.map(pref => `
+                                        <span class="bg-violet-600 bg-opacity-30 text-violet-300 px-2 py-1 rounded-full text-xs">
+                                            ${pref}
+                                        </span>
+                                    `).join('')}
+                                    <span class="bg-gray-600 text-gray-300 px-2 py-1 rounded-full text-xs">
+                                        ${relevanceScore}% Match
+                                    </span>
+                                </div>
+                                
+                                ${place.optimal_visit_time ? `
+                                    <div class="text-xs text-green-400">
+                                        ⏰ Orario ottimale: ${place.optimal_visit_time}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="ml-4 text-right">
+                                <div class="text-sm text-gray-400">Tappa ${index + 1}</div>
+                                <button class="mt-2 text-violet-400 hover:text-violet-300 text-sm">
+                                    Dettagli →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            formatCrowdInfo(crowdData) {
+                const currentLevel = crowdData.current_crowd_level;
+                const levelText = currentLevel <= 2 ? 'Basso' : currentLevel <= 3 ? 'Medio' : 'Alto';
+                const levelColor = currentLevel <= 2 ? 'green' : currentLevel <= 3 ? 'yellow' : 'red';
+                
+                return `
+                    <div class="bg-gray-700 rounded-lg p-3 mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-400">Affollamento Previsto</span>
+                            <span class="text-sm font-semibold text-${levelColor}-400">${levelText}</span>
+                        </div>
+                        <div class="crowd-indicator crowd-${levelColor === 'yellow' ? 'medium' : levelColor === 'red' ? 'high' : 'low'}" style="width: ${currentLevel * 20}%"></div>
+                        ${crowdData.best_visit_times.length > 0 ? `
+                            <div class="text-xs text-gray-400 mt-2">
+                                Orari migliori: ${crowdData.best_visit_times.slice(0, 2).join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            showLoading(show) {
+                const loadingState = document.getElementById('loading-state');
+                loadingState.classList.toggle('hidden', !show);
+            }
+
+            showError(message) {
+                // Simple error display - could be enhanced
+                alert(message);
+            }
+
+            async saveItinerary() {
+                if (!this.currentItinerary) {
+                    alert('Genera prima un itinerario da salvare!');
+                    return;
+                }
+
+                try {
+                    // Here you would implement saving to backend/localStorage
+                    const itineraryData = {
+                        id: Date.now().toString(),
+                        destination: document.getElementById('destination').value,
+                        days: document.getElementById('days-count').value,
+                        itinerary: this.currentItinerary,
+                        created_at: new Date().toISOString()
+                    };
+
+                    // Save to localStorage for now
+                    const savedItineraries = JSON.parse(localStorage.getItem('viamigo_itineraries') || '[]');
+                    savedItineraries.push(itineraryData);
+                    localStorage.setItem('viamigo_itineraries', JSON.stringify(savedItineraries));
+
+                    alert('✅ Itinerario salvato con successo!');
+                    
+                } catch (error) {
+                    console.error('Save error:', error);
+                    alert('❌ Errore nel salvataggio. Riprova.');
+                }
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.multiDayPlanner = new ViamigoMultiDayPlanner();
+        });
+    </script>
+</body>
+</html>
