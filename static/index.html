@@ -646,6 +646,19 @@
 
         // --- RILEVA CITTÀ DALL'ITINERARIO ---
         function detectCityFromItinerary(itineraryData) {
+            // 🚀 PRIORITY: Use coordinates from actual itinerary data!
+            if (itineraryData && itineraryData.length > 0) {
+                const firstStop = itineraryData[0];
+                if (firstStop.latitude && firstStop.longitude) {
+                    console.log(`🗺️ Using coordinates from itinerary: [${firstStop.latitude}, ${firstStop.longitude}]`);
+                    return { lat: firstStop.latitude, lng: firstStop.longitude };
+                }
+                if (firstStop.lat && firstStop.lng) {
+                    console.log(`🗺️ Using coordinates from itinerary: [${firstStop.lat}, ${firstStop.lng}]`);
+                    return { lat: firstStop.lat, lng: firstStop.lng };
+                }
+            }
+            
             const cityCoordinates = {
                 // 🗽 NYC PRIORITY!
                 'new york': { lat: 40.7589, lng: -73.9851 },
@@ -806,10 +819,19 @@
 
                     // Usa le coordinate dal backend (formato lat/lon) se disponibili
                     let lat, lng;
-                    if (item.lat && item.lon) {
+                    // 🚀 PRIORITY: Check latitude/longitude first (from intelligent router)
+                    if (item.latitude && item.longitude) {
+                        lat = item.latitude;
+                        lng = item.longitude;
+                        console.log(`✓ Coordinate dal backend (latitude/longitude) per ${item.title}: ${lat}, ${lng}`);
+                    } else if (item.lat && item.lng) {
+                        lat = item.lat;
+                        lng = item.lng;
+                        console.log(`✓ Coordinate dal backend (lat/lng) per ${item.title}: ${lat}, ${lng}`);
+                    } else if (item.lat && item.lon) {
                         lat = item.lat;
                         lng = item.lon;
-                        console.log(`✓ Coordinate dal backend per ${item.title}: ${lat}, ${lng}`);
+                        console.log(`✓ Coordinate dal backend (lat/lon) per ${item.title}: ${lat}, ${lng}`);
                     } else if (item.coordinates && Array.isArray(item.coordinates) && item.coordinates.length === 2) {
                         // Formato array [lat, lng] dal backend
                         lat = item.coordinates[0];
