@@ -284,12 +284,14 @@ class AICompanionEngine:
             if current_itinerary and len(current_itinerary) > 0:
                 for stop in current_itinerary:
                     # Extract stop name from different possible fields
-                    stop_name = stop.get('title') or stop.get('name') or stop.get('place', '')
+                    stop_name = stop.get('title') or stop.get(
+                        'name') or stop.get('place', '')
                     if stop_name:
                         current_stop_names.append(stop_name.strip())
-            
-            stops_to_exclude = ', '.join(current_stop_names) if current_stop_names else "nessuna"
-            
+
+            stops_to_exclude = ', '.join(
+                current_stop_names) if current_stop_names else "nessuna"
+
             print(f"🧠 RAG: Injected {city_name} context into Piano B prompt")
             print(f"🏨 PATH C: Added hotel reviews for {city_name}")
             print(f"🚫 EXCLUDING current stops: {stops_to_exclude}")
@@ -617,34 +619,24 @@ def ai_piano_b():
         Rispondi in JSON valido con array "alternative_plans".
         """
 
-        # Call OpenAI with enhanced error handling
-        response = requests.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers={
-                'Authorization': f'Bearer {openai_api_key}',
-                'Content-Type': 'application/json'
-            },
-            json={
-                'model': 'gpt-4',  # Will upgrade to gpt-5 when available
-                'messages': [{'role': 'user', 'content': prompt}],
-                'max_tokens': 2000,
-                'temperature': 0.8
-            },
-            timeout=60  # Increased timeout for GPT-4
+        # Use OpenAI client directly (works within Flask context)
+        response = openai_client.chat.completions.create(
+            model='gpt-4',
+            messages=[{'role': 'user', 'content': prompt}],
+            max_tokens=2000,
+            temperature=0.8,
+            timeout=60
         )
 
-        response.raise_for_status()  # Raise an exception for bad status codes
-        result = response.json()
-
-        # Extract and parse the relevant part of the response
-        # Assuming the AI returns a JSON object with 'choices' like OpenAI API
-        if 'choices' in result and result['choices']:
-            content = result['choices'][0]['message']['content']
+        # Extract and parse the response
+        if response.choices:
+            content = response.choices[0].message.content
             # The content is expected to be a JSON string
             return jsonify(json.loads(content))
         else:
             # Handle cases where the response structure is unexpected
             return jsonify({'error': 'Unexpected response structure from OpenAI'}), 500
+
 
     except requests.exceptions.Timeout:
         print("⚠️ OpenAI API call timed out.")

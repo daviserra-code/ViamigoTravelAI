@@ -34,18 +34,18 @@ class IntelligentImageClassifier:
         try:
             # Stage 1: PostgreSQL Database Lookup
             db_result = self._query_database(title, context)
-            if db_result and db_result['confidence'] >= 0.8:
+            if db_result and db_result.get('classification', {}).get('confidence', 0) >= 0.8:
                 return db_result
             
             # Stage 2: Semantic Search with ChromaDB
             semantic_result = self._semantic_search(title, context)
-            if semantic_result and semantic_result['confidence'] >= 0.7:
+            if semantic_result and semantic_result.get('classification', {}).get('confidence', 0) >= 0.7:
                 return semantic_result
                 
             # Stage 3: Apify Real-time Data
             if self.apify.is_available():
                 apify_result = self._query_apify(title, context)
-                if apify_result and apify_result['confidence'] >= 0.6:
+                if apify_result and apify_result.get('classification', {}).get('confidence', 0) >= 0.6:
                     return apify_result
             
             # Stage 4: Legacy classifier as fallback

@@ -1101,6 +1101,11 @@
                     // Create unique identifier for this attraction
                     const attractionId = `attraction-${Math.random().toString(36).substr(2, 9)}`;
 
+                    // 🖼️ USE IMAGE FROM BACKEND IF AVAILABLE!
+                    const imageHTML = item.image_url 
+                        ? `<img src="${item.image_url}" alt="${item.title}" class="w-full h-full object-cover" loading="lazy">`
+                        : `<div class="w-full h-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-lg">${getAttractionIcon(item.title)}</div>`;
+                    
                     timelineContainer.innerHTML += `
                         <div class="timeline-item relative pb-8 ${triggerClass}">
                             <div class="dot bg-gray-500"></div>
@@ -1108,11 +1113,8 @@
                                 <div class="flex-grow">
                                     <div class="flex items-center space-x-3 mb-2">
                                         <div id="${attractionId}" class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 attraction-image" 
-                                             data-title="${item.title}" data-context="${item.context}">
-                                            <!-- Image will be loaded here, no gray background initially -->
-                                            <div class="w-full h-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-lg">
-                                                ${getAttractionIcon(item.title)}
-                                            </div>
+                                             data-title="${item.title}" data-context="${item.context}" data-image-url="${item.image_url || ''}">
+                                            ${imageHTML}
                                         </div>
                                         <div class="flex-grow">
                                             <p class="text-xs text-gray-400 mb-1">${item.time}</p>
@@ -1526,14 +1528,23 @@
         async function loadTimelineImagesAsync() {
             const imageElements = document.querySelectorAll('.attraction-image[data-title][data-context]');
             
-            // Load all images in parallel
-            const promises = Array.from(imageElements).map(element => 
-                loadEnhancedImageForElement(element, element.dataset.title, element.dataset.context)
-            );
+            // Load all images in parallel, but SKIP elements that already have backend images
+            const promises = Array.from(imageElements)
+                .filter(element => !element.dataset.imageUrl) // Only load if no backend image
+                .map(element => 
+                    loadEnhancedImageForElement(element, element.dataset.title, element.dataset.context)
+                );
+            
+            const skipped = imageElements.length - promises.length;
+            if (skipped > 0) {
+                console.log(`✅ Using ${skipped} images from backend (comprehensive_attractions)`);
+            }
             
             try {
-                await Promise.allSettled(promises);
-                console.log(`✅ Loaded enhanced images for ${imageElements.length} attractions`);
+                if (promises.length > 0) {
+                    await Promise.allSettled(promises);
+                    console.log(`✅ Loaded enhanced images for ${promises.length} attractions (via image classifier)`);
+                }
             } catch (error) {
                 console.warn('⚠️ Some timeline images failed to load:', error);
             }
