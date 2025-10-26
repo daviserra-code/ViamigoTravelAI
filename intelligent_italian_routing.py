@@ -161,58 +161,127 @@ class IntelligentItalianRouter:
                     category_filter = "AND (" + \
                         " OR ".join(category_conditions) + ")"
 
-                # 🖼️ comprehensive_attractions has 1,554 images including 76 for Torino!
+                # 🇮🇹 DUAL-TABLE STRATEGY: Query BOTH comprehensive_attractions AND comprehensive_attractions_italy
+                # comprehensive_attractions: city-based (Roma, Torino, etc.) - 11,723 rows
+                # comprehensive_attractions_italy: region-based (Lombardia, Toscana, etc.) - 14,172 rows
+
+                # Map cities to regions for comprehensive_attractions_italy
+                city_to_region = {
+                    'milano': 'Lombardia',
+                    'milan': 'Lombardia',
+                    'firenze': 'Toscana',
+                    'florence': 'Toscana',
+                    'roma': 'Lazio',
+                    'rome': 'Lazio',
+                    'napoli': 'Campania',
+                    'naples': 'Campania',
+                    'venezia': 'Veneto',
+                    'venice': 'Veneto',
+                    'torino': 'Piemonte',
+                    'turin': 'Piemonte',
+                    'genova': 'Liguria',
+                    'genoa': 'Liguria',
+                    'bologna': 'Emilia Romagna',
+                    'palermo': 'Sicilia',
+                    'bari': 'Puglia',
+                    'verona': 'Veneto'
+                }
+
+                region_name = city_to_region.get(city_name.lower(), city_name)
+
+                # 🔄 UNION query: Search both tables and merge results
                 # JOIN with attraction_images to utilize the 932 new images!
-                # Priority: attraction_images (high-quality) > comprehensive_attractions (wikimedia)
                 query = f"""
-                    SELECT 
-                        ca.name, 
-                        ca.city, 
-                        ca.category, 
-                        ca.description, 
-                        ca.latitude, 
-                        ca.longitude, 
-                        COALESCE(ai.original_url, ai.thumb_url, ca.image_url) as image_url,
-                        ca.wikidata_id,
-                        ai.source as ai_source,
-                        ai.confidence_score
-                    FROM comprehensive_attractions ca
-                    LEFT JOIN attraction_images ai
-                        ON LOWER(ca.city) = LOWER(ai.city)
-                        AND (
-                            LOWER(ca.name) LIKE '%%' || LOWER(ai.attraction_name) || '%%'
-                            OR LOWER(ai.attraction_name) LIKE '%%' || LOWER(ca.name) || '%%'
-                        )
-                        AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
-                    WHERE LOWER(ca.city) = LOWER(%s)
-                      AND ca.latitude IS NOT NULL
-                      AND ca.longitude IS NOT NULL
-                      {category_filter}
+                    SELECT * FROM (
+                        -- Table 1: comprehensive_attractions (city-based)
+                        SELECT 
+                            ca.name, 
+                            ca.city, 
+                            ca.category, 
+                            ca.description, 
+                            ca.latitude, 
+                            ca.longitude, 
+                            COALESCE(ai.original_url, ai.thumb_url, ca.image_url) as image_url,
+                            ca.wikidata_id,
+                            ai.source as ai_source,
+                            ai.confidence_score,
+                            'comprehensive_attractions' as table_source
+                        FROM comprehensive_attractions ca
+                        LEFT JOIN attraction_images ai
+                            ON LOWER(ca.city) = LOWER(ai.city)
+                            AND (
+                                LOWER(ca.name) LIKE '%%' || LOWER(ai.attraction_name) || '%%'
+                                OR LOWER(ai.attraction_name) LIKE '%%' || LOWER(ca.name) || '%%'
+                            )
+                            AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
+                        WHERE LOWER(ca.city) = LOWER(%s)
+                          AND ca.latitude IS NOT NULL
+                          AND ca.longitude IS NOT NULL
+                          {category_filter}
+                        
+                        UNION ALL
+                        
+                        -- Table 2: comprehensive_attractions_italy (region-based)
+                        SELECT 
+                            cai.name,
+                            cai.city as region,
+                            cai.category,
+                            cai.description,
+                            cai.latitude,
+                            cai.longitude,
+                            COALESCE(ai.original_url, ai.thumb_url, cai.image_thumb_url, cai.image_original_url) as image_url,
+                            cai.wikidata,
+                            ai.source as ai_source,
+                            ai.confidence_score,
+                            'comprehensive_attractions_italy' as table_source
+                        FROM comprehensive_attractions_italy cai
+                        LEFT JOIN attraction_images ai
+                            ON LOWER(ai.city) = LOWER(%s)
+                            AND (
+                                LOWER(cai.name) LIKE '%%' || LOWER(ai.attraction_name) || '%%'
+                                OR LOWER(ai.attraction_name) LIKE '%%' || LOWER(cai.name) || '%%'
+                            )
+                            AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
+                        WHERE cai.city = %s
+                          AND cai.latitude IS NOT NULL
+                          AND cai.longitude IS NOT NULL
+                          {category_filter.replace('ca.', 'cai.')}
+                    ) combined_results
                     ORDER BY 
-                        CASE WHEN ai.original_url IS NOT NULL THEN 1 
-                             WHEN ca.image_url IS NOT NULL THEN 2 
+                        CASE WHEN ai_source IS NOT NULL THEN 1 
+                             WHEN image_url IS NOT NULL THEN 2 
                              ELSE 3 END,
                         RANDOM()
                     LIMIT %s
                 """
 
-                cursor.execute(query, (city_name, 12 - len(attractions)))
+                cursor.execute(query, (city_name, city_name,
+                               region_name, 12 - len(attractions)))
                 db_results = cursor.fetchall()
 
                 print(
                     f"🖼️ Database query returned {len(db_results)} results for {city_name}")
 
                 for row in db_results:
-                    # Defensive unpacking: handle variable column count
+                    # Defensive unpacking: UNION query returns 11 columns now (added table_source)
                     if len(row) >= 8:
-                        name, city, category, description, lat, lng, image_url, wikidata_id = row[:8]
+                        name, city_or_region, category, description, lat, lng, image_url, wikidata_id = row[
+                            :8]
                         ai_source = row[8] if len(row) > 8 else None
                         confidence = row[9] if len(row) > 9 else None
-                        
-                        img_source = 'attraction_images' if ai_source else ('comprehensive_attractions' if image_url else 'none')
-                        
+                        table_source = row[10] if len(row) > 10 else 'unknown'
+
+                        # Determine final image source for tracking
+                        if ai_source:
+                            img_source = f'attraction_images+{table_source}'
+                        elif image_url:
+                            img_source = table_source
+                        else:
+                            img_source = 'none'
+
                         if image_url:
-                            print(f"✅ {name}: Has image (source: {img_source})")
+                            print(
+                                f"✅ {name}: Has image (source: {img_source})")
                         else:
                             print(f"⚠️ {name}: NO IMAGE")
 
@@ -228,7 +297,8 @@ class IntelligentItalianRouter:
                                 'source': img_source
                             })
                     else:
-                        print(f"⚠️ Skipping row with unexpected column count: {len(row)}")
+                        print(
+                            f"⚠️ Skipping row with unexpected column count: {len(row)}")
 
             cursor.close()
             conn.close()
