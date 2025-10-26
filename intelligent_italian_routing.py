@@ -330,7 +330,8 @@ class IntelligentItalianRouter:
                     'lng': attraction['longitude'],
                     'type': 'transport',
                     'context': f"walk_to_{self._clean_name(attraction['name'])}_{city_name.lower()}",
-                    'transport': 'walking'
+                    'transport': 'walking',
+                    'image_url': None  # 🚫 NO IMAGES FOR TRANSIT
                 })
 
             # Add attraction visit
@@ -350,7 +351,7 @@ class IntelligentItalianRouter:
                 'lng': attraction['longitude'],
                 'type': 'activity',
                 'context': f"{self._clean_name(attraction['name'])}_{city_name.lower()}",
-                'image_url': attraction.get('image_url'),
+                'image_url': attraction.get('image_url'),  # ✅ IMAGES FOR ACTIVITIES ONLY
                 'category': attraction.get('category', 'attraction'),
                 'source': attraction.get('source')
             })
@@ -369,7 +370,8 @@ class IntelligentItalianRouter:
                 'lng': end_attraction['longitude'],
                 'type': 'transport',
                 'context': f"walk_to_{self._clean_name(end_attraction['name'])}_{city_name.lower()}",
-                'transport': 'walking'
+                'transport': 'walking',
+                'image_url': None  # 🚫 NO IMAGES FOR TRANSIT
             })
 
             current_time += 1.0
@@ -384,7 +386,7 @@ class IntelligentItalianRouter:
                 'lng': end_attraction['longitude'],
                 'type': 'destination',
                 'context': f"{self._clean_name(end_attraction['name'])}_{city_name.lower()}",
-                'image_url': end_attraction.get('image_url'),
+                'image_url': end_attraction.get('image_url'),  # ✅ IMAGES FOR DESTINATIONS
                 'category': end_attraction.get('category', 'destination')
             })
         elif end != start:  # End location different from start

@@ -664,7 +664,7 @@ def ai_piano_b():
     ]
 })
 def ai_scoperte():
-    """Generate intelligent discoveries"""
+    """Generate intelligent discoveries using ChromaDB + real database"""
     try:
         data = request.get_json()
         user_interests = data.get('interests', ['arte', 'cibo'])
@@ -674,49 +674,93 @@ def ai_scoperte():
         print(
             f"🔍 Generating discoveries for {city} based on interests: {user_interests}")
 
+        # 🎯 GET REAL CONTEXT FROM CHROMADB
+        real_context = ""
+        try:
+            city_context = get_city_context_prompt(city, limit=5)
+            if city_context:
+                real_context = f"\n\n🗺️ CONTESTO REALE {city.upper()} (da ChromaDB):\n{city_context}\n"
+                print(f"✅ ChromaDB context loaded for {city}")
+            else:
+                print(f"⚠️ No ChromaDB context for {city}")
+        except Exception as e:
+            print(f"⚠️ ChromaDB query failed: {e}")
+        
+        # 🎯 GET REAL ATTRACTIONS FROM DATABASE
+        real_attractions = []
+        try:
+            import psycopg2
+            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            cur = conn.cursor()
+            
+            # Query for unique, interesting places
+            cur.execute("""
+                SELECT DISTINCT name, category, description
+                FROM comprehensive_attractions
+                WHERE LOWER(city) = LOWER(%s)
+                  AND description IS NOT NULL
+                  AND description != ''
+                ORDER BY RANDOM()
+                LIMIT 10
+            """, (city,))
+            
+            results = cur.fetchall()
+            for name, category, desc in results:
+                real_attractions.append(f"- {name}: {desc[:100]}")
+            
+            conn.close()
+            
+            if real_attractions:
+                real_context += f"\n\n🏛️ ATTRAZIONI REALI {city.upper()}:\n" + "\n".join(real_attractions[:8])
+                print(f"✅ Found {len(real_attractions)} real attractions for {city}")
+        except Exception as e:
+            print(f"⚠️ Database query failed: {e}")
+
         prompt = f"""
         SCOPERTE INTELLIGENTI - {city}
 
         Interessi utente: {', '.join(user_interests)}
         Posizione attuale: {current_location}
+        {real_context}
 
-        Trova 5 scoperte autentiche vicine:
-        1. GEMMA NASCOSTA: Luogo poco turistico ma affascinante
-        2. ESPERIENZA LOCALE: Attività che fanno solo i locals
-        3. CURIOSITÀ STORICA: Fatto interessante sul posto
-        4. FOTO PERFETTA: Spot Instagram poco conosciuto
-        5. ASSAGGIO AUTENTICO: Cibo/drink tipico del quartiere
+        🎯 REGOLE CRITICHE:
+        1. USA SOLO luoghi REALI menzionati nel contesto sopra
+        2. NON inventare nomi di posti - VERIFICA che esistano nel contesto
+        3. Ogni scoperta deve essere UNICA e SPECIFICA per {city}
+        4. Se il contesto menziona un posto, USA IL NOME ESATTO
+        5. NON ripetere scoperte generiche
+
+        Trova 5 scoperte autentiche:
+        1. GEMMA NASCOSTA: Luogo poco turistico ma affascinante (USA NOME REALE dal contesto)
+        2. ESPERIENZA LOCALE: Attività che fanno solo i locals (SPECIFICA per {city})
+        3. CURIOSITÀ STORICA: Fatto interessante VERIFICABILE (dal contesto ChromaDB)
+        4. FOTO PERFETTA: Spot Instagram poco conosciuto (NOME REALE)
+        5. ASSAGGIO AUTENTICO: Cibo/drink tipico di {city} (NON generico)
 
         Per ogni scoperta includi:
-        - Nome e descrizione (max 100 caratteri)
+        - Nome ESATTO (dal contesto reale)
+        - Descrizione (max 100 caratteri)
         - Perché è speciale
         - Come raggiungerla
         - Costo/gratuito
         - Orario migliore
 
+        VERIFICA: Ogni nome deve apparire nel contesto reale sopra!
+        
         Rispondi in JSON valido con array "discoveries".
         """
 
-        # Call OpenAI with enhanced error handling
-        response = requests.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers={
-                'Authorization': f'Bearer {openai_api_key}',
-                'Content-Type': 'application/json'
-            },
-            json={
-                'model': 'gpt-4',
-                'messages': [{'role': 'user', 'content': prompt}],
-                'max_tokens': 1500,
-                'temperature': 0.9
-            },
-            timeout=60  # Increased timeout
+        # Use OpenAI client directly (Flask context safe)
+        response = openai_client.chat.completions.create(
+            model='gpt-4',
+            messages=[{'role': 'user', 'content': prompt}],
+            max_tokens=1500,
+            temperature=0.9,
+            timeout=60
         )
-        response.raise_for_status()
-        result = response.json()
 
-        if 'choices' in result and result['choices']:
-            content = result['choices'][0]['message']['content']
+        if response.choices:
+            content = response.choices[0].message.content
             return jsonify(json.loads(content))
         else:
             return jsonify({'error': 'Unexpected response structure from OpenAI'}), 500

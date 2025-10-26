@@ -1528,16 +1528,31 @@
         async function loadTimelineImagesAsync() {
             const imageElements = document.querySelectorAll('.attraction-image[data-title][data-context]');
             
-            // Load all images in parallel, but SKIP elements that already have backend images
+            // Load all images in parallel, but SKIP:
+            // 1. Elements that already have backend images
+            // 2. Transit/transport elements (data-context contains "walk_to" or "verso")
             const promises = Array.from(imageElements)
-                .filter(element => !element.dataset.imageUrl) // Only load if no backend image
+                .filter(element => {
+                    // Skip if already has backend image
+                    if (element.dataset.imageUrl) return false;
+                    
+                    // Skip if it's a transit/walk element
+                    const context = element.dataset.context || '';
+                    const title = element.dataset.title || '';
+                    if (context.includes('walk_to') || title.toLowerCase().includes('verso')) {
+                        console.log(`⏭️ Skipping image for transit: ${title}`);
+                        return false;
+                    }
+                    
+                    return true;  // Load image for this element
+                })
                 .map(element => 
                     loadEnhancedImageForElement(element, element.dataset.title, element.dataset.context)
                 );
             
             const skipped = imageElements.length - promises.length;
             if (skipped > 0) {
-                console.log(`✅ Using ${skipped} images from backend (comprehensive_attractions)`);
+                console.log(`✅ Using ${skipped} images from backend / skipped transit images`);
             }
             
             try {
