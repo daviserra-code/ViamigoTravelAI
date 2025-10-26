@@ -20,7 +20,8 @@ from multi_language_support import multi_language
 # RAG integration
 from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper
 import requests  # Import requests for making HTTP calls
-from intelligent_italian_routing import italian_router  # 🇮🇹 UNIVERSAL ITALIAN ROUTER!
+# 🇮🇹 UNIVERSAL ITALIAN ROUTER!
+from intelligent_italian_routing import italian_router
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
@@ -66,9 +67,11 @@ class AICompanionEngine:
                     place_data_json) if place_data_json else {}
 
                 lat = place_data.get('lat') or place_data.get('latitude')
-                lng = place_data.get('lon') or place_data.get('lng') or place_data.get('longitude')
-                
-                print(f"🔍 DEBUG place_cache: {place_name} - lat:{lat}, lng:{lng}, keys:{list(place_data.keys())[:5]}")
+                lng = place_data.get('lon') or place_data.get(
+                    'lng') or place_data.get('longitude')
+
+                print(
+                    f"🔍 DEBUG place_cache: {place_name} - lat:{lat}, lng:{lng}, keys:{list(place_data.keys())[:5]}")
 
                 attractions.append({
                     'name': place_data.get('name', place_name),
@@ -276,8 +279,20 @@ class AICompanionEngine:
             hotel_context = get_hotel_context_prompt(
                 city_name, min_score=8.0, limit=3)
 
+            # 🎯 EXTRACT CURRENT STOPS to exclude from alternatives
+            current_stop_names = []
+            if current_itinerary and len(current_itinerary) > 0:
+                for stop in current_itinerary:
+                    # Extract stop name from different possible fields
+                    stop_name = stop.get('title') or stop.get('name') or stop.get('place', '')
+                    if stop_name:
+                        current_stop_names.append(stop_name.strip())
+            
+            stops_to_exclude = ', '.join(current_stop_names) if current_stop_names else "nessuna"
+            
             print(f"🧠 RAG: Injected {city_name} context into Piano B prompt")
             print(f"🏨 PATH C: Added hotel reviews for {city_name}")
+            print(f"🚫 EXCLUDING current stops: {stops_to_exclude}")
 
             prompt = f"""
 Sei un AI travel companion intelligente per {city_name}. Genera un Piano B dinamico per questo itinerario:
@@ -287,16 +302,22 @@ Itinerario corrente: {json.dumps(current_itinerary[:3], indent=2)}
 Contesto: {context}
 Emergenza: {emergency_type}
 
+🚫 CRITICO: L'itinerario corrente include già questi posti: {stops_to_exclude}
+
 {real_context}
 
 {hotel_context}
 
-REGOLA CRITICA: Tutte le alternative devono essere SOLO E ESCLUSIVAMENTE per {city_name}.
-NON menzionare MAI attrazioni di altre città.
-NON menzionare Genova se stiamo parlando di Milano, Roma, etc.
-NON menzionare Milano se stiamo parlando di Genova, Roma, etc.
+REGOLE CRITICHE:
+1. Tutte le alternative devono essere SOLO E ESCLUSIVAMENTE per {city_name}.
+2. NON suggerire MAI questi posti già nell'itinerario: {stops_to_exclude}
+3. NON menzionare MAI attrazioni di altre città.
+4. Suggerisci ALTERNATIVE DIVERSE dai posti già visitati.
+5. Sii specifico: indica nomi esatti di luoghi a {city_name}.
 
-Verifica OGNI suggerimento prima di includerlo: è davvero a {city_name}?
+Verifica OGNI suggerimento:
+- È davvero a {city_name}? ✓
+- È DIVERSO da {stops_to_exclude}? ✓
 
 Crea un JSON con alternative realistiche e intelligenti SOLO per {city_name}:
 {{
@@ -305,7 +326,7 @@ Crea un JSON con alternative realistiche e intelligenti SOLO per {city_name}:
     "dynamic_alternatives": [
         {{
             "time": "orario",
-            "title": "Nome alternativa A {city_name}",
+            "title": "Nome alternativa DIVERSA da quelle attuali",
             "description": "Descrizione dettagliata",
             "why_better": "Perché è meglio della versione originale",
             "ai_insight": "Insight intelligente specifico",
@@ -317,7 +338,7 @@ Crea un JSON con alternative realistiche e intelligenti SOLO per {city_name}:
     "ai_confidence": "high/medium/low"
 }}
 
-Rispondi SOLO con JSON valido. Sii specifico per {city_name} e NON mescolare città diverse.
+Rispondi SOLO con JSON valido. Sii specifico per {city_name} e EVITA {stops_to_exclude}.
 """
 
             response = openai_client.chat.completions.create(
@@ -1039,7 +1060,7 @@ def plan_ai_powered():
         budget = data.get('budget', '€€')
 
         print(f"🧠 AI-powered planning: {start} → {end}")
-        
+
         # 🇮🇹 ITALIAN CITIES: Use intelligent database-driven router for ALL Italian cities
         italian_cities = {
             'milano': 'Milano', 'milan': 'Milano',
@@ -1057,7 +1078,7 @@ def plan_ai_powered():
             'padova': 'Padova', 'padua': 'Padova',
             'trieste': 'Trieste',
         }
-        
+
         # Detect Italian city
         combined_text = (start + ' ' + end).lower()
         detected_city = None
@@ -1065,9 +1086,10 @@ def plan_ai_powered():
             if key in combined_text:
                 detected_city = city_name
                 break
-        
+
         if detected_city:
-            print(f"✅ Detected ITALIAN CITY: {detected_city} - using IntelligentItalianRouter")
+            print(
+                f"✅ Detected ITALIAN CITY: {detected_city} - using IntelligentItalianRouter")
             itinerary = italian_router.generate_intelligent_itinerary(
                 start=start,
                 end=end,

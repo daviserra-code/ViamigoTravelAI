@@ -1480,13 +1480,18 @@
         window.openAICompanionForLocation = function(location) {
             console.log(`🧠 Apertura Compagno AI per: ${location}`);
 
-            // Save AI companion context
-            localStorage.setItem('aiCompanionContext', JSON.stringify({
+            // 🎯 Save FULL context including current itinerary
+            const aiContext = {
                 trigger: false,
                 location: location,
                 mode: 'exploration',
-                timestamp: new Date().toISOString()
-            }));
+                timestamp: new Date().toISOString(),
+                current_itinerary: currentItineraryData || [],  // 🚫 Pass itinerary to EXCLUDE from suggestions
+                city: window.currentCityName || ''
+            };
+            
+            localStorage.setItem('aiCompanionContext', JSON.stringify(aiContext));
+            console.log(`💾 AI context saved with ${currentItineraryData?.length || 0} stops to exclude`);
 
             // IMPORTANT: Save current route state before leaving
             if (currentItineraryData && window.currentCityName) {

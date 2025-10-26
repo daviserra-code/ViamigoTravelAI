@@ -270,14 +270,87 @@
         }
 
         // Piano B Dinamico
-        function triggerPlanB() {
-            document.getElementById('plan-b-modal').classList.remove('hidden');
+        async function triggerPlanB() {
+            const modal = document.getElementById('plan-b-modal');
+            const loading = document.getElementById('plan-b-loading');
+            const options = document.getElementById('plan-b-options');
             
-            // Simula processo AI di calcolo
-            setTimeout(() => {
-                document.getElementById('plan-b-loading').classList.add('hidden');
-                document.getElementById('plan-b-options').classList.remove('hidden');
-            }, 3000);
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            options.classList.add('hidden');
+            
+            try {
+                // 🎯 Recupera contesto con itinerario corrente da localStorage
+                const storedContext = localStorage.getItem('aiCompanionContext');
+                const context = storedContext ? JSON.parse(storedContext) : {};
+                
+                const currentItinerary = context.current_itinerary || [];
+                const location = context.location || 'Torino';
+                const city = context.city || location;
+                
+                console.log(`🧠 Triggering Piano B for ${city} with ${currentItinerary.length} stops to exclude`);
+                
+                // 🚫 Chiama backend con itinerario corrente per ESCLUDERE i posti già visitati
+                const response = await fetch('/ai/piano_b', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        context: location,
+                        emergency_type: 'closure',
+                        current_plan: currentItinerary  // 🎯 Pass full itinerary to exclude
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Piano B received:', data);
+                
+                // Render alternative suggestions
+                renderPlanBOptions(data);
+                
+                loading.classList.add('hidden');
+                options.classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('❌ Piano B error:', error);
+                loading.innerHTML = `
+                    <div class="text-red-400 text-center">
+                        <p>❌ Errore nel caricamento alternative</p>
+                        <p class="text-xs text-gray-400 mt-2">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderPlanBOptions(data) {
+            const container = document.getElementById('plan-b-options');
+            const alternatives = data.dynamic_alternatives || data.piano_b_alternatives || [];
+            
+            if (alternatives.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center">Nessuna alternativa disponibile</p>';
+                return;
+            }
+            
+            container.innerHTML = alternatives.map((alt, i) => `
+                <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-white">${alt.title}</h4>
+                            <p class="text-xs text-gray-400 mt-1">${alt.time || ''}</p>
+                        </div>
+                        ${alt.indoor ? '<span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">Al coperto</span>' : ''}
+                    </div>
+                    <p class="text-sm text-gray-300 mb-2">${alt.description}</p>
+                    <p class="text-xs text-emerald-400">💡 ${alt.why_better || alt.ai_insight || ''}</p>
+                    <button onclick="selectPlanB('alternative_${i}')" 
+                            class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm">
+                        Seleziona questa alternativa
+                    </button>
+                </div>
+            `).join('');
         }
 
         function closePlanB() {
