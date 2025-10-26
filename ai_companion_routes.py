@@ -20,7 +20,7 @@ from multi_language_support import multi_language
 # RAG integration
 from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper
 import requests  # Import requests for making HTTP calls
-from intelligent_torino_routing import IntelligentTorinoRouter  # 🚀 USE EXISTING INTELLIGENT ROUTER!
+from intelligent_italian_routing import italian_router  # 🇮🇹 UNIVERSAL ITALIAN ROUTER!
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
@@ -1040,22 +1040,47 @@ def plan_ai_powered():
 
         print(f"🧠 AI-powered planning: {start} → {end}")
         
-        # 🚀 TORINO: Use intelligent database-driven router
-        if any(term in (start + end).lower() for term in ['torino', 'turin', 'mole antonelliana', 'parco valentino', 'museo egizio']):
-            print(f"✅ Detected TORINO - using IntelligentTorinoRouter")
-            torino_router = IntelligentTorinoRouter()
-            itinerary = torino_router.generate_intelligent_itinerary(
+        # 🇮🇹 ITALIAN CITIES: Use intelligent database-driven router for ALL Italian cities
+        italian_cities = {
+            'milano': 'Milano', 'milan': 'Milano',
+            'roma': 'Roma', 'rome': 'Roma',
+            'torino': 'Torino', 'turin': 'Torino',
+            'venezia': 'Venezia', 'venice': 'Venezia',
+            'firenze': 'Firenze', 'florence': 'Firenze',
+            'napoli': 'Napoli', 'naples': 'Napoli',
+            'bologna': 'Bologna',
+            'genova': 'Genova', 'genoa': 'Genova',
+            'palermo': 'Palermo',
+            'catania': 'Catania',
+            'bari': 'Bari',
+            'verona': 'Verona',
+            'padova': 'Padova', 'padua': 'Padova',
+            'trieste': 'Trieste',
+        }
+        
+        # Detect Italian city
+        combined_text = (start + ' ' + end).lower()
+        detected_city = None
+        for key, city_name in italian_cities.items():
+            if key in combined_text:
+                detected_city = city_name
+                break
+        
+        if detected_city:
+            print(f"✅ Detected ITALIAN CITY: {detected_city} - using IntelligentItalianRouter")
+            itinerary = italian_router.generate_intelligent_itinerary(
                 start=start,
                 end=end,
+                city_name=detected_city,
                 interests=interests,
                 duration="full_day" if pace == "Lento" else "half_day"
             )
             return jsonify({
                 "itinerary": itinerary,
-                "city": "Torino",
+                "city": detected_city,
                 "total_duration": f"{len(itinerary) * 1.5:.1f} hours",
                 "status": "success",
-                "router": "intelligent_torino"
+                "router": "intelligent_italian"
             })
 
         # Detect city from input with proper geographical mapping
