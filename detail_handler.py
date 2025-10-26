@@ -69,27 +69,35 @@ def _get_details_from_comprehensive_db(context: str) -> dict:
 
         if result:
             name, city, description, category, lat, lng, image_url, wikidata_id = result
-            
+
             # 🎯 ENHANCE DESCRIPTION - Get rich context from ChromaDB
             enhanced_description = description or f'Attrazione importante a {city}'
             historical_context = None
             insider_tips = []
-            
+
             try:
                 from simple_rag_helper import rag_helper
                 # Query ChromaDB for rich context about this attraction
-                chroma_context = rag_helper.query_similar(f"{name} {city}", n_results=3)
-                if chroma_context and chroma_context.get('documents'):
-                    docs = chroma_context['documents'][0]
-                    if docs:
-                        # Extract historical/cultural context
-                        historical_context = docs[0][:300] + '...' if len(docs[0]) > 300 else docs[0]
-                        
-                        # Extract insider tips from additional docs
-                        if len(docs) > 1:
-                            for doc in docs[1:3]:
-                                if 'tip' in doc.lower() or 'consiglio' in doc.lower():
-                                    insider_tips.append(doc[:150])
+                chroma_results = rag_helper.semantic_search_places(
+                    query=f"{name} {city} storia cultura",
+                    city=city,
+                    n_results=3
+                )
+                if chroma_results and len(chroma_results) > 0:
+                    # Extract historical/cultural context from first result
+                    first_result = chroma_results[0]
+                    if 'description' in first_result:
+                        historical_context = first_result['description'][:300] + \
+                            '...' if len(first_result['description']) > 300 else first_result['description']
+
+                    # Extract insider tips from additional results
+                    for result in chroma_results[1:3]:
+                        desc = result.get('description', '')
+                        if 'tip' in desc.lower() or 'consiglio' in desc.lower():
+                            insider_tips.append(desc[:150])
+
+                    print(
+                        f"✅ ChromaDB enriched {name} with {len(chroma_results)} results")
             except Exception as e:
                 print(f"⚠️ ChromaDB context query failed: {e}")
 
@@ -97,22 +105,26 @@ def _get_details_from_comprehensive_db(context: str) -> dict:
             full_description = enhanced_description
             if historical_context and historical_context != enhanced_description:
                 full_description += f"\n\n📜 Contesto Storico: {historical_context}"
-            
+
             # Generate contextual tips based on category
             contextual_tips = []
             if category and 'museum' in category.lower():
                 contextual_tips.append("🎨 Prenota online per evitare code")
-                contextual_tips.append("📸 Verifica le politiche fotografiche prima di visitare")
+                contextual_tips.append(
+                    "📸 Verifica le politiche fotografiche prima di visitare")
             elif category and 'church' in category.lower():
                 contextual_tips.append("👔 Abbigliamento appropriato richiesto")
-                contextual_tips.append("🔇 Silenzio durante le funzioni religiose")
+                contextual_tips.append(
+                    "🔇 Silenzio durante le funzioni religiose")
             elif category and 'park' in category.lower():
-                contextual_tips.append("☀️ Miglior visita in giornate soleggiate")
+                contextual_tips.append(
+                    "☀️ Miglior visita in giornate soleggiate")
                 contextual_tips.append("🥪 Ottimo per picnic e relax")
-            
+
             # Combine insider tips from ChromaDB + contextual tips
             all_tips = (insider_tips + contextual_tips)[:3]  # Max 3 tips
-            tip_text = ' | '.join(all_tips) if all_tips else f'Visita {name} durante gli orari di apertura per la migliore esperienza'
+            tip_text = ' | '.join(
+                all_tips) if all_tips else f'Visita {name} durante gli orari di apertura per la migliore esperienza'
 
             formatted_result = {
                 'success': True,
