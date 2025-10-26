@@ -637,7 +637,6 @@ def ai_piano_b():
             # Handle cases where the response structure is unexpected
             return jsonify({'error': 'Unexpected response structure from OpenAI'}), 500
 
-
     except requests.exceptions.Timeout:
         print("⚠️ OpenAI API call timed out.")
         # The resilient_api_call decorator will handle this and return fallback_data
@@ -685,14 +684,14 @@ def ai_scoperte():
                 print(f"⚠️ No ChromaDB context for {city}")
         except Exception as e:
             print(f"⚠️ ChromaDB query failed: {e}")
-        
+
         # 🎯 GET REAL ATTRACTIONS FROM DATABASE
         real_attractions = []
         try:
             import psycopg2
             conn = psycopg2.connect(os.getenv('DATABASE_URL'))
             cur = conn.cursor()
-            
+
             # Query for unique, interesting places
             cur.execute("""
                 SELECT DISTINCT name, category, description
@@ -703,16 +702,18 @@ def ai_scoperte():
                 ORDER BY RANDOM()
                 LIMIT 10
             """, (city,))
-            
+
             results = cur.fetchall()
             for name, category, desc in results:
                 real_attractions.append(f"- {name}: {desc[:100]}")
-            
+
             conn.close()
-            
+
             if real_attractions:
-                real_context += f"\n\n🏛️ ATTRAZIONI REALI {city.upper()}:\n" + "\n".join(real_attractions[:8])
-                print(f"✅ Found {len(real_attractions)} real attractions for {city}")
+                real_context += f"\n\n🏛️ ATTRAZIONI REALI {city.upper()}:\n" + "\n".join(
+                    real_attractions[:8])
+                print(
+                    f"✅ Found {len(real_attractions)} real attractions for {city}")
         except Exception as e:
             print(f"⚠️ Database query failed: {e}")
 

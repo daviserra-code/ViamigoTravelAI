@@ -88,7 +88,8 @@ def _get_details_from_comprehensive_db(context: str) -> dict:
                     first_result = chroma_results[0]
                     if 'description' in first_result:
                         historical_context = first_result['description'][:300] + \
-                            '...' if len(first_result['description']) > 300 else first_result['description']
+                            '...' if len(
+                                first_result['description']) > 300 else first_result['description']
 
                     # Extract insider tips from additional results
                     for result in chroma_results[1:3]:

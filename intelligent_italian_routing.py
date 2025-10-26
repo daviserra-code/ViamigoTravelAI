@@ -146,15 +146,15 @@ class IntelligentItalianRouter:
                 # Build category filter if interests provided
                 category_conditions = []
                 if interests:
-                    if 'culture' in interests or 'history' in interests:
+                    if 'culture' in interests or 'storia' in interests or 'arte' in interests:
                         category_conditions.append(
-                            "(category ILIKE '%museum%' OR category ILIKE '%monument%' OR category ILIKE '%church%' OR category ILIKE '%palace%')")
+                            "(category ILIKE '%%museum%%' OR category ILIKE '%%monument%%' OR category ILIKE '%%church%%' OR category ILIKE '%%palace%%')")
                     if 'parks' in interests or 'nature' in interests:
                         category_conditions.append(
-                            "(category ILIKE '%park%' OR category ILIKE '%garden%')")
+                            "(category ILIKE '%%park%%' OR category ILIKE '%%garden%%')")
                     if 'food' in interests:
                         category_conditions.append(
-                            "(category ILIKE '%restaurant%' OR category ILIKE '%cafe%')")
+                            "(category ILIKE '%%restaurant%%' OR category ILIKE '%%cafe%%')")
 
                 category_filter = ""
                 if category_conditions:
@@ -162,51 +162,73 @@ class IntelligentItalianRouter:
                         " OR ".join(category_conditions) + ")"
 
                 # 🖼️ comprehensive_attractions has 1,554 images including 76 for Torino!
-                # No need for complex JOIN - images are already in image_url column
+                # JOIN with attraction_images to utilize the 932 new images!
+                # Priority: attraction_images (high-quality) > comprehensive_attractions (wikimedia)
                 query = f"""
                     SELECT 
-                        name, 
-                        city, 
-                        category, 
-                        description, 
-                        latitude, 
-                        longitude, 
-                        image_url,
-                        wikidata_id
-                    FROM comprehensive_attractions
-                    WHERE LOWER(city) = LOWER(%s)
-                      AND latitude IS NOT NULL
-                      AND longitude IS NOT NULL
+                        ca.name, 
+                        ca.city, 
+                        ca.category, 
+                        ca.description, 
+                        ca.latitude, 
+                        ca.longitude, 
+                        COALESCE(ai.original_url, ai.thumb_url, ca.image_url) as image_url,
+                        ca.wikidata_id,
+                        ai.source as ai_source,
+                        ai.confidence_score
+                    FROM comprehensive_attractions ca
+                    LEFT JOIN attraction_images ai
+                        ON LOWER(ca.city) = LOWER(ai.city)
+                        AND (
+                            LOWER(ca.name) LIKE '%%' || LOWER(ai.attraction_name) || '%%'
+                            OR LOWER(ai.attraction_name) LIKE '%%' || LOWER(ca.name) || '%%'
+                        )
+                        AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
+                    WHERE LOWER(ca.city) = LOWER(%s)
+                      AND ca.latitude IS NOT NULL
+                      AND ca.longitude IS NOT NULL
                       {category_filter}
                     ORDER BY 
-                        CASE WHEN image_url IS NOT NULL AND image_url != '' THEN 1 ELSE 2 END,
+                        CASE WHEN ai.original_url IS NOT NULL THEN 1 
+                             WHEN ca.image_url IS NOT NULL THEN 2 
+                             ELSE 3 END,
                         RANDOM()
                     LIMIT %s
                 """
 
                 cursor.execute(query, (city_name, 12 - len(attractions)))
                 db_results = cursor.fetchall()
-                
-                print(f"🖼️ Database query returned {len(db_results)} results for {city_name}")
+
+                print(
+                    f"🖼️ Database query returned {len(db_results)} results for {city_name}")
 
                 for row in db_results:
-                    name, city, category, description, lat, lng, image_url, wikidata_id = row
-                    if image_url:
-                        print(f"✅ {name}: Has image")
+                    # Defensive unpacking: handle variable column count
+                    if len(row) >= 8:
+                        name, city, category, description, lat, lng, image_url, wikidata_id = row[:8]
+                        ai_source = row[8] if len(row) > 8 else None
+                        confidence = row[9] if len(row) > 9 else None
+                        
+                        img_source = 'attraction_images' if ai_source else ('comprehensive_attractions' if image_url else 'none')
+                        
+                        if image_url:
+                            print(f"✅ {name}: Has image (source: {img_source})")
+                        else:
+                            print(f"⚠️ {name}: NO IMAGE")
+
+                        if lat and lng:  # Only add if coordinates exist
+                            attractions.append({
+                                'name': name,
+                                'latitude': float(lat),
+                                'longitude': float(lng),
+                                'description': description or f'{name} a {city_name}',
+                                'image_url': image_url,  # Now using attraction_images if available!
+                                'category': category or 'attraction',
+                                'wikidata_id': wikidata_id,
+                                'source': img_source
+                            })
                     else:
-                        print(f"⚠️ {name}: NO IMAGE")
-                    
-                    if lat and lng:  # Only add if coordinates exist
-                        attractions.append({
-                            'name': name,
-                            'latitude': float(lat),
-                            'longitude': float(lng),
-                            'description': description or f'{name} a {city_name}',
-                            'image_url': image_url,  # From comprehensive_attractions (1,554 images!)
-                            'category': category or 'attraction',
-                            'wikidata_id': wikidata_id,
-                            'source': 'comprehensive_attractions'
-                        })
+                        print(f"⚠️ Skipping row with unexpected column count: {len(row)}")
 
             cursor.close()
             conn.close()
@@ -351,7 +373,8 @@ class IntelligentItalianRouter:
                 'lng': attraction['longitude'],
                 'type': 'activity',
                 'context': f"{self._clean_name(attraction['name'])}_{city_name.lower()}",
-                'image_url': attraction.get('image_url'),  # ✅ IMAGES FOR ACTIVITIES ONLY
+                # ✅ IMAGES FOR ACTIVITIES ONLY
+                'image_url': attraction.get('image_url'),
                 'category': attraction.get('category', 'attraction'),
                 'source': attraction.get('source')
             })
@@ -386,7 +409,8 @@ class IntelligentItalianRouter:
                 'lng': end_attraction['longitude'],
                 'type': 'destination',
                 'context': f"{self._clean_name(end_attraction['name'])}_{city_name.lower()}",
-                'image_url': end_attraction.get('image_url'),  # ✅ IMAGES FOR DESTINATIONS
+                # ✅ IMAGES FOR DESTINATIONS
+                'image_url': end_attraction.get('image_url'),
                 'category': end_attraction.get('category', 'destination')
             })
         elif end != start:  # End location different from start

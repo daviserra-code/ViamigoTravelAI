@@ -5,6 +5,7 @@
 **Status**: ✅ ALL FIXED
 
 ## User Feedback
+
 > "Much better but i see still issues: 1. Details are extremely short and inconsistent;2. Compagno AI is always suggesting the same scoperta intelligente.Is crhoma db even used?;3. Images are getting better but a few especially the in transit ones are out of scope sometimes"
 
 ---
@@ -12,11 +13,13 @@
 ## ✅ ISSUE #1: Details Too Short & Inconsistent
 
 ### Problem
+
 - Details modal showed minimal info: just name + generic "Attrazione importante"
 - No historical context, cultural insights, or practical tips
 - ChromaDB data was NOT being used despite being available
 
 ### Root Cause
+
 `detail_handler.py` only queried `comprehensive_attractions` table, never used ChromaDB semantic search.
 
 ### Solution Implemented
@@ -31,7 +34,7 @@ chroma_context = rag_helper.query_similar(f"{name} {city}", n_results=3)
 if chroma_context and chroma_context.get('documents'):
     # Extract historical/cultural context
     historical_context = docs[0][:300] + '...'
-    
+
     # Extract insider tips
     for doc in docs[1:3]:
         if 'tip' in doc.lower() or 'consiglio' in doc.lower():
@@ -39,11 +42,13 @@ if chroma_context and chroma_context.get('documents'):
 ```
 
 **Added Contextual Tips**:
+
 - Museums: "🎨 Prenota online per evitare code"
 - Churches: "👔 Abbigliamento appropriato richiesto"
 - Parks: "☀️ Miglior visita in giornate soleggiate"
 
 **Enhanced Description Format**:
+
 ```python
 full_description = enhanced_description
 if historical_context:
@@ -51,7 +56,9 @@ if historical_context:
 ```
 
 ### Result
+
 ✅ Details now include:
+
 - Historical context from ChromaDB (when available)
 - Category-specific tips (museums, churches, parks)
 - Insider tips from semantic search
@@ -62,12 +69,14 @@ if historical_context:
 ## ✅ ISSUE #2: Scoperte Intelligenti Always The Same
 
 ### Problem
+
 - AI Companion suggested generic places like "Cortile storico nascosto"
 - No use of ChromaDB real city data
 - Same suggestions for every city
 - **ChromaDB was NOT being used!**
 
 ### Root Cause
+
 `ai_companion_routes.py` `/ai/scoperte` endpoint used generic AI prompt with NO real database context.
 
 ### Solution Implemented
@@ -111,7 +120,9 @@ VERIFICA: Ogni nome deve apparire nel contesto reale sopra!
 ```
 
 ### Result
+
 ✅ Scoperte Intelligenti now:
+
 - Use REAL attractions from ChromaDB + comprehensive_attractions
 - Show unique suggestions per city (Torino ≠ Milano ≠ Roma)
 - Verify every suggestion against actual database
@@ -123,11 +134,13 @@ VERIFICA: Ogni nome deve apparire nel contesto reale sopra!
 ## ✅ ISSUE #3: Transit Images Out of Scope
 
 ### Problem
+
 - "Verso Museo Egizio" (walk segments) had random city images
 - Generic images appeared on transport items
 - Confusing UX - walk steps shouldn't have attraction images
 
 ### Root Cause
+
 Backend set `image_url` for ALL itinerary items, frontend loaded images for ALL elements including "walk_to" contexts.
 
 ### Solution Implemented
@@ -157,7 +170,7 @@ itinerary.append({
 .filter(element => {
     // Skip if already has backend image
     if (element.dataset.imageUrl) return false;
-    
+
     // Skip if it's a transit/walk element
     const context = element.dataset.context || '';
     const title = element.dataset.title || '';
@@ -165,13 +178,15 @@ itinerary.append({
         console.log(`⏭️ Skipping image for transit: ${title}`);
         return false;
     }
-    
+
     return true;  // Load image for this element
 })
 ```
 
 ### Result
+
 ✅ Images now only for:
+
 - Activities (`type='activity'`)
 - Destinations (`type='destination'`)
 - **NOT for**: Transport, walks, or "Verso..." segments
@@ -191,6 +206,7 @@ itinerary.append({
    - ✅ More than just "Attrazione importante a Torino"
 
 **Verification**:
+
 ```bash
 curl -X POST http://localhost:5000/get_details \
   -d '{"context": "museo_egizio_torino"}' | jq '.description'
@@ -205,6 +221,7 @@ curl -X POST http://localhost:5000/get_details \
 2. Click "Compagno AI" button
 3. Trigger "Scoperte Intelligenti"
 4. **Expected**:
+
    - ✅ Suggestions specific to Torino (NOT generic "Cortile storico")
    - ✅ Real attraction names from database
    - ✅ Different suggestions if repeated (temperature=0.9)
@@ -214,6 +231,7 @@ curl -X POST http://localhost:5000/get_details \
    - ✅ Completely different suggestions (Milano places, not Torino)
 
 **Verification** (check Flask logs):
+
 ```bash
 tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
 # Should see: "✅ ChromaDB context loaded for Torino"
@@ -232,10 +250,11 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
    - ❌ "Verso Palazzo Reale" → NO image (icon only)
 
 **Verification** (browser console):
+
 ```javascript
 // Should see logs like:
-"⏭️ Skipping image for transit: Verso Museo Egizio"
-"✅ Using 6 images from backend / skipped transit images"
+"⏭️ Skipping image for transit: Verso Museo Egizio";
+"✅ Using 6 images from backend / skipped transit images";
 ```
 
 ---
@@ -243,12 +262,15 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
 ## Files Modified
 
 ### Backend
+
 1. **detail_handler.py** (lines 68-125)
+
    - Added ChromaDB `rag_helper.query_similar()` integration
    - Added contextual tips based on category
    - Enhanced description format with historical context
 
 2. **ai_companion_routes.py** (lines 654-770)
+
    - Added `get_city_context_prompt()` for ChromaDB data
    - Added `comprehensive_attractions` query for real places
    - Enhanced AI prompt with REAL data constraints
@@ -259,6 +281,7 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
    - Only `type='activity'` and `type='destination'` get images
 
 ### Frontend
+
 4. **static/index.html** (lines 1530-1548)
    - Added filter to skip `walk_to` and `verso` contexts
    - Console logging for skipped transit images
@@ -268,11 +291,13 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
 ## Success Metrics
 
 ### Before Fixes:
+
 - 🔴 Details: "Attrazione importante a Torino" (generic, 20 chars)
 - 🔴 Scoperte: "Cortile storico nascosto" (same for all cities)
 - 🔴 Images: Transit steps had random city photos
 
 ### After Fixes:
+
 - ✅ Details: 200-500 chars with historical context + tips
 - ✅ Scoperte: Real attractions from ChromaDB + DB (unique per city)
 - ✅ Images: Only on activities/destinations, NOT on transit
@@ -288,6 +313,7 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
 3. **Logs show**: "✅ ChromaDB context loaded for {city}"
 
 **ChromaDB Data Sources**:
+
 - `chromadb_data/chroma.sqlite3` (11+ MB with city context)
 - Collections include city-specific historical/cultural information
 - Semantic search returns top 3-5 relevant documents per query
@@ -297,9 +323,11 @@ tail -f flask_working.log | grep "ChromaDB context\|Found.*real attractions"
 ## Next Steps (Item #3 from original TODO)
 
 **Remaining Item**:
+
 - [ ] **Back Button State Persistence** - Save route state to localStorage, restore on back navigation
 
 **Future Enhancements**:
+
 - [ ] Add more ChromaDB data for under-represented cities
 - [ ] Cache ChromaDB queries to reduce latency
 - [ ] Add user feedback loop for Scoperte suggestions
