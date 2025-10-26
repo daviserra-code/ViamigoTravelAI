@@ -47,24 +47,21 @@ class IntelligentDetailHandler:
             if cache_result and cache_result.get('confidence', 0) >= 0.7:
                 return self._format_detail_response(cache_result, 'cache')
 
-            # Stage 3: Hardcoded/Heuristics (for major tourist attractions)
-            heuristic_result = self._query_hardcoded_attractions(location_info)
-            if heuristic_result and heuristic_result.get('confidence', 0) >= 0.8:
-                # Cache hardcoded results for future use
-                self._cache_heuristic_result(location_info, heuristic_result)
-                return self._format_detail_response(heuristic_result, 'hardcoded')
-
-            # Stage 4: Apify Real-time Data (EXPENSIVE - LAST RESORT)
-            logger.warning(
-                f"💰 EXPENSIVE APIFY CALL for {location_info.get('name', 'unknown')} - DB/cache/hardcoded failed")
+            # Stage 3: Apify Real-time Data (COST-EFFECTIVE - but cache immediately!)
+            # Use Apify BEFORE AI generation to get real data, then cache it
+            logger.info(
+                f"💰 Apify call for {location_info.get('name', 'unknown')} - DB/cache not found, getting real data...")
             if self.apify.is_available():
                 apify_result = self._query_apify_details(location_info)
                 if apify_result and apify_result.get('confidence', 0) >= 0.6:
-                    # IMPORTANT: Cache Apify results immediately to avoid future expensive calls
-                    self._cache_apify_result(location_info, apify_result)
+                    # CRITICAL: Save Apify results to comprehensive_attractions database
+                    # This prevents future expensive calls for the same attraction
+                    self._save_apify_to_database(location_info, apify_result)
+                    logger.info(
+                        f"✅ Apify result saved to database for future use")
                     return self._format_detail_response(apify_result, 'apify')
 
-            # Stage 5: AI-powered content generation
+            # Stage 4: AI-powered content generation (last resort before basic fallback)
             ai_result = self._generate_ai_content(location_info, user_data)
             if ai_result:
                 return self._format_detail_response(ai_result, 'ai')
@@ -624,6 +621,7 @@ class IntelligentDetailHandler:
                     'opening_hours': 'Mon-Sat 9:00-19:15, Sun 9:00-18:00',
                     'confidence': 0.95
                 }
+                # NOTE: Torino attractions removed - will be fetched from Apify and auto-saved to DB
             }
 
             # Search for matches
@@ -702,6 +700,79 @@ class IntelligentDetailHandler:
 
         except Exception as e:
             logger.error(f"❌ Caching error: {e}")
+
+    def _save_apify_to_database(self, location_info: Dict, result: Dict):
+        """
+        Save Apify result directly to comprehensive_attractions table
+        This prevents future expensive API calls for the same attraction
+        """
+        try:
+            import psycopg2
+
+            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            cursor = conn.cursor()
+
+            # Extract data from Apify result
+            name = result.get('name', location_info.get('name'))
+            city = result.get('city', location_info.get('city', 'Unknown'))
+            description = result.get('description', '')
+            category = result.get('category', 'tourism:attraction')
+
+            # Get coordinates from result
+            coords = result.get('coordinates', {})
+            latitude = coords.get('lat') if coords else None
+            longitude = coords.get('lng') if coords else None
+
+            # Get additional details
+            image_url = result.get('image_url')
+
+            # Check if already exists
+            cursor.execute("""
+                SELECT id FROM comprehensive_attractions 
+                WHERE LOWER(name) = LOWER(%s) AND LOWER(city) = LOWER(%s)
+            """, (name, city))
+
+            existing = cursor.fetchone()
+
+            if existing:
+                # Update existing record with Apify data (only if fields are empty)
+                cursor.execute("""
+                    UPDATE comprehensive_attractions
+                    SET description = COALESCE(description, %s),
+                        latitude = COALESCE(latitude, %s),
+                        longitude = COALESCE(longitude, %s),
+                        image_url = COALESCE(image_url, %s),
+                        category = COALESCE(category, %s)
+                    WHERE id = %s
+                """, (description, latitude, longitude, image_url, category, existing[0]))
+                logger.info(
+                    f"✅ Updated DB with Apify data: {name} (saved for future)")
+            else:
+                # Insert new record
+                cursor.execute("""
+                    INSERT INTO comprehensive_attractions 
+                    (name, city, description, category, latitude, longitude, image_url)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (name, city, description, category, latitude, longitude, image_url))
+                logger.info(
+                    f"✅ Inserted Apify attraction to DB: {name} (avoid future cost!)")
+
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # Also cache to PlaceCache for backward compatibility
+            self._cache_apify_result(location_info, result)
+
+        except Exception as e:
+            logger.error(f"❌ Error saving Apify to database: {e}")
+            import traceback
+            traceback.print_exc()
+            # Still try to cache to PlaceCache as fallback
+            try:
+                self._cache_apify_result(location_info, result)
+            except:
+                pass
 
 
 # Main entry point
