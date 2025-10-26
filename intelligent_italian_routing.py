@@ -161,54 +161,51 @@ class IntelligentItalianRouter:
                     category_filter = "AND (" + \
                         " OR ".join(category_conditions) + ")"
 
-                # 🖼️ JOIN attraction_images table to get real images from database (159 images available!)
+                # 🖼️ comprehensive_attractions has 1,554 images including 76 for Torino!
+                # No need for complex JOIN - images are already in image_url column
                 query = f"""
                     SELECT 
-                        ca.name, 
-                        ca.city, 
-                        ca.category, 
-                        ca.description, 
-                        ca.latitude, 
-                        ca.longitude, 
-                        COALESCE(ai.original_url, ca.image_url) as image_url,  -- Prefer attraction_images over comprehensive
-                        ca.wikidata_id,
-                        ai.confidence_score,
-                        ai.source as image_source
-                    FROM comprehensive_attractions ca
-                    LEFT JOIN attraction_images ai 
-                        ON LOWER(ca.city) = LOWER(ai.city) 
-                        AND (
-                            LOWER(ca.name) LIKE LOWER('%' || ai.attraction_name || '%')
-                            OR LOWER(ai.attraction_name) LIKE LOWER('%' || ca.name || '%')
-                        )
-                        AND (ai.confidence_score > 0.6 OR ai.confidence_score IS NULL)  -- Only quality images
-                    WHERE LOWER(ca.city) = LOWER(%s)
-                      AND ca.latitude IS NOT NULL
-                      AND ca.longitude IS NOT NULL
+                        name, 
+                        city, 
+                        category, 
+                        description, 
+                        latitude, 
+                        longitude, 
+                        image_url,
+                        wikidata_id
+                    FROM comprehensive_attractions
+                    WHERE LOWER(city) = LOWER(%s)
+                      AND latitude IS NOT NULL
+                      AND longitude IS NOT NULL
                       {category_filter}
                     ORDER BY 
-                        CASE WHEN ai.original_url IS NOT NULL THEN 1 ELSE 2 END,  -- Prioritize attraction_images
-                        CASE WHEN ca.image_url IS NOT NULL THEN 1 ELSE 2 END,
+                        CASE WHEN image_url IS NOT NULL AND image_url != '' THEN 1 ELSE 2 END,
                         RANDOM()
                     LIMIT %s
                 """
 
                 cursor.execute(query, (city_name, 12 - len(attractions)))
                 db_results = cursor.fetchall()
+                
+                print(f"🖼️ Database query returned {len(db_results)} results for {city_name}")
 
                 for row in db_results:
-                    name, city, category, description, lat, lng, image_url, wikidata_id, confidence, img_source = row
+                    name, city, category, description, lat, lng, image_url, wikidata_id = row
+                    if image_url:
+                        print(f"✅ {name}: Has image")
+                    else:
+                        print(f"⚠️ {name}: NO IMAGE")
+                    
                     if lat and lng:  # Only add if coordinates exist
                         attractions.append({
                             'name': name,
                             'latitude': float(lat),
                             'longitude': float(lng),
                             'description': description or f'{name} a {city_name}',
-                            'image_url': image_url,  # Now includes attraction_images data!
+                            'image_url': image_url,  # From comprehensive_attractions (1,554 images!)
                             'category': category or 'attraction',
                             'wikidata_id': wikidata_id,
-                            'source': f'comprehensive_attractions+{img_source}' if img_source else 'comprehensive_attractions',
-                            'image_confidence': float(confidence) if confidence else None
+                            'source': 'comprehensive_attractions'
                         })
 
             cursor.close()
