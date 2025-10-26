@@ -171,10 +171,10 @@ class DynamicRouter:
             city_lower = city.lower() if city else ""
             # Città con sistema ottimizzato (Italia + Europa + USA)
             optimized_cities = [
-                # Italia
+                # Italia - REMOVED TORINO to use intelligent routing
                 'trieste', 'miramare', 'genova', 'milano', 'roma', 'venezia',
                 'firenze', 'napoli', 'bologna', 'palermo', 'pisa', 'cagliari',
-                'perugia', 'verona', 'torino', 'olbia', 'costa smeralda', 'porto cervo',
+                'perugia', 'verona', 'olbia', 'costa smeralda', 'porto cervo',
                 'sardegna', 'arzachena', 'la maddalena', 'baia sardinia',
                 # Europa
                 'parigi', 'berlino', 'madrid', 'lisbona', 'amsterdam', 'vienna',
@@ -183,6 +183,14 @@ class DynamicRouter:
                 # 🗽 USA
                 'new york', 'washington dc'
             ]
+            
+            # 🚀 SPECIAL: Torino uses intelligent routing with database
+            if 'torino' in city_lower or 'turin' in city_lower:
+                print(f"🎯 Using intelligent database routing for Torino")
+                from intelligent_torino_routing import intelligent_torino_router
+                return intelligent_torino_router.generate_intelligent_itinerary(
+                    start, end, user_interests, duration
+                )
 
             if any(city in city_lower for city in optimized_cities):
                 print(
