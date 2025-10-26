@@ -4,7 +4,7 @@
 
 1. **❌ Hallucinated Routes** - Choosing stops far from Torino
 2. **❌ Broken Map** - Starts from point 2, wrong/random connections
-3. **❌ No Details** - AI companion suggestions missing  
+3. **❌ No Details** - AI companion suggestions missing
 4. **❌ Only Fallback Images** - No real database images
 
 ## ✅ Solutions Implemented
@@ -12,6 +12,7 @@
 ### 1. **Intelligent Torino Routing System** (`intelligent_torino_routing.py`)
 
 **What it does:**
+
 - Queries **REAL Torino attractions from database** (place_cache + comprehensive_attractions)
 - Uses actual coordinates from 369+ Torino attractions
 - Orders stops by **proximity** for logical routing
@@ -19,6 +20,7 @@
 - Returns attractions with **real images** from database
 
 **Key Features:**
+
 ```python
 class IntelligentTorinoRouter:
     - _get_torino_attractions_from_db()  # Real database query
@@ -29,6 +31,7 @@ class IntelligentTorinoRouter:
 ```
 
 **Database Integration:**
+
 - Priority 1: `place_cache` (12 Torino attractions with best data)
 - Priority 2: `comprehensive_attractions` (357 Torino attractions)
 - Returns attractions WITH image URLs (21% coverage + fallbacks)
@@ -36,12 +39,13 @@ class IntelligentTorinoRouter:
 ### 2. **Routes.py Integration**
 
 **Changed:**
+
 ```python
 # OLD - Hardcoded template
 if city == 'torino':
     itinerary = generate_torino_itinerary(start, end)
 
-# NEW - Intelligent database routing  
+# NEW - Intelligent database routing
 if city == 'torino':
     from intelligent_torino_routing import intelligent_torino_router
     itinerary = intelligent_torino_router.generate_intelligent_itinerary(
@@ -52,6 +56,7 @@ if city == 'torino':
 ### 3. **Dynamic Routing Fix** (`dynamic_routing.py`)
 
 **Changed:**
+
 ```python
 # OLD - Torino in optimized_cities list (uses fallback)
 optimized_cities = ['trieste', ..., 'torino', ...]
@@ -65,27 +70,34 @@ if 'torino' in city_lower or 'turin' in city_lower:
 ## 🎯 How It Fixes Each Issue
 
 ### Issue 1: Hallucinated Routes ✅ FIXED
+
 **Before:** Used hardcoded coordinates or random far-away locations  
 **After:** Queries database for REAL Torino attractions only
+
 - place_cache: 12 attractions (Mole Antonelliana, Museo Egizio, etc.)
 - comprehensive_attractions: 357 attractions
 - **ALL within Torino city boundaries**
 
-### Issue 2: Broken Map ✅ FIXED  
-**Before:** 
+### Issue 2: Broken Map ✅ FIXED
+
+**Before:**
+
 - Started from point 2 (bug in routing)
 - Random connections ignoring distance
 - Wrong coordinates
 
 **After:**
+
 - **Proper start point** (index 0 in itinerary array)
 - **Proximity-based routing** - each stop closest to previous
 - **Distance calculation** with haversine formula
 - **Logical transport modes** (walking <1km, tram 1-2km, bus >2km)
 
 ### Issue 3: No Details ✅ FIXED
+
 **Before:** Generic descriptions, no database integration  
 **After:**
+
 - Real descriptions from comprehensive_attractions
 - Category information (museum, restaurant, landmark)
 - Source tracking (place_cache vs comprehensive_attractions)
@@ -93,8 +105,10 @@ if 'torino' in city_lower or 'turin' in city_lower:
 - Proper context strings for detail API integration
 
 ### Issue 4: Only Fallback Images ✅ FIXED
+
 **Before:** Not querying database for images  
 **After:**
+
 - **Prioritizes attractions WITH images** in SQL query:
   ```sql
   ORDER BY CASE WHEN image_url IS NOT NULL THEN 1 ELSE 2 END
@@ -106,24 +120,28 @@ if 'torino' in city_lower or 'turin' in city_lower:
 ## 📊 Expected Results
 
 ### Route Quality:
+
 - ✅ All stops within Torino city
 - ✅ Logical geographic progression
 - ✅ Real attraction names from database
 - ✅ Proper coordinates (45.0xxx, 7.6xxx range)
 
 ### Map Rendering:
+
 - ✅ Starts from point 1 (array index 0)
 - ✅ Each point connected to nearest next point
 - ✅ Distance-aware transport modes
 - ✅ Proper lat/lng for map markers
 
 ### Details/Content:
+
 - ✅ Real descriptions from database
 - ✅ Category classification
 - ✅ Source tracking
 - ✅ Integration with detail_handler.py for enrichment
 
 ### Images:
+
 - ✅ 21% have real database images
 - ✅ Known good images for top attractions
 - ✅ Fallback system for missing images
@@ -132,12 +150,14 @@ if 'torino' in city_lower or 'turin' in city_lower:
 ## 🧪 Testing
 
 ### Manual Test via Browser:
+
 1. Go to http://localhost:5000
 2. Set "Partenza": "Torino Porta Nuova"
 3. Set "Destinazione": "Parco del Valentino"
 4. Click "Pianifica il mio giorno"
 
 ### Expected Output:
+
 ```json
 {
   "success": true,
@@ -156,7 +176,7 @@ if 'torino' in city_lower or 'turin' in city_lower:
       "lng": 7.6934,
       "transport": "walking",
       "image_url": "https://upload.wikimedia.org/..."
-    },
+    }
     // ... more real attractions
   ]
 }
@@ -179,7 +199,7 @@ if 'torino' in city_lower or 'turin' in city_lower:
 ## 📈 Impact
 
 - **Route Accuracy**: 0% → 100% (all real Torino locations)
-- **Map Quality**: Broken → Fully functional  
+- **Map Quality**: Broken → Fully functional
 - **Detail Coverage**: Generic → Rich database content
 - **Image Coverage**: 0% → 21% real + fallbacks
 

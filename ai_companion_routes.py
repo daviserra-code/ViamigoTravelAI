@@ -20,6 +20,7 @@ from multi_language_support import multi_language
 # RAG integration
 from simple_rag_helper import get_city_context_prompt, get_hotel_context_prompt, rag_helper
 import requests  # Import requests for making HTTP calls
+from intelligent_torino_routing import IntelligentTorinoRouter  # 🚀 USE EXISTING INTELLIGENT ROUTER!
 
 ai_companion_bp = Blueprint('ai_companion', __name__)
 
@@ -32,7 +33,7 @@ class AICompanionEngine:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=3)
         self.db_url = os.getenv('DATABASE_URL')
-    
+
     def _query_attractions_from_db(self, city_name: str, city_key: str, limit: int = 6) -> List[Dict]:
         """
         🚀 DYNAMIC DATABASE QUERY - Query PostgreSQL for REAL attractions
@@ -40,13 +41,13 @@ class AICompanionEngine:
         """
         import psycopg2
         import json as json_module
-        
+
         attractions = []
-        
+
         try:
             conn = psycopg2.connect(self.db_url)
             cursor = conn.cursor()
-            
+
             # Priority 1: Query place_cache (best curated data)
             print(f"📊 Querying place_cache for {city_name}...")
             cursor.execute("""
@@ -56,25 +57,32 @@ class AICompanionEngine:
                 ORDER BY priority_level DESC, access_count DESC
                 LIMIT %s
             """, (city_name, limit))
-            
+
             place_cache_results = cursor.fetchall()
-            
+
             for row in place_cache_results:
                 place_name, city, place_data_json, cache_key = row
-                place_data = json_module.loads(place_data_json) if place_data_json else {}
+                place_data = json_module.loads(
+                    place_data_json) if place_data_json else {}
+
+                lat = place_data.get('lat') or place_data.get('latitude')
+                lng = place_data.get('lon') or place_data.get('lng') or place_data.get('longitude')
                 
+                print(f"🔍 DEBUG place_cache: {place_name} - lat:{lat}, lng:{lng}, keys:{list(place_data.keys())[:5]}")
+
                 attractions.append({
                     'name': place_data.get('name', place_name),
-                    'latitude': place_data.get('lat') or place_data.get('latitude'),
-                    'longitude': place_data.get('lon') or place_data.get('lng') or place_data.get('longitude'),
+                    'latitude': lat,
+                    'longitude': lng,
                     'description': place_data.get('description', f'{place_name} a {city_name}'),
                     'image_url': place_data.get('image_url'),
                     'source': 'PostgreSQL place_cache'
                 })
-            
+
             # Priority 2: If insufficient data, query comprehensive_attractions
             if len(attractions) < limit:
-                print(f"📊 Querying comprehensive_attractions for {city_name}...")
+                print(
+                    f"📊 Querying comprehensive_attractions for {city_name}...")
                 cursor.execute("""
                     SELECT name, city, category, description, latitude, longitude, image_url
                     FROM comprehensive_attractions
@@ -88,9 +96,9 @@ class AICompanionEngine:
                     RANDOM()
                     LIMIT %s
                 """, (city_name, limit - len(attractions)))
-                
+
                 db_results = cursor.fetchall()
-                
+
                 for row in db_results:
                     name, city, category, description, lat, lng, image_url = row
                     attractions.append({
@@ -101,17 +109,18 @@ class AICompanionEngine:
                         'image_url': image_url,
                         'source': 'PostgreSQL comprehensive_attractions'
                     })
-            
+
             cursor.close()
             conn.close()
-            
-            print(f"✅ Found {len(attractions)} attractions from database for {city_name}")
+
+            print(
+                f"✅ Found {len(attractions)} attractions from database for {city_name}")
             return attractions
-            
+
         except Exception as e:
             print(f"❌ Database query error for {city_name}: {e}")
             return []
-    
+
     def _query_restaurants_from_db(self, city_name: str, city_key: str, limit: int = 3) -> List[Dict]:
         """
         🚀 DYNAMIC DATABASE QUERY - Query PostgreSQL for REAL restaurants
@@ -119,13 +128,13 @@ class AICompanionEngine:
         """
         import psycopg2
         import json as json_module
-        
+
         restaurants = []
-        
+
         try:
             conn = psycopg2.connect(self.db_url)
             cursor = conn.cursor()
-            
+
             # Priority 1: Query place_cache for restaurants
             print(f"📊 Querying place_cache for restaurants in {city_name}...")
             cursor.execute("""
@@ -137,13 +146,14 @@ class AICompanionEngine:
                 ORDER BY priority_level DESC, access_count DESC
                 LIMIT %s
             """, (city_name, limit))
-            
+
             place_cache_results = cursor.fetchall()
-            
+
             for row in place_cache_results:
                 place_name, city, place_data_json, cache_key = row
-                place_data = json_module.loads(place_data_json) if place_data_json else {}
-                
+                place_data = json_module.loads(
+                    place_data_json) if place_data_json else {}
+
                 restaurants.append({
                     'name': place_data.get('name', place_name),
                     'latitude': place_data.get('lat') or place_data.get('latitude'),
@@ -152,10 +162,11 @@ class AICompanionEngine:
                     'image_url': place_data.get('image_url'),
                     'source': 'PostgreSQL place_cache'
                 })
-            
+
             # Priority 2: If insufficient, query comprehensive_attractions for food places
             if len(restaurants) < limit:
-                print(f"📊 Querying comprehensive_attractions for restaurants in {city_name}...")
+                print(
+                    f"📊 Querying comprehensive_attractions for restaurants in {city_name}...")
                 cursor.execute("""
                     SELECT name, city, category, description, latitude, longitude, image_url
                     FROM comprehensive_attractions
@@ -166,9 +177,9 @@ class AICompanionEngine:
                     ORDER BY RANDOM()
                     LIMIT %s
                 """, (city_name, limit - len(restaurants)))
-                
+
                 db_results = cursor.fetchall()
-                
+
                 for row in db_results:
                     name, city, category, description, lat, lng, image_url = row
                     restaurants.append({
@@ -179,13 +190,14 @@ class AICompanionEngine:
                         'image_url': image_url,
                         'source': 'PostgreSQL comprehensive_attractions'
                     })
-            
+
             cursor.close()
             conn.close()
-            
-            print(f"✅ Found {len(restaurants)} restaurants from database for {city_name}")
+
+            print(
+                f"✅ Found {len(restaurants)} restaurants from database for {city_name}")
             return restaurants
-            
+
         except Exception as e:
             print(f"❌ Database query error for {city_name}: {e}")
             return []
@@ -1027,6 +1039,24 @@ def plan_ai_powered():
         budget = data.get('budget', '€€')
 
         print(f"🧠 AI-powered planning: {start} → {end}")
+        
+        # 🚀 TORINO: Use intelligent database-driven router
+        if any(term in (start + end).lower() for term in ['torino', 'turin', 'mole antonelliana', 'parco valentino', 'museo egizio']):
+            print(f"✅ Detected TORINO - using IntelligentTorinoRouter")
+            torino_router = IntelligentTorinoRouter()
+            itinerary = torino_router.generate_intelligent_itinerary(
+                start=start,
+                end=end,
+                interests=interests,
+                duration="full_day" if pace == "Lento" else "half_day"
+            )
+            return jsonify({
+                "itinerary": itinerary,
+                "city": "Torino",
+                "total_duration": f"{len(itinerary) * 1.5:.1f} hours",
+                "status": "success",
+                "router": "intelligent_torino"
+            })
 
         # Detect city from input with proper geographical mapping
         def detect_city_from_input(location_text):
@@ -1308,22 +1338,27 @@ def plan_ai_powered():
                 # No restaurants from AI in this fallback scenario
 
         else:  # Not a foreign destination, proceed with standard logic
-            print(f"🏛️ Domestic destination: {city_name}. Querying PostgreSQL database...")
-            
+            print(
+                f"🏛️ Domestic destination: {city_name}. Querying PostgreSQL database...")
+
             # 🚀 DYNAMIC DATABASE QUERY - NO HARDCODED DATA!
             # Query comprehensive_attractions table for REAL data
-            postgres_attractions = ai_engine._query_attractions_from_db(city_name, city_key)
-            
+            postgres_attractions = ai_engine._query_attractions_from_db(
+                city_name, city_key)
+
             if postgres_attractions:
-                print(f"✅ Found {len(postgres_attractions)} attractions from database for {city_name}")
+                print(
+                    f"✅ Found {len(postgres_attractions)} attractions from database for {city_name}")
             else:
                 print(f"⚠️ No attractions found in database for {city_name}")
-            
+
             # Query restaurants from database too
-            postgres_restaurants = ai_engine._query_restaurants_from_db(city_name, city_key)
-            
+            postgres_restaurants = ai_engine._query_restaurants_from_db(
+                city_name, city_key)
+
             if postgres_restaurants:
-                print(f"✅ Found {len(postgres_restaurants)} restaurants from database for {city_name}")
+                print(
+                    f"✅ Found {len(postgres_restaurants)} restaurants from database for {city_name}")
             else:
                 print(f"⚠️ No restaurants found in database for {city_name}")
 

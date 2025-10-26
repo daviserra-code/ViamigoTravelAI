@@ -183,7 +183,7 @@ class DynamicRouter:
                 # 🗽 USA
                 'new york', 'washington dc'
             ]
-            
+
             # 🚀 SPECIAL: Torino uses intelligent routing with database
             if 'torino' in city_lower or 'turin' in city_lower:
                 print(f"🎯 Using intelligent database routing for Torino")
