@@ -1,7 +1,118 @@
 from flask import Blueprint, request, jsonify
 import json
+import psycopg2
+import os
+from dotenv import load_dotenv
 
 detail_bp = Blueprint('details', __name__)
+
+load_dotenv()
+
+
+def _get_details_from_comprehensive_db(context: str) -> dict:
+    """
+    Query comprehensive_attractions table directly for intelligent router context
+    Context format: "palazzo_reale_di_torino_torino"
+    """
+    try:
+        # Parse context: last part is city, rest is attraction name
+        parts = context.replace('_', ' ').split()
+
+        # Common Italian city names
+        italian_cities = {'roma', 'milano', 'torino', 'venezia', 'firenze', 'napoli',
+                          'bologna', 'genova', 'palermo', 'catania', 'bari', 'verona',
+                          'padova', 'trieste', 'parma', 'perugia'}
+
+        # Find city name (last matching city in context)
+        city_name = None
+        attraction_name = None
+
+        for i, part in enumerate(parts):
+            if part.lower() in italian_cities:
+                city_name = part
+                attraction_name = ' '.join(parts[:i])
+                break
+
+        # If no city found, last word is probably city
+        if not city_name and len(parts) > 1:
+            city_name = parts[-1]
+            attraction_name = ' '.join(parts[:-1])
+        elif not city_name:
+            attraction_name = ' '.join(parts)
+
+        if not attraction_name:
+            return None
+
+        print(
+            f"🔍 Searching comprehensive_attractions: '{attraction_name}' in '{city_name}'")
+
+        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+        cursor = conn.cursor()
+
+        # Query with flexible matching
+        query = """
+            SELECT name, city, description, category, latitude, longitude, 
+                   image_url, wikidata_id
+            FROM comprehensive_attractions
+            WHERE LOWER(name) LIKE LOWER(%s)
+        """
+        params = [f'%{attraction_name}%']
+        
+        if city_name:
+            query += " AND LOWER(city) = LOWER(%s)"
+            params.append(city_name)
+        
+        query += " LIMIT 1"
+        
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        
+        if result:
+            name, city, description, category, lat, lng, image_url, wikidata_id = result
+            
+            formatted_result = {
+                'success': True,
+                'title': name,
+                'summary': (description[:200] + '...') if description and len(description) > 200 else (description or f'{name} a {city}'),
+                'description': description or f'Attrazione importante a {city}',
+                'imageUrl': image_url,
+                'cost': 'Consultare sito ufficiale',
+                'opening_hours': 'Consultare sito ufficiale',
+                'tip': f'Visita {name} durante gli orari di apertura per la migliore esperienza',
+                'source': 'comprehensive_attractions',
+                'details': [
+                    {'label': 'Città', 'value': city},
+                    {'label': 'Categoria', 'value': category or 'Attrazione'},
+                ]
+            }
+
+            if lat and lng:
+                formatted_result['details'].append({
+                    'label': 'Coordinate',
+                    'value': f"{lat:.4f}, {lng:.4f}"
+                })
+
+            if wikidata_id:
+                formatted_result['details'].append({
+                    'label': 'Wikidata ID',
+                    'value': wikidata_id
+                })
+
+            cursor.close()
+            conn.close()
+
+            print(f"✅ Found in comprehensive_attractions: {name}")
+            return formatted_result
+
+        cursor.close()
+        conn.close()
+        return None
+
+    except Exception as e:
+        print(f"❌ Error querying comprehensive_attractions: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 
 @detail_bp.route('/get_details', methods=['POST'])
@@ -13,7 +124,13 @@ def get_details():
 
         print(f"🔍 Processing detail request for context: {context}")
 
-        # PRIORITY 1: Use the intelligent detail handler system
+        # PRIORITY 1: Query comprehensive_attractions directly (for intelligent router)
+        db_result = _get_details_from_comprehensive_db(context)
+        if db_result:
+            print(f"✅ Found details in comprehensive_attractions database")
+            return jsonify(db_result)
+
+        # PRIORITY 2: Use the intelligent detail handler system
         try:
             from intelligent_detail_handler import IntelligentDetailHandler
 
