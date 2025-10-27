@@ -170,8 +170,10 @@ class IntelligentItalianRouter:
                 city_config = {
                     'milano': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
                     'milan': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
-                    'firenze': ('Toscana', 43.7, 43.9, 11.1, 11.4),
-                    'florence': ('Toscana', 43.7, 43.9, 11.1, 11.4),
+                    # Florence: ~10km radius from center (43.7732, 11.2560)
+                    # Filters out 18km outliers but includes main attractions
+                    'firenze': ('Toscana', 43.68, 43.86, 11.14, 11.37),
+                    'florence': ('Toscana', 43.68, 43.86, 11.14, 11.37),
                     # Rome is HUGE: actual extent is 53km x 52km
                     'roma': ('Lazio', 41.66, 42.15, 12.24, 12.86),
                     'rome': ('Lazio', 41.66, 42.15, 12.24, 12.86),
@@ -225,6 +227,8 @@ class IntelligentItalianRouter:
                         WHERE LOWER(ca.city) = LOWER(%s)
                           AND ca.latitude IS NOT NULL
                           AND ca.longitude IS NOT NULL
+                          AND ca.name IS NOT NULL
+                          AND TRIM(ca.name) != ''
                           {category_filter}
                         
                         UNION ALL
@@ -254,6 +258,8 @@ class IntelligentItalianRouter:
                             AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
                         WHERE cai.latitude IS NOT NULL
                           AND cai.longitude IS NOT NULL
+                          AND cai.name IS NOT NULL
+                          AND TRIM(cai.name) != ''
                           {geo_filter}
                           {category_filter.replace('ca.', 'cai.')}
                     ) combined_results
