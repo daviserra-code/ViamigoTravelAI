@@ -1,0 +1,41 @@
+{
+  "test_date": "2025-10-27T19:08:24.287852",
+  "summary": {
+    "total_requests": 4,
+    "apify_calls": 0,
+    "estimated_cost": 0.0,
+    "source_distribution": {
+      "chromadb": 4
+    }
+  },
+  "results": [
+    {
+      "name": "Ristorante XYZ123 non esistente",
+      "source": "chromadb",
+      "time": 2.000952959060669,
+      "title": "Ristorante C\u00e0 Leon",
+      "attempt": 1
+    },
+    {
+      "name": "Bar Immaginario Torino 9999",
+      "source": "chromadb",
+      "time": 2.0392818450927734,
+      "title": "Bar 999",
+      "attempt": 1
+    },
+    {
+      "name": "Museo Fantastico Milano ABC",
+      "source": "chromadb",
+      "time": 1.757166862487793,
+      "title": "Museo nazionale dell\u2019emigrazione italiana",
+      "attempt": 1
+    },
+    {
+      "name": "Caff\u00e8 Mulassano Torino",
+      "source": "chromadb",
+      "time": 2.240994453430176,
+      "title": "Caff\u00e8 Torino",
+      "attempt": 1
+    }
+  ]
+}

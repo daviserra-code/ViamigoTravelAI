@@ -1,0 +1,68 @@
+
+================================================================================
+🧪 AGGRESSIVE APIFY TESTING
+Testing with unknown attractions to verify Apify fallback and caching
+================================================================================
+
+
+📊 TEST 1: Random unknown places (should trigger Apify if not in ChromaDB)
+--------------------------------------------------------------------------------
+
+======================================================================
+Test 1: Ristorante XYZ123 non esistente
+======================================================================
+🧠 Source: chromadb
+⚡ Time: 2.00s
+📝 Title: Ristorante Cà Leon
+
+======================================================================
+Test 1: Bar Immaginario Torino 9999
+======================================================================
+🧠 Source: chromadb
+⚡ Time: 2.04s
+📝 Title: Bar 999
+
+======================================================================
+Test 1: Museo Fantastico Milano ABC
+======================================================================
+🧠 Source: chromadb
+⚡ Time: 1.76s
+📝 Title: Museo nazionale dell’emigrazione italiana
+
+
+📊 TEST 2: Caching verification with specific attraction
+--------------------------------------------------------------------------------
+
+🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄
+CACHING TEST: Caffè Mulassano Torino
+🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄
+
+--- FIRST REQUEST (might be slow if Apify is called) ---
+
+======================================================================
+Test 1: Caffè Mulassano Torino
+======================================================================
+🧠 Source: chromadb
+⚡ Time: 2.24s
+📝 Title: Caffè Torino
+
+✅ First request didn't need Apify (served from chromadb)
+
+
+================================================================================
+📊 SUMMARY
+================================================================================
+
+📈 Source Distribution:
+  🧠 chromadb                      : 4 requests - Avg: 2.01s
+
+💰 Apify Calls: 0/4
+💵 Estimated Cost: $0.00
+
+✅ NO APIFY CALLS! ChromaDB/DB handled everything.
+   This means your database coverage is excellent.
+
+💾 Report saved to: aggressive_apify_test_20251027_190824.json
+
+================================================================================
+

@@ -1,0 +1,123 @@
+{
+  "summary": {
+    "total_requests": 12,
+    "source_distribution": {
+      "chromadb": 9,
+      "comprehensive_attractions": 3
+    },
+    "apify_calls": 0,
+    "estimated_cost": 0.0,
+    "avg_response_time": 1.821666666666667,
+    "success_rate": 100.0
+  },
+  "detailed_results": [
+    {
+      "attraction": "Mole Antonelliana",
+      "source": "chromadb",
+      "time": 2.08,
+      "success": true,
+      "title": "Osteria Il Ghibellino",
+      "expected_source": "comprehensive_attractions",
+      "timestamp": "2025-10-27T19:06:25.923213"
+    },
+    {
+      "attraction": "Museo Egizio Torino",
+      "source": "comprehensive_attractions",
+      "time": 1.83,
+      "success": true,
+      "title": "Museo Egizio di Torino",
+      "expected_source": "comprehensive_attractions",
+      "timestamp": "2025-10-27T19:06:28.257623"
+    },
+    {
+      "attraction": "Duomo di Milano",
+      "source": "chromadb",
+      "time": 1.82,
+      "success": true,
+      "title": "Duomo",
+      "expected_source": "comprehensive_attractions",
+      "timestamp": "2025-10-27T19:06:30.574965"
+    },
+    {
+      "attraction": "Colosseo Roma",
+      "source": "chromadb",
+      "time": 1.82,
+      "success": true,
+      "title": "Colosseo",
+      "expected_source": "comprehensive_attractions",
+      "timestamp": "2025-10-27T19:06:32.897301"
+    },
+    {
+      "attraction": "Uffizi Firenze",
+      "source": "chromadb",
+      "time": 1.87,
+      "success": true,
+      "title": "Uzeta",
+      "expected_source": "comprehensive_attractions",
+      "timestamp": "2025-10-27T19:06:35.264430"
+    },
+    {
+      "attraction": "Museo del Cinema Torino",
+      "source": "chromadb",
+      "time": 1.91,
+      "success": true,
+      "title": "Museo Nazionale del Cinema",
+      "expected_source": "chromadb",
+      "timestamp": "2025-10-27T19:06:37.671805"
+    },
+    {
+      "attraction": "Galleria d'arte Torino",
+      "source": "chromadb",
+      "time": 1.96,
+      "success": true,
+      "title": "BLL Galleria d'arte",
+      "expected_source": "chromadb",
+      "timestamp": "2025-10-27T19:06:40.135713"
+    },
+    {
+      "attraction": "Parco pubblico Milano",
+      "source": "chromadb",
+      "time": 1.69,
+      "success": true,
+      "title": "Caff\u00e8 Del Parco",
+      "expected_source": "chromadb",
+      "timestamp": "2025-10-27T19:06:42.323443"
+    },
+    {
+      "attraction": "Piccolo bar vicino Piazza Castello",
+      "source": "chromadb",
+      "time": 1.69,
+      "success": true,
+      "title": "Piccolo Bar",
+      "expected_source": "apify",
+      "timestamp": "2025-10-27T19:06:44.511359"
+    },
+    {
+      "attraction": "Negozio artigianale Via Roma Torino",
+      "source": "chromadb",
+      "time": 1.71,
+      "success": true,
+      "title": "Quel che c\u2019\u00e8",
+      "expected_source": "apify",
+      "timestamp": "2025-10-27T19:06:46.720462"
+    },
+    {
+      "attraction": "Palazzo Reale Torino",
+      "source": "comprehensive_attractions",
+      "time": 1.82,
+      "success": true,
+      "title": "Palazzo Reale di Torino",
+      "expected_source": null,
+      "timestamp": "2025-10-27T19:06:49.037839"
+    },
+    {
+      "attraction": "Palazzo Reale Torino",
+      "source": "comprehensive_attractions",
+      "time": 1.66,
+      "success": true,
+      "title": "Palazzo Reale di Torino",
+      "expected_source": null,
+      "timestamp": "2025-10-27T19:06:51.698882"
+    }
+  ]
+}
