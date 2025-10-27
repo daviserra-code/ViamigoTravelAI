@@ -486,6 +486,7 @@ def get_details():
 
         # PRIORITY 5 (LAST RESORT): Apify real-time data - expensive and slow!
         print(f"⚠️ All fast sources exhausted, trying Apify as LAST RESORT...")
+        print(f"💰 Note: Apify will cache results to comprehensive_attractions to avoid future costs")
         apify_start = time.time()
         try:
             from intelligent_detail_handler import IntelligentDetailHandler
@@ -499,6 +500,7 @@ def get_details():
 
             if result and result.get('success'):
                 print(f"✅ Apify success: {result.get('source', 'unknown')} source")
+                print(f"💾 Apify result cached - next request will be FREE and 20x faster!")
                 return jsonify(result)
             else:
                 print(f"⚠️ Apify returned empty result, using fallback")
