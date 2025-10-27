@@ -299,37 +299,63 @@ def _enhance_generic_result(context: str, apify_data: dict = None) -> dict:
 def get_details():
     """Scalable details handler using database-first approach"""
     try:
+        import time
+        start_time = time.time()
+        
         data = request.get_json()
         context = data.get('context', '')
 
         print(f"🔍 Processing detail request for context: {context}")
 
         # PRIORITY 1: Query comprehensive_attractions directly (for intelligent router)
+        print(f"⏱️ Starting comprehensive_attractions query...")
         db_result = _get_details_from_comprehensive_db(context)
+        print(f"⏱️ Comprehensive DB query took {time.time() - start_time:.2f}s")
         if db_result:
             print(f"✅ Found details in comprehensive_attractions database")
             return jsonify(db_result)
 
-        # PRIORITY 2: Use the intelligent detail handler system
+        # PRIORITY 2: ChromaDB semantic search (FAST and uses sentence transformers!)
         try:
-            from intelligent_detail_handler import IntelligentDetailHandler
+            print(f"⏱️ Starting ChromaDB semantic search...")
+            chroma_start = time.time()
+            from simple_rag_helper import rag_helper
 
-            handler = IntelligentDetailHandler()
-            user_data = data.get('user_data', {})
+            # Search ChromaDB for relevant information about this place
+            search_results = rag_helper.semantic_search_places(
+                query=context,
+                n_results=1
+            )
 
-            result = handler.get_details(context, user_data)
+            if search_results and len(search_results) > 0:
+                place = search_results[0]
+                
+                formatted_result = {
+                    'success': True,
+                    'title': place.get('name', context.title()),
+                    'summary': place.get('description', '')[:200] + '...' if place.get('description') and len(place.get('description', '')) > 200 else place.get('description', f'Attrazione trovata tramite ricerca semantica'),
+                    'description': place.get('description', 'Descrizione non disponibile'),
+                    'cost': 'Variabile',
+                    'opening_hours': 'Consultare fonti ufficiali',
+                    'tip': 'Informazioni ottenute da knowledge base semantica',
+                    'source': 'chromadb',
+                    'details': [
+                        {'label': 'Fonte', 'value': 'Knowledge Base (Semantic Search)'},
+                        {'label': 'Tipo', 'value': place.get('category', 'Attrazione')},
+                        {'label': 'Rilevanza', 'value': f"{place.get('score', 0):.2%}"}
+                    ]
+                }
 
-            if result and result.get('success'):
-                print(
-                    f"✅ Intelligent handler success: {result.get('source', 'unknown')} source")
-                return jsonify(result)
+                if place.get('city'):
+                    formatted_result['details'].insert(0, {'label': 'Città', 'value': place.get('city')})
+
+                print(f"✅ Found information in ChromaDB in {time.time() - chroma_start:.2f}s")
+                return jsonify(formatted_result)
             else:
-                print(
-                    f"⚠️ Intelligent handler returned empty result, using comprehensive API")
+                print(f"⚠️ ChromaDB returned no results, trying place_cache")
 
         except Exception as e:
-            print(
-                f"❌ Intelligent handler error: {e}, trying comprehensive API")
+            print(f"❌ ChromaDB error: {e}, trying place_cache")
 
         # PRIORITY 2: Search place_cache table (has Milano data!)
         try:
@@ -456,52 +482,26 @@ def get_details():
                     return jsonify(formatted_result)
 
         except Exception as e:
-            print(f"❌ Comprehensive API error: {e}, trying ChromaDB")
+            print(f"❌ Comprehensive API error: {e}, trying Apify as last resort")
 
-        # PRIORITY 3: ChromaDB semantic search
+        # PRIORITY 5 (LAST RESORT): Apify real-time data - expensive and slow!
+        print(f"⚠️ All fast sources exhausted, trying Apify as LAST RESORT...")
+        apify_start = time.time()
         try:
-            from simple_rag_helper import simple_rag
+            from intelligent_detail_handler import IntelligentDetailHandler
 
-            # Search ChromaDB for relevant information
-            rag_result = simple_rag(f"dettagli informazioni {context}")
+            handler = IntelligentDetailHandler()
+            user_data = data.get('user_data', {})
 
-            if rag_result:
-                formatted_result = {
-                    'success': True,
-                    'title': context.title(),
-                    'summary': rag_result[:200] + '...' if len(rag_result) > 200 else rag_result,
-                    'description': rag_result,
-                    'cost': 'Variabile',
-                    'opening_hours': 'Consultare fonti ufficiali',
-                    'tip': 'Informazioni ottenute da knowledge base',
-                    'source': 'chromadb',
-                    'details': [
-                        {'label': 'Fonte', 'value': 'Knowledge Base'},
-                        {'label': 'Tipo', 'value': 'Attrazione'}
-                    ]
-                }
+            print(f"⏱️ Calling Apify handler (this may take 30+ seconds)...")
+            result = handler.get_details(context, user_data)
+            print(f"⏱️ Apify took {time.time() - apify_start:.2f}s")
 
-                print(f"✅ Found information in ChromaDB")
-                return jsonify(formatted_result)
-
-        except Exception as e:
-            print(f"❌ ChromaDB error: {e}, trying Apify")
-
-        # PRIORITY 4: Apify real-time data
-        apify_data = None
-        try:
-            from apify_integration import ApifyTravelIntegration
-
-            apify = ApifyTravelIntegration()
-            apify_result = apify.get_attraction_details(context)
-
-            if apify_result and apify_result.get('success'):
-                print(f"⚠️ Found via Apify but enhancing with context-aware content...")
-                # Enhance Apify result with better context
-                enhanced = _enhance_generic_result(context, apify_result)
-                print(
-                    f"✅ Enhanced Apify result with source: {enhanced.get('source')}")
-                return jsonify(enhanced)
+            if result and result.get('success'):
+                print(f"✅ Apify success: {result.get('source', 'unknown')} source")
+                return jsonify(result)
+            else:
+                print(f"⚠️ Apify returned empty result, using fallback")
 
         except Exception as e:
             print(f"❌ Apify error: {e}, using enhanced fallback")
