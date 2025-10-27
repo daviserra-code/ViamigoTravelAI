@@ -13,24 +13,34 @@ enhanced_images_bp = Blueprint('enhanced_images', __name__)
 
 # Simple image database for testing
 ATTRACTION_IMAGES = {
+    # Rome
     'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',  # Colosseum
     'fontana_di_trevi': 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=800',  # Trevi Fountain
     'pantheon': 'https://images.unsplash.com/photo-1555992336-03a23c33d7ba?w=800',  # Pantheon Rome
     'piazza_navona': 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800',  # Better Piazza Navona image
+    # Milan
     'duomo_milano': 'https://images.unsplash.com/photo-1543832923-44667a44c804?w=800',  # Milan Cathedral
     'castello_sforzesco': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',  # Sforza Castle
     'galleria_vittorio_emanuele': 'https://images.unsplash.com/photo-1509715513011-e394f0cb20c4?w=800',  # Galleria in Milan
     'navigli': 'https://images.unsplash.com/photo-1576673177419-2ed30b99e27b?w=800',  # Milan Navigli canals
+    # Naples
     'spaccanapoli': 'https://images.unsplash.com/photo-1544737151-6e4b2eb0bb8d?w=800',
     'castel_dell_ovo': 'https://images.unsplash.com/photo-1587022092690-1db5b98c73ac?w=800',
     'piazza_del_plebiscito': 'https://images.unsplash.com/photo-1544737150-6ba4f3b29ed1?w=800',
     'quartieri_spagnoli': 'https://images.unsplash.com/photo-1587022092690-1db5b98c73ac?w=800',
+    # Genoa
     'acquario_genova': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800',
     'palazzo_rosso': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800',
     'palazzo_bianco': 'https://images.unsplash.com/photo-1565026057447-bc90f80b4a82?w=800',
     'lanterna_genova': 'https://images.unsplash.com/photo-1565026057447-bc90f80b4a82?w=800',
     'via_del_campo': 'https://images.unsplash.com/photo-1585562582810-b6970174c3b6?w=800',
-    'centro_storico_genova': 'https://images.unsplash.com/photo-1585562582810-b6970174c3b6?w=800'
+    'centro_storico_genova': 'https://images.unsplash.com/photo-1585562582810-b6970174c3b6?w=800',
+    # Florence
+    'piazza_della_signoria': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',  # Piazza della Signoria
+    'uffizi': 'https://images.unsplash.com/photo-1560969184-10fe8719e047?w=800',  # Uffizi Gallery
+    'ponte_vecchio': 'https://images.unsplash.com/photo-1557232838-4497d1da2c6b?w=800',  # Ponte Vecchio
+    'duomo_firenze': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',  # Florence Cathedral
+    'palazzo_pitti': 'https://images.unsplash.com/photo-1555992336-03a23c33d7ba?w=800',  # Palazzo Pitti
 }
 
 
@@ -38,8 +48,10 @@ def classify_attraction_simple(title, context=""):
     """Simple attraction classification"""
     text = f"{title} {context}".lower()
 
-    # Italian cities
-    if any(city in text for city in ['roma', 'rome']):
+    # Italian cities - CHECK CONTEXT FIRST for better accuracy
+    if any(city in text for city in ['firenze', 'florence']):
+        city = 'Firenze'
+    elif any(city in text for city in ['roma', 'rome']):
         city = 'Roma'
     elif any(city in text for city in ['milano', 'milan']):
         city = 'Milano'
@@ -67,6 +79,23 @@ def classify_attraction_simple(title, context=""):
     elif 'navona' in text:
         attraction = 'Piazza Navona'
         confidence = 0.9
+    # Florence attractions
+    elif 'signoria' in text:
+        attraction = 'Piazza della Signoria'
+        confidence = 0.9
+    elif 'uffizi' in text:
+        attraction = 'Galleria degli Uffizi'
+        confidence = 0.9
+    elif 'ponte vecchio' in text or 'pontevecchio' in text:
+        attraction = 'Ponte Vecchio'
+        confidence = 0.9
+    elif 'duomo' in text and 'firenze' in text:
+        attraction = 'Duomo di Firenze'
+        confidence = 0.9
+    elif 'palazzo pitti' in text or 'palazzopitti' in text:
+        attraction = 'Palazzo Pitti'
+        confidence = 0.9
+    # Milan attractions
     elif 'duomo' in text and 'milano' in text:
         attraction = 'Duomo di Milano'
         confidence = 0.9
@@ -79,6 +108,7 @@ def classify_attraction_simple(title, context=""):
     elif 'navigli' in text:
         attraction = 'Navigli'
         confidence = 0.9
+    # Naples attractions
     elif 'spaccanapoli' in text:
         attraction = 'Spaccanapoli'
         confidence = 0.9
@@ -139,25 +169,28 @@ def classify_attraction():
         logger.info(f"🔍 Classifying: '{title}' with context: '{context}'")
 
         # First try simple classification for fast results
-        city, attraction, confidence = classify_attraction_simple(title, context)
-        
+        city, attraction, confidence = classify_attraction_simple(
+            title, context)
+
         # If confidence is low, use intelligent classifier
         if confidence < 0.8:
             try:
                 from intelligent_image_classifier import classify_image_intelligent
                 intelligent_result = classify_image_intelligent(title, context)
-                
+
                 if intelligent_result.get('success') and intelligent_result.get('classification', {}).get('confidence', 0) > confidence:
                     # Use intelligent result if better
                     classification = intelligent_result['classification']
                     city = classification.get('city', city)
-                    attraction = classification.get('attraction', attraction) 
+                    attraction = classification.get('attraction', attraction)
                     confidence = classification.get('confidence', confidence)
-                    image_url = intelligent_result.get('image_url', get_image_for_attraction(attraction))
+                    image_url = intelligent_result.get(
+                        'image_url', get_image_for_attraction(attraction))
                 else:
                     image_url = get_image_for_attraction(attraction)
             except Exception as e:
-                logger.warning(f"⚠️ Intelligent classifier failed, using simple: {e}")
+                logger.warning(
+                    f"⚠️ Intelligent classifier failed, using simple: {e}")
                 image_url = get_image_for_attraction(attraction)
         else:
             image_url = get_image_for_attraction(attraction)

@@ -1100,6 +1100,12 @@
 
                 // RENDERIZZA LA TIMELINE
                 data.itinerary.forEach(item => {
+                // 🚫 SKIP TRANSPORT STOPS (like "Verso...") - show only activities, tips, start/end
+                if (item.type === 'transport') {
+                    console.log(`⏭️ Skipping transport stop: ${item.title}`);
+                    return; // Skip this iteration
+                }
+                
                 if (item.type === 'tip') {
                     timelineContainer.innerHTML += `<div class="pro-tip relative my-4 ml-2 p-3 rounded-lg border-l-4 ${themeColors.border} ${themeColors.bgTip}"><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-sm text-gray-300">${item.description}</p></div>`;
                 } else {
