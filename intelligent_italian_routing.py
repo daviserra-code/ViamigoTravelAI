@@ -165,29 +165,36 @@ class IntelligentItalianRouter:
                 # comprehensive_attractions: city-based (Roma, Torino, etc.) - 11,723 rows
                 # comprehensive_attractions_italy: region-based (Lombardia, Toscana, etc.) - 14,172 rows
 
-                # Map cities to regions for comprehensive_attractions_italy
-                city_to_region = {
-                    'milano': 'Lombardia',
-                    'milan': 'Lombardia',
-                    'firenze': 'Toscana',
-                    'florence': 'Toscana',
-                    'roma': 'Lazio',
-                    'rome': 'Lazio',
-                    'napoli': 'Campania',
-                    'naples': 'Campania',
-                    'venezia': 'Veneto',
-                    'venice': 'Veneto',
-                    'torino': 'Piemonte',
-                    'turin': 'Piemonte',
-                    'genova': 'Liguria',
-                    'genoa': 'Liguria',
-                    'bologna': 'Emilia Romagna',
-                    'palermo': 'Sicilia',
-                    'bari': 'Puglia',
-                    'verona': 'Veneto'
+                # Map cities to regions AND geographic bounds for comprehensive_attractions_italy
+                # Bounds format: (min_lat, max_lat, min_lng, max_lng)
+                city_config = {
+                    'milano': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
+                    'milan': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
+                    'firenze': ('Toscana', 43.7, 43.9, 11.1, 11.4),
+                    'florence': ('Toscana', 43.7, 43.9, 11.1, 11.4),
+                    'roma': ('Lazio', 41.8, 42.0, 12.4, 12.6),
+                    'rome': ('Lazio', 41.8, 42.0, 12.4, 12.6),
+                    'napoli': ('Campania', 40.8, 40.9, 14.2, 14.3),
+                    'naples': ('Campania', 40.8, 40.9, 14.2, 14.3),
+                    'venezia': ('Veneto', 45.4, 45.5, 12.3, 12.4),
+                    'venice': ('Veneto', 45.4, 45.5, 12.3, 12.4),
+                    'torino': ('Piemonte', 45.0, 45.1, 7.6, 7.7),
+                    'turin': ('Piemonte', 45.0, 45.1, 7.6, 7.7),
+                    'genova': ('Liguria', 44.4, 44.5, 8.9, 9.0),
+                    'genoa': ('Liguria', 44.4, 44.5, 8.9, 9.0),
+                    'bologna': ('Emilia Romagna', 44.4, 44.6, 11.3, 11.4),
+                    'palermo': ('Sicilia', 38.1, 38.2, 13.3, 13.4),
+                    'bari': ('Puglia', 41.1, 41.2, 16.8, 16.9),
+                    'verona': ('Veneto', 45.4, 45.5, 10.9, 11.1)
                 }
 
-                region_name = city_to_region.get(city_name.lower(), city_name)
+                city_lower = city_name.lower()
+                if city_lower in city_config:
+                    region_name, min_lat, max_lat, min_lng, max_lng = city_config[city_lower]
+                    geo_filter = f"AND cai.latitude BETWEEN {min_lat} AND {max_lat} AND cai.longitude BETWEEN {min_lng} AND {max_lng}"
+                else:
+                    region_name = city_name
+                    geo_filter = ""  # No geographic filter if city not in config
 
                 # 🔄 UNION query: Search both tables and merge results
                 # JOIN with attraction_images to utilize the 932 new images!
@@ -245,6 +252,7 @@ class IntelligentItalianRouter:
                         WHERE cai.city = %s
                           AND cai.latitude IS NOT NULL
                           AND cai.longitude IS NOT NULL
+                          {geo_filter}
                           {category_filter.replace('ca.', 'cai.')}
                     ) combined_results
                     ORDER BY 

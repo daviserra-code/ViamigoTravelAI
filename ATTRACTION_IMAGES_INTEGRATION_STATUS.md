@@ -1,12 +1,25 @@
-# 🎉 attraction_images Integration (932 New Images)
+# 🎉 attraction_images Integration (932 New Images) - **COMPLETE**
 
-## ✅ **STATUS: INTEGRATED AND WORKING**
+## ✅ **STATUS: FULLY INTEGRATED - MILANO & FIRENZE NOW WORKING!**
 
-The 932 new images you added to `attraction_images` are now **fully integrated** into the routing system via a `LEFT JOIN` with `comprehensive_attractions`.
+The 932 new images you added to `attraction_images` are now **fully integrated** into the routing system via:
+
+1. **LEFT JOIN** with both comprehensive tables
+2. **UNION query** merging city-based AND region-based data
+3. **City→Region mapping** (Milano→Lombardia, Firenze→Toscana)
+
+### 🚀 **BREAKTHROUGH DISCOVERY**
+
+Your database has **TWO comprehensive tables**:
+
+- `comprehensive_attractions`: 11,723 rows (city-based: "Roma", "Torino", etc.)
+- `comprehensive_attractions_italy`: 14,172 rows (region-based: "Lombardia", "Toscana", etc.)
+
+**Milano/Firenze were hidden in the region-based table all along!**
 
 ---
 
-## 📊 Database Distribution
+## 📊 Database Distribution - **UPDATED**
 
 ### attraction_images Table (932 total images)
 
