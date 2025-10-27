@@ -320,7 +320,12 @@
                         ? `${result.name} <span class="text-gray-500 text-sm">• ${result.city}</span>`
                         : result.name;
                     
-                    return `<div class="px-4 py-3 hover:bg-gray-700 cursor-pointer text-white border-b border-gray-700 last:border-b-0 transition-colors" data-name="${result.name}" data-type="${result.type}">
+                    // CRITICAL: Include city in the data attribute for places to avoid routing issues
+                    const fullName = result.type === 'place' && result.city 
+                        ? `${result.name}, ${result.city}`
+                        : result.name;
+                    
+                    return `<div class="px-4 py-3 hover:bg-gray-700 cursor-pointer text-white border-b border-gray-700 last:border-b-0 transition-colors" data-name="${fullName}" data-city="${result.city || ''}" data-type="${result.type}">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 ${icon}
@@ -336,9 +341,13 @@
                 // Add click handlers
                 suggestionsContainer.querySelectorAll('[data-name]').forEach(item => {
                     item.addEventListener('click', () => {
-                        console.log('👆 Suggestion clicked:', item.dataset.name);
-                        input.value = item.dataset.name;
+                        const fullName = item.dataset.name;
+                        const city = item.dataset.city;
+                        console.log('👆 Suggestion clicked:', fullName, 'City:', city);
+                        // Use fullName which already includes city for places
+                        input.value = fullName;
                         suggestionsContainer.classList.add('hidden');
+                        console.log('✅ Input value set to:', input.value);
                     });
                 });
             }

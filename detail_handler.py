@@ -301,7 +301,7 @@ def get_details():
     try:
         import time
         start_time = time.time()
-        
+
         data = request.get_json()
         context = data.get('context', '')
 
@@ -310,7 +310,8 @@ def get_details():
         # PRIORITY 1: Query comprehensive_attractions directly (for intelligent router)
         print(f"⏱️ Starting comprehensive_attractions query...")
         db_result = _get_details_from_comprehensive_db(context)
-        print(f"⏱️ Comprehensive DB query took {time.time() - start_time:.2f}s")
+        print(
+            f"⏱️ Comprehensive DB query took {time.time() - start_time:.2f}s")
         if db_result:
             print(f"✅ Found details in comprehensive_attractions database")
             return jsonify(db_result)
@@ -329,7 +330,7 @@ def get_details():
 
             if search_results and len(search_results) > 0:
                 place = search_results[0]
-                
+
                 formatted_result = {
                     'success': True,
                     'title': place.get('name', context.title()),
@@ -340,16 +341,21 @@ def get_details():
                     'tip': 'Informazioni ottenute da knowledge base semantica',
                     'source': 'chromadb',
                     'details': [
-                        {'label': 'Fonte', 'value': 'Knowledge Base (Semantic Search)'},
-                        {'label': 'Tipo', 'value': place.get('category', 'Attrazione')},
-                        {'label': 'Rilevanza', 'value': f"{place.get('score', 0):.2%}"}
+                        {'label': 'Fonte',
+                            'value': 'Knowledge Base (Semantic Search)'},
+                        {'label': 'Tipo', 'value': place.get(
+                            'category', 'Attrazione')},
+                        {'label': 'Rilevanza',
+                            'value': f"{place.get('score', 0):.2%}"}
                     ]
                 }
 
                 if place.get('city'):
-                    formatted_result['details'].insert(0, {'label': 'Città', 'value': place.get('city')})
+                    formatted_result['details'].insert(
+                        0, {'label': 'Città', 'value': place.get('city')})
 
-                print(f"✅ Found information in ChromaDB in {time.time() - chroma_start:.2f}s")
+                print(
+                    f"✅ Found information in ChromaDB in {time.time() - chroma_start:.2f}s")
                 return jsonify(formatted_result)
             else:
                 print(f"⚠️ ChromaDB returned no results, trying place_cache")
@@ -482,7 +488,8 @@ def get_details():
                     return jsonify(formatted_result)
 
         except Exception as e:
-            print(f"❌ Comprehensive API error: {e}, trying Apify as last resort")
+            print(
+                f"❌ Comprehensive API error: {e}, trying Apify as last resort")
 
         # PRIORITY 5 (LAST RESORT): Apify real-time data - expensive and slow!
         print(f"⚠️ All fast sources exhausted, trying Apify as LAST RESORT...")
@@ -499,8 +506,10 @@ def get_details():
             print(f"⏱️ Apify took {time.time() - apify_start:.2f}s")
 
             if result and result.get('success'):
-                print(f"✅ Apify success: {result.get('source', 'unknown')} source")
-                print(f"💾 Apify result cached - next request will be FREE and 20x faster!")
+                print(
+                    f"✅ Apify success: {result.get('source', 'unknown')} source")
+                print(
+                    f"💾 Apify result cached - next request will be FREE and 20x faster!")
                 return jsonify(result)
             else:
                 print(f"⚠️ Apify returned empty result, using fallback")

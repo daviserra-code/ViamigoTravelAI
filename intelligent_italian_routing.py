@@ -172,8 +172,9 @@ class IntelligentItalianRouter:
                     'milan': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
                     'firenze': ('Toscana', 43.7, 43.9, 11.1, 11.4),
                     'florence': ('Toscana', 43.7, 43.9, 11.1, 11.4),
-                    'roma': ('Lazio', 41.8, 42.0, 12.4, 12.6),
-                    'rome': ('Lazio', 41.8, 42.0, 12.4, 12.6),
+                    # Rome is HUGE: actual extent is 53km x 52km
+                    'roma': ('Lazio', 41.66, 42.15, 12.24, 12.86),
+                    'rome': ('Lazio', 41.66, 42.15, 12.24, 12.86),
                     'napoli': ('Campania', 40.8, 40.9, 14.2, 14.3),
                     'naples': ('Campania', 40.8, 40.9, 14.2, 14.3),
                     'venezia': ('Veneto', 45.4, 45.5, 12.3, 12.4),
@@ -229,6 +230,8 @@ class IntelligentItalianRouter:
                         UNION ALL
                         
                         -- Table 2: comprehensive_attractions_italy (region-based)
+                        -- For cities with geographic config, use ONLY geographic bounds
+                        -- The city column in this table contains actual city names, not regions
                         SELECT 
                             cai.name,
                             cai.city as region,
@@ -249,8 +252,7 @@ class IntelligentItalianRouter:
                                 OR LOWER(ai.attraction_name) LIKE '%%' || LOWER(cai.name) || '%%'
                             )
                             AND (ai.confidence_score > 0.5 OR ai.confidence_score IS NULL)
-                        WHERE cai.city = %s
-                          AND cai.latitude IS NOT NULL
+                        WHERE cai.latitude IS NOT NULL
                           AND cai.longitude IS NOT NULL
                           {geo_filter}
                           {category_filter.replace('ca.', 'cai.')}
@@ -263,8 +265,11 @@ class IntelligentItalianRouter:
                     LIMIT %s
                 """
 
-                cursor.execute(query, (city_name, city_name,
-                               region_name, 12 - len(attractions)))
+                # Parameters: city_name for comprehensive_attractions WHERE,
+                #             city_name for attraction_images JOIN,
+                #             limit for LIMIT clause
+                cursor.execute(
+                    query, (city_name, city_name, 12 - len(attractions)))
                 db_results = cursor.fetchall()
 
                 print(
