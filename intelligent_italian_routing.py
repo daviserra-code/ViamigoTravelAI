@@ -45,7 +45,7 @@ class IntelligentItalianRouter:
         start: str,
         end: str,
         city_name: str,
-        interests: List[str] = None,
+        interests: Optional[List[str]] = None,
         duration: str = "half_day"
     ) -> List[Dict]:
         """
@@ -98,7 +98,7 @@ class IntelligentItalianRouter:
             traceback.print_exc()
             return self._enhanced_fallback(start, end, city_name)
 
-    def _get_city_attractions_from_db(self, city_name: str, interests: List[str] = None) -> List[Dict]:
+    def _get_city_attractions_from_db(self, city_name: str, interests: Optional[List[str]] = None) -> List[Dict]:
         """Get REAL attractions from database for ANY Italian city"""
         try:
             conn = psycopg2.connect(self.db_url)
@@ -168,10 +168,12 @@ class IntelligentItalianRouter:
                 # Map cities to regions AND geographic bounds for comprehensive_attractions_italy
                 # Bounds format: (min_lat, max_lat, min_lng, max_lng)
                 city_config = {
+                    # Milan: ~20km radius - Lombardia data is sparse (only 7 attractions)
+                    # Center: 45.4642, 9.1900 (Duomo di Milano)
                     'milano': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
                     'milan': ('Lombardia', 45.3, 45.6, 9.0, 9.4),
                     # Florence: ~10km radius from center (43.7732, 11.2560)
-                    # Filters out 18km outliers but includes main attractions
+                    # Filters out 18km outliers but includes main attractions (25 total)
                     'firenze': ('Toscana', 43.68, 43.86, 11.14, 11.37),
                     'florence': ('Toscana', 43.68, 43.86, 11.14, 11.37),
                     # Rome is HUGE: actual extent is 53km x 52km

@@ -7,7 +7,7 @@ Tracks which data sources are being used and their performance
 import requests
 import json
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 
 BASE_URL = "http://localhost:5000"
@@ -19,7 +19,7 @@ class ApifyPriorityTester:
     def __init__(self):
         self.results = []
 
-    def test_attraction(self, attraction_name: str, expected_source: str = None) -> Dict:
+    def test_attraction(self, attraction_name: str, expected_source: Optional[str] = None) -> Optional[Dict]:
         """Test a single attraction and track results"""
         print(f"\n{'='*60}")
         print(f"🔍 Testing: {attraction_name}")

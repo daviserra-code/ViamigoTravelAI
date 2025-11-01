@@ -16,13 +16,18 @@ ATTRACTION_IMAGES = {
     # Rome
     'colosseo': 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800',  # Colosseum
     'fontana_di_trevi': 'https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=800',  # Trevi Fountain
-    'pantheon': 'https://images.unsplash.com/photo-1555992336-03a23c33d7ba?w=800',  # Pantheon Rome
-    'piazza_navona': 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800',  # Better Piazza Navona image
+    # Pantheon Rome
+    'pantheon': 'https://images.unsplash.com/photo-1555992336-03a23c33d7ba?w=800',
+    # Better Piazza Navona image
+    'piazza_navona': 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800',
     # Milan
-    'duomo_milano': 'https://images.unsplash.com/photo-1543832923-44667a44c804?w=800',  # Milan Cathedral
+    # Milan Cathedral
+    'duomo_milano': 'https://images.unsplash.com/photo-1543832923-44667a44c804?w=800',
     'castello_sforzesco': 'https://images.unsplash.com/photo-1513581166391-887a96ddeafd?w=800',  # Sforza Castle
-    'galleria_vittorio_emanuele': 'https://images.unsplash.com/photo-1509715513011-e394f0cb20c4?w=800',  # Galleria in Milan
-    'navigli': 'https://images.unsplash.com/photo-1576673177419-2ed30b99e27b?w=800',  # Milan Navigli canals
+    # Galleria in Milan
+    'galleria_vittorio_emanuele': 'https://images.unsplash.com/photo-1509715513011-e394f0cb20c4?w=800',
+    # Milan Navigli canals
+    'navigli': 'https://images.unsplash.com/photo-1576673177419-2ed30b99e27b?w=800',
     # Naples
     'spaccanapoli': 'https://images.unsplash.com/photo-1544737151-6e4b2eb0bb8d?w=800',
     'castel_dell_ovo': 'https://images.unsplash.com/photo-1587022092690-1db5b98c73ac?w=800',
@@ -36,10 +41,12 @@ ATTRACTION_IMAGES = {
     'via_del_campo': 'https://images.unsplash.com/photo-1585562582810-b6970174c3b6?w=800',
     'centro_storico_genova': 'https://images.unsplash.com/photo-1585562582810-b6970174c3b6?w=800',
     # Florence
-    'piazza_della_signoria': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',  # Piazza della Signoria
+    # Piazza della Signoria
+    'piazza_della_signoria': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',
     'uffizi': 'https://images.unsplash.com/photo-1560969184-10fe8719e047?w=800',  # Uffizi Gallery
     'ponte_vecchio': 'https://images.unsplash.com/photo-1557232838-4497d1da2c6b?w=800',  # Ponte Vecchio
-    'duomo_firenze': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',  # Florence Cathedral
+    # Florence Cathedral
+    'duomo_firenze': 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800',
     'palazzo_pitti': 'https://images.unsplash.com/photo-1555992336-03a23c33d7ba?w=800',  # Palazzo Pitti
 }
 

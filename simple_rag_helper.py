@@ -64,8 +64,8 @@ class OptimizedRAGHelper:
     def semantic_search_places(
         self,
         query: str,
-        city: str = None,
-        categories: List[str] = None,
+        city: Optional[str] = None,
+        categories: Optional[List[str]] = None,
         n_results: int = 10
     ) -> List[Dict]:
         """
@@ -151,7 +151,7 @@ class OptimizedRAGHelper:
         self,
         query: str,
         city: str,
-        categories: List[str] = None,
+        categories: Optional[List[str]] = None,
         semantic_weight: float = 0.3,
         n_results: int = 15
     ) -> List[Dict]:
@@ -319,7 +319,7 @@ class OptimizedRAGHelper:
     def search_places_by_description(
         self,
         description: str,
-        city: str = None,
+        city: Optional[str] = None,
         limit: int = 10
     ) -> List[Dict]:
         """
@@ -370,8 +370,8 @@ class OptimizedRAGHelper:
     def get_city_context_with_semantic(
         self,
         city: str,
-        categories: List[str] = None,
-        semantic_query: str = None,
+        categories: Optional[List[str]] = None,
+        semantic_query: Optional[str] = None,
         include_semantic: bool = True,
         semantic_weight: float = 0.2
     ) -> Dict:
@@ -455,7 +455,7 @@ class OptimizedRAGHelper:
                 f"❌ Error enhancing context with semantic search: {e}")
             return base_context
 
-    def get_city_context(self, city: str, categories: List[str] = None) -> Dict:
+    def get_city_context(self, city: str, categories: Optional[List[str]] = None) -> Dict:
         """
         Get real place data from PostgreSQL cache for a city with optimization
         Supports both legacy format (city_category) and new OSM format (osm:city:id)
@@ -1039,7 +1039,7 @@ SimpleRAGHelper = OptimizedRAGHelper
 rag_helper = OptimizedRAGHelper()
 
 
-def get_city_context_prompt(city: str, categories: List[str] = None) -> str:
+def get_city_context_prompt(city: str, categories: Optional[List[str]] = None) -> str:
     """
     Convenience function to get formatted context for AI prompts
 
@@ -1064,7 +1064,7 @@ def get_hotel_context_prompt(city: str, min_score: float = 8.0, limit: int = 5) 
 
 
 # New semantic search convenience functions
-def semantic_search_places(query: str, city: str = None, categories: List[str] = None, n_results: int = 10) -> List[Dict]:
+def semantic_search_places(query: str, city: Optional[str] = None, categories: Optional[List[str]] = None, n_results: int = 10) -> List[Dict]:
     """
     Convenience function for semantic search of places
 
@@ -1075,7 +1075,7 @@ def semantic_search_places(query: str, city: str = None, categories: List[str] =
     return rag_helper.semantic_search_places(query, city, categories, n_results)
 
 
-def hybrid_search_places(query: str, city: str, categories: List[str] = None, semantic_weight: float = 0.3, n_results: int = 15) -> List[Dict]:
+def hybrid_search_places(query: str, city: str, categories: Optional[List[str]] = None, semantic_weight: float = 0.3, n_results: int = 15) -> List[Dict]:
     """
     Convenience function for hybrid search combining traditional + semantic
 
@@ -1086,7 +1086,7 @@ def hybrid_search_places(query: str, city: str, categories: List[str] = None, se
     return rag_helper.hybrid_search_places(query, city, categories, semantic_weight, n_results)
 
 
-def search_places_by_description(description: str, city: str = None, limit: int = 10) -> List[Dict]:
+def search_places_by_description(description: str, city: Optional[str] = None, limit: int = 10) -> List[Dict]:
     """
     Convenience function to search places by natural language description
 
@@ -1097,7 +1097,7 @@ def search_places_by_description(description: str, city: str = None, limit: int 
     return rag_helper.search_places_by_description(description, city, limit)
 
 
-def get_city_context_with_semantic(city: str, categories: List[str] = None, semantic_query: str = None) -> Dict:
+def get_city_context_with_semantic(city: str, categories: Optional[List[str]] = None, semantic_query: Optional[str] = None) -> Dict:
     """
     Convenience function for enhanced city context with semantic search
 

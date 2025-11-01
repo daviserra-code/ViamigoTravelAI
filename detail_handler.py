@@ -3,13 +3,14 @@ import json
 import psycopg2
 import os
 from dotenv import load_dotenv
+from typing import Optional, Dict, Any
 
 detail_bp = Blueprint('details', __name__)
 
 load_dotenv()
 
 
-def _get_details_from_comprehensive_db(context: str) -> dict:
+def _get_details_from_comprehensive_db(context: str) -> Optional[Dict[str, Any]]:
     """
     Query comprehensive_attractions table directly for intelligent router context
     Context format: "palazzo_reale_di_torino_torino"
@@ -172,7 +173,7 @@ def _get_details_from_comprehensive_db(context: str) -> dict:
         return None
 
 
-def _enhance_generic_result(context: str, apify_data: dict = None) -> dict:
+def _enhance_generic_result(context: str, apify_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Enhance generic/fallback results with context-aware information
     """
