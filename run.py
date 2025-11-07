@@ -9,6 +9,7 @@ from advanced_routes import advanced_bp
 from dashboard_routes import dashboard_bp
 from image_storage_routes import image_routes_bp
 from demo_routes import demo_bp
+from hotels_routes import hotels_bp  # Hotels integration
 import os
 import sys
 from dotenv import load_dotenv
@@ -37,10 +38,11 @@ app.register_blueprint(pure_instant_bp)
 app.register_blueprint(advanced_bp)
 app.register_blueprint(image_routes_bp)
 app.register_blueprint(demo_bp)
+app.register_blueprint(hotels_bp)  # Hotels API routes
 
 if __name__ == "__main__":
-    # Create tables after all imports are complete
-    create_tables()
+    # Skip table creation - tables already exist in database
+    # create_tables()  # Commented out - causes connection hang
 
     # Get port from environment or default to 5000
     port = int(os.environ.get("PORT", 5000))

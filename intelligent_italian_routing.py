@@ -283,6 +283,9 @@ class IntelligentItalianRouter:
                 print(
                     f"🖼️ Database query returned {len(db_results)} results for {city_name}")
 
+                # 🚫 Track seen attraction names to prevent duplicates from UNION query
+                seen_attractions = set()
+
                 for row in db_results:
                     # Defensive unpacking: UNION query returns 11 columns now (added table_source)
                     if len(row) >= 8:
@@ -291,6 +294,13 @@ class IntelligentItalianRouter:
                         ai_source = row[8] if len(row) > 8 else None
                         confidence = row[9] if len(row) > 9 else None
                         table_source = row[10] if len(row) > 10 else 'unknown'
+
+                        # 🚫 Skip duplicate attractions (e.g., Pinacoteca di Brera in both tables)
+                        name_lower = name.lower().strip()
+                        if name_lower in seen_attractions:
+                            print(f"⏭️ Skipping duplicate: {name}")
+                            continue
+                        seen_attractions.add(name_lower)
 
                         # Determine final image source for tracking
                         if ai_source:
