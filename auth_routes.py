@@ -7,13 +7,19 @@ import re
 # Blueprint per routes di autenticazione
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-# Import db from flask_app after defining blueprint to avoid circular import
+# Import db and models from flask_app after defining blueprint to avoid circular import
 
 
 def get_db():
     """Get database instance"""
     from flask_app import db
     return db
+
+
+def get_user_class():
+    """Get User class to avoid circular import"""
+    from models import User
+    return User
 
 
 @auth_bp.route('/check-session')
@@ -65,6 +71,11 @@ def validate_email(email):
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """Registrazione nuovo utente"""
+    if request.method == 'POST':
+        # Import User and db at function level to avoid circular imports
+        User = get_user_class()
+        db = get_db()
+
     if request.method == 'GET':
         # Mostra form di registrazione
         return render_template_string('''
@@ -265,6 +276,7 @@ def register():
 def login():
     # Debug logging for login POST
     if request.method == 'POST':
+        User = get_user_class()  # Get User class to avoid circular import
         data = request.get_json()
         print(f"[DEBUG] Login attempt for email: {data.get('email')}")
         user = User.query.filter_by(email=data.get(
@@ -624,6 +636,7 @@ def get_profile():
 @login_required
 def update_profile():
     """Aggiorna profilo utente"""
+    User = get_user_class()  # Get User class to avoid circular import
     data = request.get_json()
     db_session = get_db_session()
 

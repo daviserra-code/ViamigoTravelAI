@@ -243,6 +243,10 @@ def old_dashboard():
 @login_required
 def planner():
     """Redirect alla pagina originale di pianificazione"""
+    # Preserve query parameters when redirecting
+    restore_param = request.args.get('restore')
+    if restore_param:
+        return redirect(f'/static/index.html?restore={restore_param}')
     return redirect('/static/index.html')
 
 

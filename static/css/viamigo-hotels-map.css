@@ -1,0 +1,259 @@
+/**
+ * Viamigo Hotels Map Styles
+ * Custom styling for hotel markers and popups
+ */
+
+/* Hotel Marker Styles */
+.hotel-marker-content {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.hotel-marker-content:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+.hotel-marker-content .hotel-icon {
+    font-size: 16px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.hotel-marker-content .hotel-rating {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #374151;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
+
+/* Category-specific marker colors (already set via inline styles, but here for reference) */
+.hotel-marker[data-category="luxury"] {
+    background-color: #f59e0b !important; /* amber-500 */
+}
+
+.hotel-marker[data-category="premium"] {
+    background-color: #3b82f6 !important; /* blue-500 */
+}
+
+.hotel-marker[data-category="mid-range"] {
+    background-color: #10b981 !important; /* green-500 */
+}
+
+.hotel-marker[data-category="budget"] {
+    background-color: #6b7280 !important; /* gray-500 */
+}
+
+/* Marker Cluster Styles */
+.hotel-marker-cluster {
+    background: transparent;
+}
+
+.hotel-cluster-small,
+.hotel-cluster-medium,
+.hotel-cluster-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hotel-cluster-small {
+    width: 35px;
+    height: 35px;
+    background-color: #8b5cf6; /* violet-500 */
+    font-size: 14px;
+}
+
+.hotel-cluster-medium {
+    width: 40px;
+    height: 40px;
+    background-color: #7c3aed; /* violet-600 */
+    font-size: 15px;
+}
+
+.hotel-cluster-large {
+    width: 45px;
+    height: 45px;
+    background-color: #6d28d9; /* violet-700 */
+    font-size: 16px;
+}
+
+.hotel-cluster-small:hover,
+.hotel-cluster-medium:hover,
+.hotel-cluster-large:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Hotel Popup Styles */
+.hotel-marker-popup .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.hotel-marker-popup .leaflet-popup-content {
+    margin: 0;
+    padding: 16px;
+    min-width: 280px;
+}
+
+.hotel-marker-popup .leaflet-popup-tip {
+    background: white;
+}
+
+.hotel-popup {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.hotel-popup h3 {
+    line-height: 1.3;
+}
+
+/* Hotel Layer Toggle Button */
+.hotel-layer-toggle {
+    position: absolute;
+    top: 80px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.hotel-layer-toggle:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.hotel-layer-toggle.active {
+    background-color: #8b5cf6;
+    color: white;
+}
+
+.hotel-layer-toggle .toggle-icon {
+    font-size: 16px;
+}
+
+.hotel-layer-toggle .toggle-text {
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Hotels Info Badge (when no data available) */
+.hotels-info-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.hotels-info-badge .badge-icon {
+    font-size: 14px;
+}
+
+/* Loading Spinner for Hotels */
+.hotels-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    color: #8b5cf6;
+    font-size: 14px;
+}
+
+.hotels-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hotel-layer-toggle {
+        top: 70px;
+        right: 8px;
+        padding: 6px 10px;
+    }
+    
+    .hotel-layer-toggle .toggle-text {
+        font-size: 12px;
+    }
+    
+    .hotel-marker-popup .leaflet-popup-content {
+        min-width: 240px;
+        padding: 12px;
+    }
+    
+    .hotel-marker-content {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .hotel-marker-content .hotel-icon {
+        font-size: 14px;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .hotel-layer-toggle {
+        background: #1f2937;
+        color: #f3f4f6;
+    }
+    
+    .hotel-layer-toggle:hover {
+        background: #374151;
+    }
+    
+    .hotel-layer-toggle.active {
+        background: #8b5cf6;
+        color: white;
+    }
+}

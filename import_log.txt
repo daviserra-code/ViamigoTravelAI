@@ -1,0 +1,49 @@
+🇮🇹 Northern Italy Tourist Attractions Import
+============================================================
+📂 Loading dataset: dataset_touristic-attractions_2025-11-06_20-38-13-921.json
+✅ Loaded 2321 attractions
+
+📊 Analyzing data before import...
+   Existing records: 12112
+   Loading existing attractions to check for duplicates...
+   Loaded 6863 existing (city, name) pairs
+   Loaded 12109 existing OSM (id, type) pairs
+
+   Processing JSON data...
+   Valid unique records to insert: 0
+   Skipped (missing data): 700
+   Duplicates in source data: 0
+   Already in database: 1621
+
+⚠️  No new records to insert!
+
+📸 Importing to attraction_images table...
+   Existing Wikimedia Commons images: 0
+   Loading existing image records to check for duplicates...
+   Loaded 0 existing image records
+   Loaded 817 existing Wikidata QIDs
+
+   Processing image data...
+   Valid unique image records to insert: 483
+   Skipped (no image or missing data): 1768
+   Duplicates in source data: 10
+   Already in database: -1708
+
+🚀 Bulk inserting 483 image records...
+✅ Image import complete!
+   Records before: 0
+   Records after: 483
+   New images added: 483
+
+📸 Image statistics by city:
+   Genova: 165 images
+   Milano: 122 images
+   Torino: 74 images
+   Bologna: 72 images
+   Pisa: 50 images
+
+============================================================
+✅ Import completed successfully!
+
+💡 The new attractions are now available for route planning.
+   Milano routes will now have more diverse attractions!

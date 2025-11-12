@@ -224,10 +224,13 @@ const imageLoadingStyles = `
 }
 `;
 
-// Inject styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = imageLoadingStyles;
-document.head.appendChild(styleSheet);
+// Inject styles only once
+if (!document.getElementById('viamigo-image-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'viamigo-image-styles';
+    styleSheet.textContent = imageLoadingStyles;
+    document.head.appendChild(styleSheet);
+}
 
 // Export for ES6 modules
 if (typeof module !== 'undefined' && module.exports) {

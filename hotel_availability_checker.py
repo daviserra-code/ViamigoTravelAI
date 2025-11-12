@@ -89,51 +89,59 @@ class HotelAvailabilityChecker:
                 "message": "Hotel data available" or "No hotels found"
             }
         """
+        # Get all variations of the city name (Milano -> [Milan, Milano])
+        variations = self.get_city_name_variations(city)
+
         conn = self.get_connection()
         cursor = conn.cursor()
 
-        query = """
-        SELECT 
-            COUNT(*) as hotel_count,
-            ROUND(AVG(average_score)::numeric, 1) as avg_rating
-        FROM hotel_reviews
-        WHERE LOWER(city) = LOWER(%s)
-        AND latitude IS NOT NULL 
-        AND longitude IS NOT NULL;
-        """
+        # Try each variation until we find hotels
+        for variation in variations:
+            query = """
+            SELECT 
+                COUNT(*) as hotel_count,
+                ROUND(AVG(average_score)::numeric, 1) as avg_rating
+            FROM hotel_reviews
+            WHERE LOWER(city) = LOWER(%s)
+            AND latitude IS NOT NULL 
+            AND longitude IS NOT NULL;
+            """
 
-        cursor.execute(query, (city,))
-        row = cursor.fetchone()
+            cursor.execute(query, (variation,))
+            row = cursor.fetchone()
 
+            hotel_count = row[0] if row else 0
+            avg_rating = float(row[1]) if row and row[1] else 0.0
+
+            if hotel_count > 0:
+                cursor.close()
+                conn.close()
+                return {
+                    "available": True,
+                    "city": variation,  # Return the variation that worked
+                    "hotel_count": hotel_count,
+                    "avg_rating": avg_rating,
+                    "message": f"Hotel data available for {variation}"
+                }
+
+        # No variation found hotels
         cursor.close()
         conn.close()
 
-        hotel_count = row[0] if row else 0
-        avg_rating = float(row[1]) if row and row[1] else 0.0
+        # Get available cities for the message
+        try:
+            available_cities = self.get_available_cities()[:3]
+            cities_str = ", ".join(
+                [c["city"] for c in available_cities if c and c.get("city")])
+        except:
+            cities_str = "Milan, Rome"
 
-        if hotel_count > 0:
-            return {
-                "available": True,
-                "city": city,
-                "hotel_count": hotel_count,
-                "avg_rating": avg_rating,
-                "message": f"Hotel data available for {city}"
-            }
-        else:
-            # Get available cities for the message
-            try:
-                available_cities = self.get_available_cities()[:3]
-                cities_str = ", ".join(
-                    [c["city"] for c in available_cities if c and c.get("city")])
-            except:
-                cities_str = "Milan, Rome"
-
-            return {
-                "available": False,
-                "city": city,
-                "hotel_count": 0,
-                "message": f"Hotel data not yet available for {city}. Currently supported cities: {cities_str}"
-            }
+        return {
+            "available": False,
+            "city": city,
+            "hotel_count": 0,
+            "message": f"Hotel data not yet available for {city}. Currently supported cities: {cities_str}"
+        }
 
     def get_city_name_variations(self, city: str) -> List[str]:
         """
@@ -146,23 +154,24 @@ class HotelAvailabilityChecker:
             List of variations: ["Milan", "Milano"]
         """
         variations = {
-            "Milan": ["Milan", "Milano"],
-            "Milano": ["Milan", "Milano"],
-            "Rome": ["Rome", "Roma"],
-            "Roma": ["Rome", "Roma"],
-            "Florence": ["Florence", "Firenze"],
-            "Firenze": ["Florence", "Firenze"],
-            "Venice": ["Venice", "Venezia"],
-            "Venezia": ["Venice", "Venezia"],
-            "Turin": ["Turin", "Torino"],
-            "Torino": ["Turin", "Torino"],
-            "Genoa": ["Genoa", "Genova"],
-            "Genova": ["Genoa", "Genova"],
-            "Naples": ["Naples", "Napoli"],
-            "Napoli": ["Naples", "Napoli"]
+            "milan": ["Milan", "Milano"],
+            "milano": ["Milan", "Milano"],
+            "rome": ["Rome", "Roma"],
+            "roma": ["Rome", "Roma"],
+            "florence": ["Florence", "Firenze"],
+            "firenze": ["Florence", "Firenze"],
+            "venice": ["Venice", "Venezia"],
+            "venezia": ["Venice", "Venezia"],
+            "turin": ["Turin", "Torino"],
+            "torino": ["Turin", "Torino"],
+            "genoa": ["Genoa", "Genova"],
+            "genova": ["Genoa", "Genova"],
+            "naples": ["Naples", "Napoli"],
+            "napoli": ["Naples", "Napoli"]
         }
 
-        return variations.get(city, [city])
+        # Case-insensitive lookup
+        return variations.get(city.lower(), [city])
 
     def find_city_in_database(self, city_query: str) -> Optional[str]:
         """

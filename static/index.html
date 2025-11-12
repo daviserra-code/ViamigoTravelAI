@@ -28,6 +28,10 @@
     <!-- Libreria Leaflet.js per le mappe -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet MarkerCluster Plugin for Hotels -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/api/app/manifest">
@@ -40,10 +44,11 @@
     <script defer src="/static/ux_enhancements.js"></script>
     <script defer src="/static/interactive_map.js"></script>
     <!-- Viamigo Image Management System -->
-    <script defer src="/static/js/viamigo-images.js"></script>
+    <script defer src="/static/js/viamigo-images.js?v=1762897378"></script>
     <!-- Viamigo Hotels Integration -->
-    <script defer src="/static/js/viamigo-hotels-api.js"></script>
+    <script defer src="/static/js/viamigo-hotels-api.js?v=1762897378"></script>
     <script defer src="/static/js/viamigo-hotels-ui.js"></script>
+    <link rel="stylesheet" href="/static/css/viamigo-hotels-map.css">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0c0a09; }
         .phone-mockup { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; background-color: #111827; border-radius: 40px; border: 10px solid #111827; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
@@ -595,6 +600,38 @@
                         console.log(`🗺️ Mappa centrata su: ${cityFromInput}`);
                         window.currentCityName = cityFromInput;
 
+                        // 🏨 Load hotels for new city
+                        if (window.viamigoHotelsMapInstance) {
+                            console.log('🏨 Hotels map instance exists, updating city...');
+                            window.viamigoHotelsMapInstance.updateCity(cityFromInput);
+                            
+                            // 🏨 Show accommodation suggestions (Phase 3.3)
+                            if (data.itinerary && data.itinerary.length > 0) {
+                                const routePoints = data.itinerary
+                                    .filter(item => item.latitude && item.longitude)
+                                    .map(item => ({
+                                        lat: item.latitude,
+                                        lng: item.longitude,
+                                        name: item.title
+                                    }));
+                                
+                                console.log(`🏨 Extracted ${routePoints.length} route points for accommodation suggestions:`, routePoints);
+                                
+                                if (routePoints.length > 0) {
+                                    setTimeout(() => {
+                                        console.log('🏨 Calling showAccommodationSuggestions...');
+                                        window.viamigoHotelsMapInstance.showAccommodationSuggestions(routePoints);
+                                    }, 1000); // Delay to let route render first
+                                } else {
+                                    console.warn('🏨 No route points with coordinates, skipping accommodation suggestions');
+                                }
+                            } else {
+                                console.warn('🏨 No itinerary data, skipping accommodation suggestions');
+                            }
+                        } else {
+                            console.warn('🏨 Hotels map instance not available');
+                        }
+
                         document.querySelector('.nav-button[data-page="itinerary"]').click();
                     }
                 } catch (error) {
@@ -657,6 +694,42 @@
 
                 // Aggiungi controlli personalizzati alla mappa
                 addMapControls();
+
+                // 🏨 Initialize Hotels Map Integration - Load script dynamically
+                const loadHotelsMapScript = () => {
+                    return new Promise((resolve, reject) => {
+                        // Check if already loaded
+                        if (typeof initializeHotelsMap === 'function') {
+                            resolve();
+                            return;
+                        }
+                        
+                        const script = document.createElement('script');
+                        script.src = '/static/js/viamigo-hotels-map.js?v=1762897378';
+                        script.onload = () => {
+                            console.log('✅ Hotels map script loaded');
+                            resolve();
+                        };
+                        script.onerror = () => {
+                            console.error('❌ Failed to load hotels map script');
+                            reject(new Error('Failed to load hotels map script'));
+                        };
+                        document.head.appendChild(script);
+                    });
+                };
+                
+                // Load and initialize
+                loadHotelsMapScript().then(() => {
+                    if (typeof initializeHotelsMap === 'function') {
+                        const instance = initializeHotelsMap(map);
+                        if (instance) {
+                            console.log('✅ Hotels map integration initialized');
+                            window.viamigoHotelsMapInstance = instance;
+                        }
+                    }
+                }).catch(error => {
+                    console.error('❌ Hotels map initialization failed:', error);
+                });
 
                 mapInitialized = true;
             } else {
@@ -744,22 +817,35 @@
                 }
             }
 
-            // 🗽 EMERGENCY NYC Fix: Aggiungi NYC al database
+            // 🗽 EMERGENCY NYC Fix: Only for NYC-specific routes
             const nyc_coords = { lat: 40.7589, lng: -73.9851 };
 
             // Controlla se è NYC dal testo input
             const allText = `${startLocation} ${endLocation}`.toLowerCase();
             if (allText.includes('fifth avenue') || allText.includes('cornelia') ||
-                allText.includes('manhattan') || allText.includes('new york')) {
+                allText.includes('manhattan') || allText.includes('new york') || allText.includes('nyc')) {
                 console.log('🗽 Mappa centrata su: NYC (rilevato da input)');
                 window.currentCityName = 'new york';
                 return nyc_coords;
             }
 
-            // Default: NYC invece di Genova per supporto mondiale
-            console.log('🗽 Mappa centrata su: NYC (default mondiale)');
-            window.currentCityName = 'new york';
-            return nyc_coords;
+            // 🇮🇹 DEFAULT: Use current city if available (Milano, Roma, etc.)
+            // Check if we have a currentCityName set from search modal
+            if (window.currentCityName && typeof window.currentCityName === 'string') {
+                const cityLower = window.currentCityName.toLowerCase();
+                // Try to find coordinates for currentCityName
+                for (const [city, coords] of Object.entries(cityCoordinates)) {
+                    if (cityLower.includes(city) || city.includes(cityLower)) {
+                        console.log(`🎯 Mappa centrata su: ${city} (da currentCityName: ${window.currentCityName})`);
+                        return coords;
+                    }
+                }
+            }
+
+            // Last resort: Use Milano as default (most hotels in database)
+            console.log('📍 Mappa centrata su: Milano (default - città con più hotel)');
+            window.currentCityName = 'milano';
+            return { lat: 45.4642, lng: 9.1900 };
         }
 
         // Database delle coordinate reali dei luoghi
@@ -1026,6 +1112,72 @@
             };
 
             locateControl.addTo(map);
+
+            // 🏨 Hotel Layer Toggle Control
+            const hotelLayerControl = L.control({ position: 'topright' });
+            hotelLayerControl.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                div.style.backgroundColor = '#1F2937';
+                div.style.backgroundImage = 'none';
+                div.style.width = '36px';
+                div.style.height = '36px';
+                div.style.cursor = 'pointer';
+                div.style.borderRadius = '8px';
+                div.style.marginTop = '10px';
+                div.title = 'Toggle hotels layer';
+                div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                   🏨
+                                 </div>`;
+
+                div.onclick = async function() {
+                    // Check if instance is ready with retry
+                    let instance = window.viamigoHotelsMapInstance;
+                    
+                    if (!instance) {
+                        // Show loading and wait a bit
+                        div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 14px;">⏳</div>`;
+                        
+                        // Try to get instance with a short delay
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        instance = window.viamigoHotelsMapInstance;
+                        
+                        if (!instance) {
+                            // Still not ready, restore icon and show error
+                            div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏨</div>`;
+                            console.error('Hotels map instance not initialized');
+                            alert('Hotels feature is still loading. Please wait a moment and try again, or refresh the page.');
+                            return;
+                        }
+                    }
+                    
+                    // Show loading state
+                    div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 14px;">⏳</div>`;
+                    
+                    try {
+                        const isVisible = await instance.toggle();
+                        
+                        // Restore icon
+                        div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏨</div>`;
+                        div.style.backgroundColor = isVisible ? '#8b5cf6' : '#1F2937';
+                        
+                        // Show toast notification
+                        if (typeof window.showToast === 'function') {
+                            window.showToast(
+                                isVisible ? '🏨 Hotels layer shown' : '🏨 Hotels layer hidden',
+                                'info'
+                            );
+                        }
+                    } catch (error) {
+                        console.error('Error toggling hotels:', error);
+                        div.innerHTML = `<div style="padding: 6px; color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏨</div>`;
+                        alert('Failed to load hotels. Please check console for details.');
+                    }
+                };
+
+                return div;
+            };
+
+            hotelLayerControl.addTo(map);
         }
 
         // --- ROUTING REALISTICO ---
@@ -1612,6 +1764,8 @@
          */
         async function loadEnhancedImageForElement(element, title, context) {
             try {
+                console.log(`🔍 Fetching image for "${title}" with context: "${context}"`);
+                
                 // Use the enhanced classification API
                 const response = await fetch('/api/images/classify', {
                     method: 'POST',
@@ -1629,13 +1783,17 @@
                 }
 
                 const data = await response.json();
+                console.log(`📦 API response for "${title}":`, data);
                 
                 if (data.success && data.image && data.image.url) {
                     // Create and test image loading
                     const img = new Image();
                     
+                    console.log(`📸 Loading image for "${title}": ${data.image.url}`);
+                    
                     img.onload = () => {
                         // Replace with actual image on successful load
+                        console.log(`✅ Image loaded successfully for "${title}"`);
                         element.innerHTML = `<img src="${data.image.url}" alt="${title}" class="w-full h-full object-cover" loading="lazy">`;
                         element.classList.add('image-loaded');
                         
@@ -1646,9 +1804,15 @@
                         }
                     };
                     
-                    img.onerror = () => {
+                    img.onerror = (e) => {
                         // Keep the icon fallback on error - no gray circle
-                        console.warn(`Failed to load image for ${title}, keeping icon fallback`);
+                        console.error(`❌ Image failed to load for "${title}"`, {
+                            url: data.image.url,
+                            error: e,
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                            complete: img.complete
+                        });
                         element.classList.add('image-error');
                     };
                     
@@ -1946,8 +2110,85 @@
          */
         function checkAndRestoreContext() {
             try {
-                // Check if we're returning from advanced features
                 const urlParams = new URLSearchParams(window.location.search);
+                
+                // Check if we're restoring a route from dashboard (Riapri button)
+                const restoreRouteId = urlParams.get('restore');
+                if (restoreRouteId) {
+                    console.log('🔄 Restoring route from dashboard:', restoreRouteId);
+                    
+                    // Get the route from localStorage
+                    const routeData = localStorage.getItem('viamigo_restore_route');
+                    if (routeData) {
+                        try {
+                            const route = JSON.parse(routeData);
+                            console.log('📍 Found route to restore:', route);
+                            
+                            // Restore the route data
+                            currentItineraryData = route.itinerary || [];
+                            
+                            // Update the UI
+                            if (itineraryTitle && route.title) {
+                                itineraryTitle.textContent = route.title;
+                            }
+                            
+                            // Set the city context
+                            if (route.city) {
+                                window.currentCityName = route.city.toLowerCase();
+                            }
+                            
+                            // Render the restored itinerary
+                            if (currentItineraryData && currentItineraryData.length > 0) {
+                                // Wait for page to fully load before rendering
+                                setTimeout(() => {
+                                    console.log('🔄 Rendering restored itinerary...');
+                                    renderItinerary({ itinerary: currentItineraryData });
+                                    
+                                    // Switch to itinerary view after rendering
+                                    setTimeout(() => {
+                                        const itineraryButton = document.querySelector('.nav-button[data-page="itinerary"]');
+                                        if (itineraryButton) {
+                                            itineraryButton.click();
+                                        }
+                                    }, 300);
+                                    
+                                    // 🏨 Show accommodation suggestions for restored route (AFTER hotels map loads)
+                                    setTimeout(() => {
+                                        if (window.viamigoHotelsMapInstance && currentItineraryData.length > 0) {
+                                            const routePoints = currentItineraryData
+                                                .filter(item => item.latitude && item.longitude)
+                                                .map(item => ({
+                                                    lat: item.latitude,
+                                                    lng: item.longitude,
+                                                    name: item.title
+                                                }));
+                                            
+                                            if (routePoints.length > 0) {
+                                                console.log('🏨 Showing accommodation suggestions for restored route');
+                                                window.viamigoHotelsMapInstance.showAccommodationSuggestions(routePoints);
+                                            }
+                                        } else {
+                                            console.warn('🏨 Hotels map instance not ready yet for accommodation suggestions');
+                                        }
+                                    }, 3500); // Wait longer for hotels map to fully initialize
+                                    
+                                    console.log('✅ Route restored successfully from dashboard!');
+                                }, 500); // Wait 500ms for page to fully initialize
+                            }
+                            
+                            // Clean up
+                            localStorage.removeItem('viamigo_restore_route');
+                            
+                            // Clean the URL
+                            window.history.replaceState({}, '', '/static/index.html');
+                            return;
+                        } catch (e) {
+                            console.error('❌ Error parsing route data:', e);
+                        }
+                    }
+                }
+                
+                // Check if we're returning from advanced features
                 const shouldRestore = urlParams.get('restore_context');
                 
                 if (shouldRestore === 'true') {
@@ -1984,6 +2225,23 @@
                             // Render the restored itinerary
                             if (currentItineraryData) {
                                 renderItinerary({ itinerary: currentItineraryData });
+                                
+                                // 🏨 Show accommodation suggestions for restored route
+                                if (window.viamigoHotelsMapInstance && currentItineraryData.length > 0) {
+                                    const routePoints = currentItineraryData
+                                        .filter(item => item.latitude && item.longitude)
+                                        .map(item => ({
+                                            lat: item.latitude,
+                                            lng: item.longitude,
+                                            name: item.title
+                                        }));
+                                    
+                                    if (routePoints.length > 0) {
+                                        setTimeout(() => {
+                                            window.viamigoHotelsMapInstance.showAccommodationSuggestions(routePoints);
+                                        }, 1500);
+                                    }
+                                }
                                 
                                 // Switch to itinerary view
                                 setTimeout(() => {
@@ -2041,6 +2299,23 @@
                         
                         // Render the restored itinerary
                         renderItinerary({ itinerary: currentItineraryData });
+                        
+                        // 🏨 Show accommodation suggestions for restored route
+                        if (window.viamigoHotelsMapInstance && currentItineraryData.length > 0) {
+                            const routePoints = currentItineraryData
+                                .filter(item => item.latitude && item.longitude)
+                                .map(item => ({
+                                    lat: item.latitude,
+                                    lng: item.longitude,
+                                    name: item.title
+                                }));
+                            
+                            if (routePoints.length > 0) {
+                                setTimeout(() => {
+                                    window.viamigoHotelsMapInstance.showAccommodationSuggestions(routePoints);
+                                }, 1500);
+                            }
+                        }
                         
                         console.log('✅ Session route context restored!');
                     }

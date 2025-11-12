@@ -65,6 +65,10 @@ if database_url:
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         'pool_pre_ping': True,
         "pool_recycle": 300,
+        "connect_args": {
+            "connect_timeout": 10,  # 10 second timeout
+            "options": "-c statement_timeout=30000"  # 30 second statement timeout
+        }
     }
 
     # Initialize database
@@ -111,28 +115,29 @@ def create_tables():
     if db:
         with app.app_context():
             try:
+                logging.info("Attempting to create database tables...")
                 import models  # noqa: F401
                 db.create_all()
-                logging.info("Database tables created")
+                logging.info("✅ Database tables created successfully")
             except Exception as e:
-                logging.error(f"Error creating tables: {e}")
+                logging.error(f"❌ Error creating tables: {e}")
+                logging.error(f"   Exception type: {type(e).__name__}")
+                import traceback
+                logging.error(traceback.format_exc())
     else:
-        logging.warning("Skipping table creation - no database configured")
+        logging.warning("⚠️  Skipping table creation - no database configured")
 
 
-# Register auth routes first (handle circular imports)
-try:
-    # Import here to avoid circular imports
-    def register_auth_routes():
-        from auth_routes import auth_bp
-        app.register_blueprint(auth_bp)
-        return True
-    register_auth_routes()
-    logging.info("✅ Auth routes registered successfully")
-except Exception as e:
-    logging.warning(f"❌ Auth routes not available: {e}")
+# NOTE: All blueprint registrations are handled in run.py
+# Don't register blueprints here to avoid duplicate registration errors
+# The following blueprints are registered in run.py:
+# - auth_bp, create_profile_bp, pure_instant_bp, advanced_bp, image_routes_bp, demo_bp
+# The following blueprints are registered in flask_app.py itself (keep these):
+# - detail_bp, ai_companion_bp, dashboard_bp, admin_bp, performance_bp, ux_bp,
+#   ai_advanced_bp, data_intelligence_bp, analytics_dashboard_bp, role_based_access_bp,
+#   comprehensive_attractions_bp
 
-# Register blueprints
+# Register blueprints that are NOT in run.py
 app.register_blueprint(detail_bp)
 app.register_blueprint(ai_companion_bp)
 app.register_blueprint(dashboard_bp)
@@ -211,8 +216,7 @@ app.register_blueprint(ux_bp)
 # Register AI advanced features
 app.register_blueprint(ai_advanced_bp)
 
-# Register advanced routes (includes /advanced-features)
-app.register_blueprint(advanced_bp)
+# NOTE: advanced_bp is registered in run.py - don't register here
 
 # Register data intelligence analytics
 app.register_blueprint(data_intelligence_bp)
@@ -234,23 +238,8 @@ try:
 except ImportError as e:
     logging.warning(f"❌ Main routes not available: {e}")
 
-# Add routes that might be missing (only if not already registered)
-try:
-    # Check if route already exists
-    planner_exists = any('/planner' in str(rule)
-                         for rule in app.url_map.iter_rules())
-    if not planner_exists:
-        @app.route('/planner')
-        def planner():
-            """Main planner interface"""
-            from flask import redirect
-            return redirect('/static/index.html')
-
-    # NOTE: Skip index route - it's already defined in one of the blueprints
-    # This avoids the duplicate route error
-
-except Exception as e:
-    logging.warning(f"Planner route issue: {e}")
+# NOTE: All main routes (/, /planner, etc.) are defined in routes.py
+# Don't add them here to avoid endpoint collisions
 
 # Add logout route if not in auth blueprint
 try:
@@ -277,60 +266,8 @@ try:
 except Exception as e:
     logging.warning(f"Logout route issue: {e}")
 
-# Add essential API routes for the fixes
-
-
-@app.route('/api/routes/history', methods=['GET'])
-def get_route_history():
-    """Get saved route history for current user"""
-    try:
-        # For now, return empty list - in future this would query database
-        from flask import jsonify
-        return jsonify({
-            'routes': [],
-            'total_count': 0,
-            'success': True
-        })
-    except Exception as e:
-        from flask import jsonify
-        return jsonify({'error': str(e), 'success': False}), 500
-
-
-@app.route('/api/routes/save', methods=['POST'])
-def save_route():
-    """Save a route to user's history"""
-    try:
-        from flask import request, jsonify
-        from datetime import datetime
-        data = request.get_json()
-        route_data = data.get('route', {})
-
-        # For now, just return success - in future this would save to database
-        return jsonify({
-            'success': True,
-            'message': 'Route saved successfully',
-            'route_id': f"route_{datetime.now().timestamp()}"
-        })
-    except Exception as e:
-        from flask import jsonify
-        return jsonify({'error': str(e), 'success': False}), 500
-
-
-@app.route('/api/routes/load/<route_id>', methods=['GET'])
-def load_route(route_id):
-    """Load a specific saved route"""
-    try:
-        from flask import jsonify
-        # For now, return empty route - in future this would query database
-        return jsonify({
-            'route': None,
-            'success': False,
-            'message': 'Route not found'
-        }), 404
-    except Exception as e:
-        from flask import jsonify
-        return jsonify({'error': str(e), 'success': False}), 500
-
+# NOTE: All API routes (/api/routes/*, etc.) are defined in routes.py
+# Don't add them here to avoid endpoint collisions
 
 # Register enhanced images API - simplified version
 try:
@@ -398,14 +335,8 @@ except ImportError as e:
 
         logging.info("✅ Enhanced images fallback route registered")
 
-# Add a simple root route that redirects to login
-
-
-@app.route('/')
-def index():
-    """Homepage - redirect to static index.html"""
-    from flask import redirect
-    return redirect('/static/index.html')
+# Root route is defined in routes.py (with authentication logic)
+# Don't define it here to avoid endpoint collision
 
 
 # Import main routes after all app setup is complete (to avoid circular imports)

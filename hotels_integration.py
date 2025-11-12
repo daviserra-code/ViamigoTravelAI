@@ -23,8 +23,54 @@ DATABASE_URL = os.environ.get(
 class HotelsIntegration:
     """Handle hotel data integration with route planning"""
 
+    # City name normalization (Italian → English for database)
+    CITY_ALIASES = {
+        'milano': 'Milan',
+        'roma': 'Rome',
+        'firenze': 'Florence',
+        'venezia': 'Venice',
+        'torino': 'Turin',
+        'genova': 'Genoa',
+        'napoli': 'Naples',
+        'bologna': 'Bologna',
+        'palermo': 'Palermo',
+        'catania': 'Catania',
+        'verona': 'Verona',
+        'bari': 'Bari',
+        'pisa': 'Pisa',
+        'siena': 'Siena'
+    }
+
     def __init__(self):
         self.db_url = DATABASE_URL
+
+    def normalize_city_name(self, city: str) -> str:
+        """
+        Normalize city name to database format (English)
+
+        Args:
+            city: City name in any language (e.g., "Milano" or "Milan")
+
+        Returns:
+            Normalized city name (e.g., "Milan")
+        """
+        if not city:
+            return city
+
+        city_lower = city.lower().strip()
+
+        # Check if it's an Italian name that needs translation
+        if city_lower in self.CITY_ALIASES:
+            return self.CITY_ALIASES[city_lower]
+
+        # If already in English, return with proper capitalization
+        # Try to match against English city names
+        for italian, english in self.CITY_ALIASES.items():
+            if city_lower == english.lower():
+                return english
+
+        # Return original with first letter capitalized
+        return city.strip().capitalize()
 
     def get_connection(self):
         """Get database connection"""
@@ -109,7 +155,11 @@ class HotelsIntegration:
 
         return hotels
 
-    def get_hotel_by_name(self, hotel_name: str, city: str = None) -> Optional[Dict]:
+    def get_hotel_by_name(
+        self,
+        hotel_name: str,
+        city: str = None
+    ) -> Optional[Dict]:
         """
         Get specific hotel details by name
 
@@ -120,6 +170,10 @@ class HotelsIntegration:
         Returns:
             Hotel dictionary or None
         """
+        # Normalize city name if provided (Milano -> Milan, etc.)
+        if city:
+            city = self.normalize_city_name(city)
+
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -191,6 +245,9 @@ class HotelsIntegration:
         Returns:
             List of hotel dictionaries
         """
+        # Normalize city name (Milano -> Milan, etc.)
+        city = self.normalize_city_name(city)
+
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -272,6 +329,9 @@ class HotelsIntegration:
         Returns:
             List of matching hotels
         """
+        # Normalize city name (Milano -> Milan, etc.)
+        city = self.normalize_city_name(city)
+
         conn = self.get_connection()
         cursor = conn.cursor()
 

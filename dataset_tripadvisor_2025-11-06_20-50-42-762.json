@@ -1,0 +1,4225 @@
+[{
+  "reviewTags": [
+    {
+      "text": "lunch",
+      "reviews": 6
+    },
+    {
+      "text": "paninis",
+      "reviews": 12
+    },
+    {
+      "text": "sandwich",
+      "reviews": 5
+    },
+    {
+      "text": "ham",
+      "reviews": 3
+    },
+    {
+      "text": "bread",
+      "reviews": 3
+    },
+    {
+      "text": "pasta",
+      "reviews": 2
+    },
+    {
+      "text": "italian fast food",
+      "reviews": 4
+    },
+    {
+      "text": "panini place",
+      "reviews": 2
+    },
+    {
+      "text": "good quality ingredients",
+      "reviews": 2
+    },
+    {
+      "text": "aperol spritz",
+      "reviews": 3
+    },
+    {
+      "text": "quick service",
+      "reviews": 2
+    },
+    {
+      "text": "amazing food",
+      "reviews": 2
+    },
+    {
+      "text": "crispy",
+      "reviews": 5
+    },
+    {
+      "text": "duomo",
+      "reviews": 11
+    },
+    {
+      "text": "mozzerella",
+      "reviews": 2
+    }
+  ],
+  "id": "20112890",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Cesarino",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/1b/b6/a9/21/cesarino-crea-dipendenza.jpg",
+  "photoCount": 251,
+  "rankingPosition": 16,
+  "rating": 4.9,
+  "rawRanking": 4.809671401977539,
+  "phone": "+39 347 948 7039",
+  "address": "Via Pattari 2, 20122 Milan Italy",
+  "addressObj": {
+    "street1": "Via Pattari 2",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20122"
+  },
+  "localName": "Cesarino",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": null,
+  "latitude": 45.464447,
+  "longitude": 9.193517,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d20112890-Reviews-Cesarino-Milan_Lombardy.html",
+  "website": "http://www.cesarinomilano.it",
+  "rankingString": "#16 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "8117507",
+      "name": "Centro Storico"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "Duomo",
+      "localName": "Duomo",
+      "address": "Piazza del Duomo, 1, 20121 Gessate, Italy",
+      "localAddress": "Piazza del Duomo, 1, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46390151977539,
+      "longitude": 9.18860912322998,
+      "distance": 0.2410540753610236
+    },
+    {
+      "name": "San Babila",
+      "localName": "San Babila",
+      "address": "Piazza S. Babila, 4, 20122 Milan, Italy",
+      "localAddress": "Piazza S. Babila, 4, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46651840209961,
+      "longitude": 9.197527885437012,
+      "distance": 0.2416469829631843
+    },
+    {
+      "name": "Cordusio",
+      "localName": "Cordusio",
+      "address": "Piazza Cordusio, 20123 Milan, Italy",
+      "localAddress": "Piazza Cordusio, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46555709838867,
+      "longitude": 9.18638801574707,
+      "distance": 0.3542516449608798
+    },
+    {
+      "name": "Missori",
+      "localName": "Missori",
+      "address": "Corso Italia, 1, 20122 Gessate, Italy",
+      "localAddress": "Corso Italia, 1, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.460105895996094,
+      "longitude": 9.189023971557617,
+      "distance": 0.371045538872331
+    },
+    {
+      "name": "Montenapoleone",
+      "localName": "Montenapoleone",
+      "address": "Via Croce Rossa, 2, 20121 Milan, Italy",
+      "localAddress": "Via Croce Rossa, 2, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.470191955566406,
+      "longitude": 9.192688941955566,
+      "distance": 0.3994027474130322
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 3,
+    "count2": 2,
+    "count3": 7,
+    "count4": 39,
+    "count5": 468
+  },
+  "numberOfReviews": 519,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Closes in 11 min",
+  "priceLevel": "$",
+  "dishes": [
+    "Sandwiches",
+    "Pasta",
+    "Hoagie",
+    "Crisp",
+    "Paninis",
+    "Pesto",
+    "Parfait",
+    "Breads and Pastries",
+    "Potato Chips",
+    "Fresh Pasta",
+    "Spritz",
+    "Ham Sandwich",
+    "Crispy",
+    "Bread Rolls"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ],
+      [
+        {
+          "open": 600,
+          "openHours": "10:00",
+          "close": 1320,
+          "closeHours": "22:00"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": null,
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/24/44/cd/24/caption.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/b6/a9/21/cesarino-crea-dipendenza.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/b6/78/87/preparato-al-momento.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/b4/cc/68/cesarino-crudo-di-parma.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/b6/78/92/per-i-golosi-come-noi.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/b6/78/86/spettacolo.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/dd/cf/43/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/a3/6d/a8/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/a3/6d/a9/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/dc/fd/34/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/28/d4/ec/ca/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/28/d4/ec/cb/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e8/d9/1a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e8/d9/1b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/e3/ef/96/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/e3/ef/97/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/27/de/bc/79/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/27/de/bc/78/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Fast Food",
+    "Street Food"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Takeout",
+    "Seating",
+    "Serves Alcohol",
+    "Accepts Credit Cards"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner",
+    "Brunch",
+    "Drinks"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [],
+  "input": "Milano"
+},
+{
+  "reviewTags": [
+    {
+      "text": "ravioli",
+      "reviews": 17
+    },
+    {
+      "text": "involtini",
+      "reviews": 2
+    },
+    {
+      "text": "lamb chops",
+      "reviews": 4
+    },
+    {
+      "text": "nduja",
+      "reviews": 2
+    },
+    {
+      "text": "mashed potatoes",
+      "reviews": 3
+    },
+    {
+      "text": "chocolate cake",
+      "reviews": 2
+    },
+    {
+      "text": "cold cuts",
+      "reviews": 2
+    },
+    {
+      "text": "panna cotta",
+      "reviews": 2
+    },
+    {
+      "text": "seafood",
+      "reviews": 3
+    },
+    {
+      "text": "salad",
+      "reviews": 2
+    },
+    {
+      "text": "di bronte",
+      "reviews": 2
+    },
+    {
+      "text": "nero d'avola",
+      "reviews": 2
+    },
+    {
+      "text": "an authentic italian restaurant",
+      "reviews": 2
+    },
+    {
+      "text": "the house white wine",
+      "reviews": 2
+    },
+    {
+      "text": "super kind",
+      "reviews": 2
+    },
+    {
+      "text": "delicious dishes",
+      "reviews": 2
+    },
+    {
+      "text": "lovely service",
+      "reviews": 2
+    },
+    {
+      "text": "amazing food",
+      "reviews": 5
+    },
+    {
+      "text": "cozy restaurant",
+      "reviews": 2
+    },
+    {
+      "text": "wonderful meal",
+      "reviews": 2
+    },
+    {
+      "text": "nice atmosphere",
+      "reviews": 5
+    },
+    {
+      "text": "recommend this restaurant",
+      "reviews": 3
+    },
+    {
+      "text": "great wine",
+      "reviews": 2
+    },
+    {
+      "text": "wine list",
+      "reviews": 3
+    },
+    {
+      "text": "visiting milan",
+      "reviews": 2
+    },
+    {
+      "text": "apertizer",
+      "reviews": 2
+    },
+    {
+      "text": "delicioso",
+      "reviews": 2
+    },
+    {
+      "text": "calabria",
+      "reviews": 2
+    },
+    {
+      "text": "desert",
+      "reviews": 7
+    },
+    {
+      "text": "homemade",
+      "reviews": 3
+    }
+  ],
+  "id": "18856368",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [],
+  "name": "Viaggi Nel Gusto",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-o/19/5a/d6/27/photo0jpg.jpg",
+  "photoCount": 560,
+  "rankingPosition": 37,
+  "rating": 4.8,
+  "rawRanking": 4.709369659423828,
+  "phone": "+39 02 4775 5531",
+  "address": "Via Edmondo de Amicis 24, 20123 Milan Italy",
+  "addressObj": {
+    "street1": "Via Edmondo de Amicis 24",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20123"
+  },
+  "localName": "Viaggi Nel Gusto",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": null,
+  "latitude": 45.45878,
+  "longitude": 9.17823,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d18856368-Reviews-Viaggi_Nel_Gusto-Milan_Lombardy.html",
+  "website": "http://www.viagginelgusto.it/",
+  "rankingString": "#37 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "8117507",
+      "name": "Centro Storico"
+    },
+    {
+      "id": "15621105",
+      "name": "Ticinese"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "Sant'Ambrogio",
+      "localName": "Sant'Ambrogio",
+      "address": "Via De Amicis Edmondo, 61, 20123 Pontesesto, Italy",
+      "localAddress": "Via De Amicis Edmondo, 61, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46162033081055,
+      "longitude": 9.173166275024414,
+      "distance": 0.3146513395640591
+    },
+    {
+      "name": "Sant'Agostino",
+      "localName": "Sant'Agostino",
+      "address": "Viale Papiniano, 38, 20123 Pontesesto, Italy",
+      "localAddress": "Viale Papiniano, 38, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.4586181640625,
+      "longitude": 9.169814109802246,
+      "distance": 0.4084836165049079
+    },
+    {
+      "name": "Missori",
+      "localName": "Missori",
+      "address": "Corso Italia, 1, 20122 Gessate, Italy",
+      "localAddress": "Corso Italia, 1, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.460105895996094,
+      "longitude": 9.189023971557617,
+      "distance": 0.5316671791738184
+    },
+    {
+      "name": "Porta Genova",
+      "localName": "Porta Genova",
+      "address": "Via Casale, 2, 20144 Corsico, Italy",
+      "localAddress": "Via Casale, 2, 20144",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.45237731933594,
+      "longitude": 9.169602394104004,
+      "distance": 0.6093350956150579
+    },
+    {
+      "name": "Cordusio",
+      "localName": "Cordusio",
+      "address": "Piazza Cordusio, 20123 Milan, Italy",
+      "localAddress": "Piazza Cordusio, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46555709838867,
+      "longitude": 9.18638801574707,
+      "distance": 0.6135860223796077
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 9,
+    "count2": 12,
+    "count3": 27,
+    "count4": 79,
+    "count5": 757
+  },
+  "numberOfReviews": 884,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Pasta",
+    "Lasagne",
+    "Lobster",
+    "Saltimbocca",
+    "Salad",
+    "Lamb chops",
+    "Risotto",
+    "Tiramisu",
+    "Carbonara",
+    "Bolognese",
+    "Steak Frites",
+    "Croquettes",
+    "Eggplant",
+    "Cecina",
+    "Cocido",
+    "Swordfish",
+    "Clams",
+    "Beef",
+    "Dauphiné raviolis",
+    "Torte",
+    "Lamb",
+    "Antipasti",
+    "Caponata",
+    "Bruschette",
+    "Cotoletta",
+    "Caprese Salads",
+    "Milanese risotto",
+    "Italian Meatballs",
+    "Pesto",
+    "Sweets",
+    "Parfait",
+    "Fish",
+    "Tagliata",
+    "Mixed Seafood",
+    "Fresh Pasta",
+    "Milanesa",
+    "Panna Cotta",
+    "Italian Desserts",
+    "Linguine",
+    "Tarte",
+    "Desserts",
+    "Cake",
+    "Torta",
+    "Homemade Desserts",
+    "Fried",
+    "Tarts",
+    "Rack of Lamb",
+    "Limoncello"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 735,
+          "openHours": "12:15",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1155,
+          "openHours": "19:15",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d18856368-Viaggi_Nel_Gusto-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/2d/47/eb/d5/caption.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/31/76/74/74/caption.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/31/76/74/73/caption.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/19/5a/d6/27/photo0jpg.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2f/e7/3c/04/caption.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2f/e7/3c/03/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/bc/68/71/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/2f/cc/95/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/2f/cc/96/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/2f/cc/97/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/2f/cc/98/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/3c/02/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/3c/03/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/3c/04/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/5d/5a/1d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/5d/5a/1e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/47/eb/d4/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/47/eb/d5/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/47/eb/d6/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/d8/67/65/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/d8/67/66/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/d8/67/67/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/d8/67/68/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/d8/67/69/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/cd/0d/0a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/cd/0d/09/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/cd/0d/08/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/a1/d3/89/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/25/25/2c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/25/25/2d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/25/25/2e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/25/25/2f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/25/25/30/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/de/dd/cb/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/de/dd/ce/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/de/dd/cc/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/de/dd/cd/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Mediterranean",
+    "Healthy",
+    "Romana",
+    "Lazio",
+    "Lombard",
+    "Northern-Italian",
+    "Central-Italian"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Takeout",
+    "Reservations",
+    "Seating",
+    "Serves Alcohol",
+    "Full Bar",
+    "Table Service"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=165560896&geo=18856368&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373793&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2Vy9GmoKeWbm7aB-nm_WMZ8&cs=1dc701ba7066935bd008a961b967fa6c2",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [],
+  "id": "26875208",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Glory Pop",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/2c/67/6c/31/croccante-o-pop.jpg",
+  "photoCount": 375,
+  "rankingPosition": 3,
+  "rating": 4.9,
+  "rawRanking": 4.871327877044678,
+  "phone": "+39 02 4770 7717",
+  "address": "Via Correggio, 14, 20149 Milan Italy",
+  "addressObj": {
+    "street1": "Via Correggio, 14",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20149"
+  },
+  "localName": "Glory Pop - Via Correggio",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": null,
+  "latitude": 45.47039,
+  "longitude": 9.151136,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d26875208-Reviews-Glory_Pop-Milan_Lombardy.html",
+  "website": "https://www.instagram.com/glorypop_milano",
+  "rankingString": "#3 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [],
+  "nearestMetroStations": [
+    {
+      "name": "Buonarroti",
+      "localName": "Buonarroti",
+      "address": "Via Monte Rosa, 29, 20149 Cesate, Italy",
+      "localAddress": "Via Monte Rosa, 29, 20149",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.470401763916016,
+      "longitude": 9.155290603637695,
+      "distance": 0.20151209949357066
+    },
+    {
+      "name": "Amendola",
+      "localName": "Amendola",
+      "address": "Piazza Giovanni Amendola, 3, 20149 Novegro, Italy",
+      "localAddress": "Piazza Giovanni Amendola, 3, 20149",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.47333526611328,
+      "longitude": 9.15110969543457,
+      "distance": 0.2037070052498672
+    },
+    {
+      "name": "Affori FN",
+      "localName": "Affori FN",
+      "address": "Via Comasina, 6, 20161 Novegro, Italy",
+      "localAddress": "Via Comasina, 6, 20161",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.47367477416992,
+      "longitude": 9.15096664428711,
+      "distance": 0.2273359385466051
+    },
+    {
+      "name": "De Angeli",
+      "localName": "De Angeli",
+      "address": "Piazza Ernesto de Angeli, 12, 20149 Cesate, Italy",
+      "localAddress": "Piazza Ernesto de Angeli, 12, 20149",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.466426849365234,
+      "longitude": 9.14956283569336,
+      "distance": 0.2845827664295846
+    },
+    {
+      "name": "Wagner",
+      "localName": "Wagner",
+      "address": "Piazza Riccardo Wagner, 15, 20145 Cesate, Italy",
+      "localAddress": "Piazza Riccardo Wagner, 15, 20145",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46794891357422,
+      "longitude": 9.155913352966309,
+      "distance": 0.2867296689124555
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 6,
+    "count2": 3,
+    "count3": 10,
+    "count4": 71,
+    "count5": 988
+  },
+  "numberOfReviews": 1077,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Cheesecake",
+    "Carbonara",
+    "Antipasti",
+    "Neapolitan pizza",
+    "Stracciatella",
+    "Sweets",
+    "Parfait",
+    "Italian Desserts",
+    "Desserts",
+    "Crispy",
+    "Homemade Desserts",
+    "Limoncello"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "https://menu.menumal.com/glorypopmilano",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/67/6c/31/croccante-o-pop.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2e/08/94/d2/180gr-di-croccantezza.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2e/08/96/45/pizza-180gr-di-croccantezza.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2e/08/90/95/180-gr-di-croccantezza.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2e/08/89/2a/mortadella-pecorino-e.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/6a/b3/df/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/7d/50/0c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/a5/e9/25/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/a5/e9/91/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/7a/5c/1d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/0f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/10/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/11/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/12/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/13/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/14/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/15/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/16/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/17/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/e7/8b/18/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/f5/b0/94/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Pizza",
+    "Mediterranean",
+    "Campania",
+    "Southern-Italian"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Takeout",
+    "Reservations",
+    "Outdoor Seating",
+    "Seating",
+    "Street Parking",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Full Bar",
+    "Wine and Beer",
+    "Digital Payments",
+    "Accepts Credit Cards",
+    "Table Service",
+    "Dog Friendly",
+    "Family style"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner",
+    "Drinks"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [],
+  "input": "Milano"
+},
+{
+  "reviewTags": [
+    {
+      "text": "truffle pasta",
+      "reviews": 5
+    },
+    {
+      "text": "crispy prawns",
+      "reviews": 3
+    },
+    {
+      "text": "braised beef",
+      "reviews": 3
+    },
+    {
+      "text": "caviar",
+      "reviews": 2
+    },
+    {
+      "text": "paccheri",
+      "reviews": 2
+    },
+    {
+      "text": "octopus",
+      "reviews": 3
+    },
+    {
+      "text": "tiramisu",
+      "reviews": 4
+    },
+    {
+      "text": "steak",
+      "reviews": 3
+    },
+    {
+      "text": "amazing food and great service",
+      "reviews": 2
+    },
+    {
+      "text": "excellent waiter",
+      "reviews": 2
+    },
+    {
+      "text": "food menu",
+      "reviews": 2
+    },
+    {
+      "text": "amazing meal",
+      "reviews": 2
+    },
+    {
+      "text": "food experience",
+      "reviews": 2
+    },
+    {
+      "text": "wine bar",
+      "reviews": 3
+    },
+    {
+      "text": "business dinner",
+      "reviews": 3
+    },
+    {
+      "text": "wonderful evening",
+      "reviews": 2
+    },
+    {
+      "text": "fantastic restaurant",
+      "reviews": 2
+    },
+    {
+      "text": "kind staff",
+      "reviews": 2
+    },
+    {
+      "text": "olive oil",
+      "reviews": 2
+    },
+    {
+      "text": "great wine",
+      "reviews": 2
+    },
+    {
+      "text": "our waiter",
+      "reviews": 3
+    },
+    {
+      "text": "friendly service",
+      "reviews": 2
+    },
+    {
+      "text": "cantina",
+      "reviews": 26
+    },
+    {
+      "text": "fabio",
+      "reviews": 7
+    },
+    {
+      "text": "dishes",
+      "reviews": 13
+    },
+    {
+      "text": "isola",
+      "reviews": 4
+    },
+    {
+      "text": "decadent",
+      "reviews": 2
+    },
+    {
+      "text": "rosato",
+      "reviews": 2
+    },
+    {
+      "text": "fusion",
+      "reviews": 2
+    },
+    {
+      "text": "menus",
+      "reviews": 2
+    }
+  ],
+  "id": "12479650",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Cantine Milano",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/29/65/5a/ea/cantine-milano.jpg",
+  "photoCount": 2508,
+  "rankingPosition": 4,
+  "rating": 4.8,
+  "rawRanking": 4.859793663024902,
+  "phone": "+39 02 6680 2819",
+  "address": "Via Trau, 1, 20159 Milan Italy",
+  "addressObj": {
+    "street1": "Via Trau, 1",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20159"
+  },
+  "localName": "Cantine Milano",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "reservation@cantinemilano.it",
+  "latitude": 45.490032,
+  "longitude": 9.190228,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d12479650-Reviews-Cantine_Milano-Milan_Lombardy.html",
+  "website": "https://cantinemilano.com/",
+  "rankingString": "#4 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "15621115",
+      "name": "Zona Zara"
+    },
+    {
+      "id": "15621048",
+      "name": "Zone 9"
+    },
+    {
+      "id": "15621072",
+      "name": "Isola"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "Isola",
+      "localName": "Isola",
+      "address": "Via Volturno, 26, 20124 Pasturago, Italy",
+      "localAddress": "Via Volturno, 26, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.487606048583984,
+      "longitude": 9.191261291503906,
+      "distance": 0.17513154463563232
+    },
+    {
+      "name": "Zara",
+      "localName": "Zara",
+      "address": "Viale Zara, 21-23, 20159 Pasturago, Italy",
+      "localAddress": "Viale Zara, 21-23, 20159",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.49266052246094,
+      "longitude": 9.192599296569824,
+      "distance": 0.21509999263610632
+    },
+    {
+      "name": "Gioia",
+      "localName": "Gioia",
+      "address": "Via Melchiorre Gioia, 1108, 20124 Pasturago, Italy",
+      "localAddress": "Via Melchiorre Gioia, 1108, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.48489761352539,
+      "longitude": 9.194854736328125,
+      "distance": 0.42008125252535095
+    },
+    {
+      "name": "Garibaldi",
+      "localName": "Garibaldi",
+      "address": "Viale Luigi Sturzo, 41, 20154 Milan, Italy",
+      "localAddress": "Viale Luigi Sturzo, 41, 20154",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.483638763427734,
+      "longitude": 9.186738967895508,
+      "distance": 0.4735051347467179
+    },
+    {
+      "name": "Marche",
+      "localName": "Marche",
+      "address": "Viale Zara, 90, 20125 Pasturago, Italy",
+      "localAddress": "Viale Zara, 90, 20125",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.49614334106445,
+      "longitude": 9.194822311401367,
+      "distance": 0.47780730181994613
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 19,
+    "count2": 33,
+    "count3": 60,
+    "count4": 270,
+    "count5": 2222
+  },
+  "numberOfReviews": 2604,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Pasta",
+    "Steak Tartare",
+    "Salad",
+    "Risotto",
+    "Tiramisu",
+    "Meatballs",
+    "Carbonara",
+    "Steak Frites",
+    "Cecina",
+    "Cocido",
+    "Salmon",
+    "Tuna",
+    "Octopus",
+    "Beef",
+    "Cacio e pepe",
+    "Antipasti",
+    "Tartufo",
+    "Taglierini",
+    "Paccheri",
+    "Milanese risotto",
+    "Italian Meatballs",
+    "Pesto",
+    "Sweets",
+    "Cheese fondue",
+    "Parfait",
+    "Fish",
+    "Tagliata",
+    "Breads and Pastries",
+    "Tartare",
+    "Mixed Seafood",
+    "Fresh Pasta",
+    "Milanesa",
+    "Italian Desserts",
+    "Linguine",
+    "Desserts",
+    "Jumbo Shrimp",
+    "Tasting Menu",
+    "Truffle",
+    "Potato Wedges",
+    "Mashed Potatoes",
+    "Braised Beef",
+    "Truffade"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 750,
+          "openHours": "12:30",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d12479650-Cantine_Milano-Milan_Lombardy.html",
+  "ownersTopReasons": {
+    "sectionHeader": "Top 3 reasons to eat here",
+    "sponsoredBy": "Sponsored by: Cantine Milano",
+    "topReasons": [
+      {
+        "header": "A MUST VISIT FOR TOURISTS",
+        "rank": 1,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/29/a9/97/bc/tataki-di-tonno-gold.jpg",
+        "text": "They plate everything perfectly like a Michelin star restaurant,",
+        "keyword": "A MUST VISIT FOR TOURISTS",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "Tourist29292246934",
+          "reviewId": 963841380
+        }
+      },
+      {
+        "header": "200% ITALIAN EXPERIENCE",
+        "rank": 2,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/2c/b0/d5/5d/lacarbonara-classica.jpg",
+        "text": "We had a wonderful dinner experience at this charming Italian restaurant.",
+        "keyword": "200% ITALIAN EXPERIENCE",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "A6602AXhassana",
+          "reviewId": 963199851
+        }
+      },
+      {
+        "header": "AN UNFORGETTABLE EXPERIENCE I",
+        "rank": 3,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/29/62/dc/10/la-fiorentina-di-limouisine.jpg",
+        "text": "Food, wines and service was excellent, especially the pairing with food and wine",
+        "keyword": "AN UNFORGETTABLE EXPERIENCE I",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "Sunshine53758404049",
+          "reviewId": 960742651
+        }
+      }
+    ]
+  },
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/29/65/5a/ea/cantine-milano.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/27/f3/6e/a5/i-mondeghili-dello-chef.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/28/27/9e/a2/risotto-nero-di-seppia.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/27/f4/39/eb/m-j.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/29/62/d3/91/i-ravioli-cacio-e-pepe.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/29/87/83/35/tartare-di-scottona-menu.jpg",
+    "https://media-cdn.tripadvisor.com/media/video-t/29/a9/a6/d7/cantine-milano-1.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/99/23/54/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/38/63/61/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/38/63/60/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/38/63/5f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e1/ff/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/00/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/01/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/02/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/03/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/04/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/0c/e2/05/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/47/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/48/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/49/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/29/67/4f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/17/9a/81/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/17/9a/80/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/17/9a/7f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/17/9a/7e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/b1/e3/ca/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/b1/e3/cc/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/b1/e3/cd/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/5a/e3/d0/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/5a/e3/cf/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/5a/e3/ce/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Mediterranean",
+    "Grill"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options",
+    "Gluten free options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Reservations",
+    "Outdoor Seating",
+    "Private Dining",
+    "Seating",
+    "Street Parking",
+    "Highchairs Available",
+    "Serves Alcohol",
+    "Wine and Beer",
+    "American Express",
+    "Mastercard",
+    "Visa",
+    "Digital Payments",
+    "Free Wifi",
+    "Accepts Credit Cards",
+    "Table Service",
+    "Dog Friendly",
+    "Gift Cards Available"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner",
+    "Drinks"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=119028757&geo=12479650&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373803&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2STbC6UX2YtehXyosMARRG8&cs=1f5e996cd87da3b0f572c3860b7c387ea",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [
+    {
+      "text": "steak",
+      "reviews": 46
+    },
+    {
+      "text": "t bone",
+      "reviews": 10
+    },
+    {
+      "text": "tartare",
+      "reviews": 6
+    },
+    {
+      "text": "bistecca",
+      "reviews": 3
+    },
+    {
+      "text": "potatoes",
+      "reviews": 6
+    },
+    {
+      "text": "tiramisu",
+      "reviews": 4
+    },
+    {
+      "text": "salad",
+      "reviews": 4
+    },
+    {
+      "text": "pasta dishes",
+      "reviews": 2
+    },
+    {
+      "text": "cooked to perfection",
+      "reviews": 12
+    },
+    {
+      "text": "quality meat",
+      "reviews": 3
+    },
+    {
+      "text": "florentine style",
+      "reviews": 2
+    },
+    {
+      "text": "outstanding meal",
+      "reviews": 2
+    },
+    {
+      "text": "highest level",
+      "reviews": 2
+    },
+    {
+      "text": "meat lovers",
+      "reviews": 3
+    },
+    {
+      "text": "perfect restaurant",
+      "reviews": 2
+    },
+    {
+      "text": "corso garibaldi",
+      "reviews": 2
+    },
+    {
+      "text": "great wine",
+      "reviews": 5
+    },
+    {
+      "text": "great meat",
+      "reviews": 2
+    },
+    {
+      "text": "lovely atmosphere",
+      "reviews": 3
+    },
+    {
+      "text": "attentive service",
+      "reviews": 2
+    },
+    {
+      "text": "dining experience",
+      "reviews": 2
+    },
+    {
+      "text": "donatella",
+      "reviews": 6
+    },
+    {
+      "text": "carnivore",
+      "reviews": 4
+    },
+    {
+      "text": "tomahawk",
+      "reviews": 2
+    },
+    {
+      "text": "sides",
+      "reviews": 6
+    },
+    {
+      "text": "medium",
+      "reviews": 6
+    }
+  ],
+  "id": "13138666",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Nero 9",
+  "locationString": "Milan, Lombardy",
+  "description": "Nero 9 milano is a Italian restaurant located in the center of Milan, specializing in meat cuisine, with the selection of the best Italian breeders and products of the highest quality at the origin DOC and DOCG. The peculiarity of Nero 9 is in cooking meat made on embers and charcoal. Features that know how to give the meat a unique and inimitable taste The choice of wines is varied and offers some of the most important and award-winning labels of Italian production. Located in the Brera district, near the business center of Milano Garibaldi, the Castello Sforzesco. The perfect place for business dinners and lunch and for private event.",
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/19/cd/16/33/mmexport1571932754240.jpg",
+  "photoCount": 585,
+  "rankingPosition": 38,
+  "rating": 4.7,
+  "rawRanking": 4.699912071228027,
+  "phone": "+39 02 9167 2324",
+  "address": "Via Anfiteatro, 9, 20121 Milan Italy",
+  "addressObj": {
+    "street1": "Via Anfiteatro, 9",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20121"
+  },
+  "localName": "Nero 9",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "info@nero9milano.com",
+  "latitude": 45.47429,
+  "longitude": 9.182778,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d13138666-Reviews-Nero_9-Milan_Lombardy.html",
+  "website": "http://www.nero9milano.com",
+  "rankingString": "#38 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "8117507",
+      "name": "Centro Storico"
+    },
+    {
+      "id": "15621083",
+      "name": "Porta Garibaldi"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "Lanza",
+      "localName": "Lanza",
+      "address": "Foro Buonaparte, 48, 20121 Milan, Italy",
+      "localAddress": "Foro Buonaparte, 48, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.472225189208984,
+      "longitude": 9.182544708251953,
+      "distance": 0.14319951692359528
+    },
+    {
+      "name": "Moscova",
+      "localName": "Moscova",
+      "address": "Via della Moscova, 56-58, 20121 Milan, Italy",
+      "localAddress": "Via della Moscova, 56-58, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.47743606567383,
+      "longitude": 9.184473991394043,
+      "distance": 0.23270550608689194
+    },
+    {
+      "name": "Cairoli",
+      "localName": "Cairoli",
+      "address": "Largo Cairoli, 1898, 20121 Milan, Italy",
+      "localAddress": "Largo Cairoli, 1898, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46836471557617,
+      "longitude": 9.182021141052246,
+      "distance": 0.41142338986036625
+    },
+    {
+      "name": "Cadorna",
+      "localName": "Cadorna",
+      "address": "Piazzale Luigi Cadorna, 20123 Gessate, Italy",
+      "localAddress": "Piazzale Luigi Cadorna, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46821212768555,
+      "longitude": 9.177169799804688,
+      "distance": 0.5006942861166414
+    },
+    {
+      "name": "Montenapoleone",
+      "localName": "Montenapoleone",
+      "address": "Via Croce Rossa, 2, 20121 Milan, Italy",
+      "localAddress": "Via Croce Rossa, 2, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.470191955566406,
+      "longitude": 9.192688941955566,
+      "distance": 0.5580361143649194
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 8,
+    "count2": 13,
+    "count3": 29,
+    "count4": 149,
+    "count5": 695
+  },
+  "numberOfReviews": 894,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Pasta",
+    "Cheesecake",
+    "Porterhouse Steak",
+    "Steak Tartare",
+    "T-Bone Steak",
+    "Salad",
+    "Steak Frites",
+    "Cecina",
+    "Cocido",
+    "Beef",
+    "Cacio e pepe",
+    "Antipasti",
+    "Bigoli",
+    "Chianina",
+    "Tartufo",
+    "Pesto",
+    "Sweets",
+    "Rice dishes",
+    "Tagliata",
+    "Tartare",
+    "Rump Steak",
+    "Carpaccio",
+    "Fresh Pasta",
+    "Panna Cotta",
+    "Italian Desserts",
+    "Desserts",
+    "Picanha",
+    "Rice Dishes",
+    "Beef Carpaccio",
+    "Charcuterie Board",
+    "Cold Cuts",
+    "Truffle",
+    "Potato Wedges",
+    "Truffade"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1440,
+          "closeHours": "00:00"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1440,
+          "closeHours": "00:00"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "https://www.nero9milano.com/wp-content/uploads/2023/12/menu-nuovi-copia-inglese.pdf",
+  "ownersTopReasons": {
+    "sectionHeader": "Top 3 reasons to eat here",
+    "sponsoredBy": "Sponsored by: Nero 9",
+    "topReasons": [
+      {
+        "header": "A temple of Beef",
+        "rank": 1,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/24/51/55/53/cottura-della-carne-ottimale.jpg",
+        "text": "Very nice food, meat was one of the best I ever had ",
+        "keyword": "A temple of Beef",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "Jose188113",
+          "reviewId": 930446342
+        }
+      },
+      {
+        "header": "Best Steak In Town",
+        "rank": 2,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/15/da/35/10/20181207-221845-largejpg.jpg",
+        "text": "The best steak I have ever had! ",
+        "keyword": "Best Steak In Town",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "Wendy_FL33498",
+          "reviewId": 925418717
+        }
+      },
+      {
+        "header": "Steak lovers Paradise",
+        "rank": 3,
+        "image_url": "https://media-cdn.tripadvisor.com/media/photo-s/15/da/35/0f/20181207-221643-largejpg.jpg",
+        "text": "The best steakhouse experience, the meat is amazing 10/10,",
+        "keyword": "Steak lovers Paradise",
+        "isSearchTerm": true,
+        "linkText": "Read review",
+        "review": {
+          "rating": 5,
+          "screenName": "Departure61330238002",
+          "reviewId": 922196592
+        }
+      }
+    ]
+  },
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/29/8c/f4/2a/location-nero-9-dallo.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/40/46/60/interni-nero-9.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/24/51/55/28/la-carne-e-la-vera-protagonist.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/40/46/61/mise-en-place.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/40/46/5b/carpaccio-affumicato.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/40/46/55/tagliatella-con-crema.jpg",
+    "https://media-cdn.tripadvisor.com/media/video-t/2b/48/ea/7d/nero-9-1.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/bb/21/b7/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/5d/8a/ff/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/5d/8b/00/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/5d/8b/01/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/5d/8b/02/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/85/b5/df/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/4d/49/3d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ea/7a/c5/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ea/7a/c6/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ea/7a/c7/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ea/7a/c8/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/c5/13/33/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/94/0c/19/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/7d/43/33/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/78/6d/65/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/0d/ac/bc/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Steakhouse",
+    "Barbecue",
+    "Grill"
+  ],
+  "dietaryRestrictions": [
+    "Gluten free options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Reservations",
+    "Seating",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Wine and Beer",
+    "American Express",
+    "Mastercard",
+    "Visa",
+    "Free Wifi",
+    "Accepts Credit Cards",
+    "Table Service"
+  ],
+  "mealTypes": [
+    "Dinner"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=123415237&geo=13138666&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373807&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2blzWDfAPaHACyLo-f48Pz8&cs=1e511ea71ac8534835ff298539715fe28",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [],
+  "id": "33251576",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Glory Pop - Piazzale Cantore",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/30/39/aa/c1/pomodoro-giallo-e-spianata.jpg",
+  "photoCount": 200,
+  "rankingPosition": 2,
+  "rating": 4.9,
+  "rawRanking": 4.882701396942139,
+  "phone": "+39 02 0995 3592",
+  "address": "Piazzale Antonio Cantore 3, 20123 Milan Italy",
+  "addressObj": {
+    "street1": "Piazzale Antonio Cantore 3",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20123"
+  },
+  "localName": "Glory Pop - Piazzale Cantore",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "marketing@glorypop.it",
+  "latitude": 45.45572,
+  "longitude": 9.17461,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d33251576-Reviews-Glory_Pop_Piazzale_Cantore-Milan_Lombardy.html",
+  "website": "https://glorypop.it/",
+  "rankingString": "#2 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [],
+  "nearestMetroStations": [
+    {
+      "name": "Sant'Agostino",
+      "localName": "Sant'Agostino",
+      "address": "Viale Papiniano, 38, 20123 Pontesesto, Italy",
+      "localAddress": "Viale Papiniano, 38, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.4586181640625,
+      "longitude": 9.169814109802246,
+      "distance": 0.30718635406599265
+    },
+    {
+      "name": "Porta Genova",
+      "localName": "Porta Genova",
+      "address": "Via Casale, 2, 20144 Corsico, Italy",
+      "localAddress": "Via Casale, 2, 20144",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.45237731933594,
+      "longitude": 9.169602394104004,
+      "distance": 0.3353642219122805
+    },
+    {
+      "name": "Sant'Ambrogio",
+      "localName": "Sant'Ambrogio",
+      "address": "Via De Amicis Edmondo, 61, 20123 Pontesesto, Italy",
+      "localAddress": "Via De Amicis Edmondo, 61, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46162033081055,
+      "longitude": 9.173166275024414,
+      "distance": 0.41416482045553993
+    },
+    {
+      "name": "Missori",
+      "localName": "Missori",
+      "address": "Corso Italia, 1, 20122 Gessate, Italy",
+      "localAddress": "Corso Italia, 1, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.460105895996094,
+      "longitude": 9.189023971557617,
+      "distance": 0.7623305719779057
+    },
+    {
+      "name": "Cadorna",
+      "localName": "Cadorna",
+      "address": "Piazzale Luigi Cadorna, 20123 Gessate, Italy",
+      "localAddress": "Piazzale Luigi Cadorna, 20123",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46821212768555,
+      "longitude": 9.177169799804688,
+      "distance": 0.873031136760724
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 0,
+    "count2": 2,
+    "count3": 3,
+    "count4": 27,
+    "count5": 396
+  },
+  "numberOfReviews": 428,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Cheesecake",
+    "Tiramisu",
+    "Cocido",
+    "Antipasti",
+    "Neapolitan pizza",
+    "Sweets",
+    "Italian Desserts",
+    "Crispy",
+    "Limoncello"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1380,
+          "closeHours": "23:00"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d33251576-Glory_Pop_Piazzale_Cantore-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/39/aa/c1/pomodoro-giallo-e-spianata.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/3e/4b/c3/glory-pop-cantore.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/39/b0/21/focaccina-con-bufala.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/39/ae/f9/bresaola-rucola-e-grana.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/39/ab/e4/crudo-e-fichi-180gr-di.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/39/ab/69/melanzane-e-cacioricotta.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/08/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/07/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/06/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/05/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/04/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/53/c2/03/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/9a/82/25/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/9a/82/22/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/9a/82/21/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/8c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/8b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/8a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/89/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/88/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/59/9f/87/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/73/cb/3b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/73/cb/3a/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Pizza",
+    "Mediterranean",
+    "Campania",
+    "Calabrian",
+    "Southern-Italian"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Delivery",
+    "Takeout",
+    "Reservations",
+    "Seating",
+    "Street Parking",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Full Bar",
+    "Wine and Beer",
+    "American Express",
+    "Mastercard",
+    "Visa",
+    "Digital Payments",
+    "Free Wifi",
+    "Discover",
+    "Accepts Credit Cards",
+    "Table Service",
+    "Dog Friendly",
+    "Family style",
+    "Non-smoking restaurants"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner",
+    "Drinks"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=271056517&geo=33251576&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373810&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2R_RZ_bgyOp7HOYK14cvn8U&cs=127bf47dfa7511bceb45ada5b2cb34159",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [
+    {
+      "text": "meatballs",
+      "reviews": 124
+    },
+    {
+      "text": "steak",
+      "reviews": 62
+    },
+    {
+      "text": "tiramisu",
+      "reviews": 46
+    },
+    {
+      "text": "antipasti",
+      "reviews": 24
+    },
+    {
+      "text": "osso bucco",
+      "reviews": 31
+    },
+    {
+      "text": "salad",
+      "reviews": 15
+    },
+    {
+      "text": "fried bread",
+      "reviews": 24
+    },
+    {
+      "text": "restaurant experience",
+      "reviews": 9
+    },
+    {
+      "text": "excellent restaurant",
+      "reviews": 8
+    },
+    {
+      "text": "visiting milan",
+      "reviews": 12
+    },
+    {
+      "text": "jars",
+      "reviews": 126
+    },
+    {
+      "text": "marko",
+      "reviews": 22
+    },
+    {
+      "text": "meloncello",
+      "reviews": 13
+    },
+    {
+      "text": "desert",
+      "reviews": 26
+    },
+    {
+      "text": "carafe",
+      "reviews": 8
+    },
+    {
+      "text": "mozzarella",
+      "reviews": 16
+    },
+    {
+      "text": "euros",
+      "reviews": 23
+    }
+  ],
+  "id": "1629070",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "L'immagine Ristorante Bistrot",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-o/03/ee/7b/a6/bistrot-l-immagine.jpg",
+  "photoCount": 1343,
+  "rankingPosition": 23,
+  "rating": 4.6,
+  "rawRanking": 4.777845859527588,
+  "phone": "+39 02 3926 4564",
+  "address": "Via Varesina 61, 20156 Milan Italy",
+  "addressObj": {
+    "street1": "Via Varesina 61",
+    "street2": "",
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20156"
+  },
+  "localName": "L'immagine Ristorante Bistrot",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "limmaginebistrot@gmail.com",
+  "latitude": 45.49723,
+  "longitude": 9.145549,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d1629070-Reviews-L_immagine_Ristorante_Bistrot-Milan_Lombardy.html",
+  "website": "https://www.facebook.com/limmaginebistrotmilano/",
+  "rankingString": "#23 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "13208353",
+      "name": "Villapizzone"
+    },
+    {
+      "id": "15621047",
+      "name": "Zone 8"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "QT8",
+      "localName": "QT8",
+      "address": "Piazza Santa Maria Nascente, 29, 20148 Novegro, Italy",
+      "localAddress": "Piazza Santa Maria Nascente, 29, 20148",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.485958099365234,
+      "longitude": 9.13718032836914,
+      "distance": 0.8789876710737528
+    },
+    {
+      "name": "Portello",
+      "localName": "Portello",
+      "address": "Viale Lodovico Scarampo, 20149 Novegro, Italy",
+      "localAddress": "Viale Lodovico Scarampo, 20149",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.48417663574219,
+      "longitude": 9.147662162780762,
+      "distance": 0.9087385570310037
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 20,
+    "count2": 58,
+    "count3": 150,
+    "count4": 689,
+    "count5": 2133
+  },
+  "numberOfReviews": 3050,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Polenta",
+    "Pasta",
+    "Lasagne",
+    "Shrimp",
+    "Steak Tartare",
+    "Salad",
+    "Risotto",
+    "Tiramisu",
+    "Prosciutto",
+    "Meatballs",
+    "Carbonara",
+    "Bolognese",
+    "Tortellini",
+    "Steak Frites",
+    "Cecina",
+    "Cocido",
+    "Tuna",
+    "Foie gras",
+    "Beef",
+    "Dauphiné raviolis",
+    "Torte",
+    "Antipasti",
+    "Tortelli",
+    "Gnocco fritto",
+    "Ossobuco",
+    "Ragu",
+    "Tartufo",
+    "Bruschette",
+    "Cotoletta",
+    "Wild boar",
+    "Milanese risotto",
+    "Italian Meatballs",
+    "Pesto",
+    "Chocolates",
+    "Sweets",
+    "Cheese fondue",
+    "Parfait",
+    "Fish",
+    "Tagliata",
+    "Breads and Pastries",
+    "Tartare",
+    "Sun-dried Tomatoes",
+    "Fried Bread",
+    "Carpaccio",
+    "Veal",
+    "Fresh Pasta",
+    "Milanesa",
+    "Italian Desserts",
+    "Tarte",
+    "Desserts",
+    "Jumbo Shrimp",
+    "Biscotti",
+    "Cake",
+    "Torta",
+    "Beef Carpaccio",
+    "Fried",
+    "Tarts",
+    "Cold Cuts",
+    "Truffle",
+    "Potato Wedges",
+    "Limoncello",
+    "Truffade"
+  ],
+  "hours": {
+    "weekRanges": [
+      [],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ],
+      [
+        {
+          "open": 1080,
+          "openHours": "18:00",
+          "close": 1350,
+          "closeHours": "22:30"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d1629070-L_immagine_Ristorante_Bistrot-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/03/ee/7b/a6/bistrot-l-immagine.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/2d/36/45/antipasto-con-gnocco.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/2d/36/1c/gnam.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/2d/36/0c/filetto-di-black-angus.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/1b/2d/36/09/filetto-di-black-angus.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/59/a0/86/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ba/c2/08/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ba/c2/09/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ba/c2/0a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/ba/c2/0b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/43/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/44/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/45/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/46/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/47/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/6d/83/48/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/01/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/02/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/03/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/04/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/05/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/59/b7/06/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/cf/22/a2/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/2b/06/f7/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/ce/18/d5/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/ce/18/d6/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/ce/18/d7/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "International",
+    "Mediterranean",
+    "European",
+    "Lombard",
+    "Northern-Italian"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options",
+    "Gluten free options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Reservations",
+    "Seating",
+    "Free off-street parking",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Full Bar",
+    "Wine and Beer",
+    "American Express",
+    "Mastercard",
+    "Visa",
+    "Digital Payments",
+    "Free Wifi",
+    "Accepts Credit Cards",
+    "Table Service"
+  ],
+  "mealTypes": [
+    "Dinner"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=69912327&geo=1629070&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373811&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2W28hl7M7gHaGd8rulwKZ-k&cs=14ca168d6af67901a34a5f93b2d7f34c4",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [],
+  "id": "25192066",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Prime",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/2c/c1/56/87/linguine.jpg",
+  "photoCount": 162,
+  "rankingPosition": 6,
+  "rating": 4.9,
+  "rawRanking": 4.842334747314453,
+  "phone": "+39 02 6556 0923",
+  "address": "Viale Francesco Crispi,2, 20154 Milan Italy",
+  "addressObj": {
+    "street1": "Viale Francesco Crispi,2",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20154"
+  },
+  "localName": "Ristorante Primè",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "prime@ristoranteprime.it",
+  "latitude": 45.480843,
+  "longitude": 9.185742,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d25192066-Reviews-Prime-Milan_Lombardy.html",
+  "website": "https://www.ristoranteprime.it",
+  "rankingString": "#6 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [],
+  "nearestMetroStations": [
+    {
+      "name": "Garibaldi",
+      "localName": "Garibaldi",
+      "address": "Viale Luigi Sturzo, 41, 20154 Milan, Italy",
+      "localAddress": "Viale Luigi Sturzo, 41, 20154",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.483638763427734,
+      "longitude": 9.186738967895508,
+      "distance": 0.19935963027395825
+    },
+    {
+      "name": "Moscova",
+      "localName": "Moscova",
+      "address": "Via della Moscova, 56-58, 20121 Milan, Italy",
+      "localAddress": "Via della Moscova, 56-58, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.47743606567383,
+      "longitude": 9.184473991394043,
+      "distance": 0.2435282641011419
+    },
+    {
+      "name": "Gioia",
+      "localName": "Gioia",
+      "address": "Via Melchiorre Gioia, 1108, 20124 Pasturago, Italy",
+      "localAddress": "Via Melchiorre Gioia, 1108, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m2",
+          "lineName": "M2",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.48489761352539,
+      "longitude": 9.194854736328125,
+      "distance": 0.5234186796450755
+    },
+    {
+      "name": "Isola",
+      "localName": "Isola",
+      "address": "Via Volturno, 26, 20124 Pasturago, Italy",
+      "localAddress": "Via Volturno, 26, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.487606048583984,
+      "longitude": 9.191261291503906,
+      "distance": 0.5389791781806513
+    },
+    {
+      "name": "Turati",
+      "localName": "Turati",
+      "address": "Via Principe Amedeo, 1-2, 20121 Milan, Italy",
+      "localAddress": "Via Principe Amedeo, 1-2, 20121",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.475040435791016,
+      "longitude": 9.1947021484375,
+      "distance": 0.5915341552981744
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 1,
+    "count2": 1,
+    "count3": 3,
+    "count4": 6,
+    "count5": 244
+  },
+  "numberOfReviews": 255,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$$$",
+  "dishes": [
+    "Ice Cream",
+    "Oyster",
+    "Steak Tartare",
+    "Crawfish",
+    "Risotto",
+    "Croquettes",
+    "Cecina",
+    "Salmon",
+    "Tuna",
+    "Gazpacho",
+    "Octopus",
+    "Norway Lobsters",
+    "Bass",
+    "Torte",
+    "Antipasti",
+    "Milanese risotto",
+    "Fish",
+    "Tartare",
+    "Tortino",
+    "Scampi",
+    "Linguine",
+    "Tarte",
+    "Desserts",
+    "Jumbo Shrimp",
+    "Torta",
+    "Tarts",
+    "Sea Bass",
+    "Shrimp Scampi",
+    "Tartiflette"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 900,
+          "closeHours": "15:00"
+        },
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1140,
+          "openHours": "19:00",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d25192066-Prime-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/c1/56/87/linguine.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/d4/01/10/ristotto-agli-agrumi.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/c1/56/85/gamberi.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/c1/56/86/paccheri.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2c/c1/4f/c5/selezione-di-vini.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/09/e3/5e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/09/e3/5d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/73/92/c9/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/5d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/5c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/5b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/5a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/59/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/58/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/57/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/56/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/55/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/2a/7a/54/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/30/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/31/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/32/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/33/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/34/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/35/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/36/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/37/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/38/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/39/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/3a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/3b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/3c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/6c/d6/3d/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Italian",
+    "Seafood",
+    "Mediterranean",
+    "Diner",
+    "Lombard",
+    "Northern-Italian"
+  ],
+  "dietaryRestrictions": [
+    "Gluten free options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Reservations",
+    "Outdoor Seating",
+    "Private Dining",
+    "Seating",
+    "Parking Available",
+    "Street Parking",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Wine and Beer",
+    "American Express",
+    "Mastercard",
+    "Visa",
+    "Digital Payments",
+    "Free Wifi",
+    "Discover",
+    "Accepts Credit Cards",
+    "Table Service",
+    "Dog Friendly",
+    "Non-smoking restaurants",
+    "Gift Cards Available"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner",
+    "Drinks"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=269819925&geo=25192066&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373816&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2Xo6Dk675Fp1yCnNevoW8q8&cs=132e04dd9102486c75e25ca9c42e61569",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "reviewTags": [
+    {
+      "text": "pasta",
+      "reviews": 2
+    }
+  ],
+  "id": "2355592",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Panigacci",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/28/bd/c6/bb/panigacci-milano-bistrot.jpg",
+  "photoCount": 570,
+  "rankingPosition": 1,
+  "rating": 4.9,
+  "rawRanking": 4.883142471313477,
+  "phone": "+39 339 419 4333",
+  "address": "Via Bezzecca, 2, 20135 Milan Italy",
+  "addressObj": {
+    "street1": "Via Bezzecca, 2",
+    "street2": "",
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20135"
+  },
+  "localName": "Panigacci",
+  "localAddress": "Via Bezzecca, 2, 20135",
+  "localLangCode": "it",
+  "email": "info@panigaccimilanobistrot.it",
+  "latitude": 45.460957,
+  "longitude": 9.209515,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d2355592-Reviews-Panigacci-Milan_Lombardy.html",
+  "website": "http://www.panigaccimilanobistrot.it/",
+  "rankingString": "#1 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "15621090",
+      "name": "Porta Vittoria"
+    },
+    {
+      "id": "15621043",
+      "name": "Zone 4"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "San Babila",
+      "localName": "San Babila",
+      "address": "Piazza S. Babila, 4, 20122 Milan, Italy",
+      "localAddress": "Piazza S. Babila, 4, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.46651840209961,
+      "longitude": 9.197527885437012,
+      "distance": 0.6972558765235647
+    },
+    {
+      "name": "Porta Romana",
+      "localName": "Porta Romana",
+      "address": "Corso Lodi, 3, 20135 Mediglia, Italy",
+      "localAddress": "Corso Lodi, 3, 20135",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.45143127441406,
+      "longitude": 9.203398704528809,
+      "distance": 0.7226088237697839
+    },
+    {
+      "name": "Crocetta",
+      "localName": "Crocetta",
+      "address": "Corso di Porta Vigentina, 2, 20122 Mediglia, Italy",
+      "localAddress": "Corso di Porta Vigentina, 2, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.45655059814453,
+      "longitude": 9.195100784301758,
+      "distance": 0.7628470979335504
+    },
+    {
+      "name": "Palestro",
+      "localName": "Palestro",
+      "address": "Corso Venezia, 49-51, 20122 Milan, Italy",
+      "localAddress": "Corso Venezia, 49-51, 20122",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.4714241027832,
+      "longitude": 9.201948165893555,
+      "distance": 0.8117689610114672
+    },
+    {
+      "name": "Porta Venezia",
+      "localName": "Porta Venezia",
+      "address": "Corso Buenos Aires, 1, 20124 Milan, Italy",
+      "localAddress": "Corso Buenos Aires, 1, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m1",
+          "lineName": "M1",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.47447967529297,
+      "longitude": 9.20500373840332,
+      "distance": 0.9606515384438822
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 6,
+    "count2": 8,
+    "count3": 8,
+    "count4": 24,
+    "count5": 768
+  },
+  "numberOfReviews": 814,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$",
+  "dishes": [
+    "Pasta",
+    "Chicken Wings",
+    "Burger",
+    "Lasagne",
+    "Tiramisu",
+    "Focaccia",
+    "Cecina",
+    "Beef Cheeks",
+    "Cocido",
+    "Octopus",
+    "Beef",
+    "Dauphiné raviolis",
+    "Antipasti",
+    "Bruschette",
+    "Pesto",
+    "Parfait",
+    "Chicken dishes",
+    "Burger and Fries",
+    "Rump Steak",
+    "Veal",
+    "Fresh Pasta",
+    "Panna Cotta",
+    "Italian Desserts",
+    "Desserts",
+    "Jumbo Shrimp",
+    "Picanha",
+    "Limoncello"
+  ],
+  "hours": {
+    "weekRanges": [
+      [],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1530,
+          "closeHours": "01:30"
+        }
+      ],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1530,
+          "closeHours": "01:30"
+        }
+      ],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1530,
+          "closeHours": "01:30"
+        }
+      ],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1530,
+          "closeHours": "01:30"
+        }
+      ],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1560,
+          "closeHours": "02:00"
+        }
+      ],
+      [
+        {
+          "open": 1020,
+          "openHours": "17:00",
+          "close": 1560,
+          "closeHours": "02:00"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d2355592-Panigacci-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/28/bd/c6/bb/panigacci-milano-bistrot.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/15/90/9d/4f/interno.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/30/26/65/4f/tutte-le-sere-dopo-cena.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/28/bd/c6/ba/panigacci-milano-bistrot.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/27/36/15/42/sovracoscia-di-pollo.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/c7/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/c8/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/c9/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/ca/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/cb/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/39/3f/cc/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6a/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6b/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6c/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6d/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6e/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/6f/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/70/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/31/9a/c1/71/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "International"
+  ],
+  "dietaryRestrictions": [
+    "Vegetarian friendly",
+    "Vegan options",
+    "Gluten free options"
+  ],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Takeout",
+    "Reservations",
+    "Outdoor Seating",
+    "Seating",
+    "Parking Available",
+    "Street Parking",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "Wine and Beer",
+    "Mastercard",
+    "Visa",
+    "Digital Payments",
+    "Free Wifi",
+    "Accepts Credit Cards",
+    "Table Service",
+    "BYOB",
+    "Dog Friendly",
+    "Non-smoking restaurants"
+  ],
+  "mealTypes": [
+    "Dinner",
+    "Late Night"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=170721771&geo=2355592&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373824&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2YcUS6X5KvRm9PwfOl1DRbA&cs=18d77060ca9ed6e2d1b81764c0692567a",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+},
+{
+  "id": "10385156",
+  "type": "RESTAURANT",
+  "category": "restaurant",
+  "subcategories": [
+    "Sit down"
+  ],
+  "name": "Enoteca di mare Bistrot - Mare In Pasta",
+  "locationString": "Milan, Lombardy",
+  "description": null,
+  "image": "https://media-cdn.tripadvisor.com/media/photo-m/1280/2a/6b/af/a0/tagliolino-nero-su-tartare.jpg",
+  "photoCount": 597,
+  "rankingPosition": 26,
+  "rating": 4.6,
+  "rawRanking": 4.770635604858398,
+  "phone": "+39 02 688 3224",
+  "address": "Via Menabrea, 12, 20159 Milan Italy",
+  "addressObj": {
+    "street1": "Via Menabrea, 12",
+    "street2": null,
+    "city": "Milan",
+    "state": null,
+    "country": "Italy",
+    "postalcode": "20159"
+  },
+  "localName": "Enoteca di mare Bistrot - Mare In Pasta",
+  "localAddress": null,
+  "localLangCode": "it",
+  "email": "mareinpasta@gmail.com",
+  "latitude": 45.49487,
+  "longitude": 9.187097,
+  "webUrl": "https://www.tripadvisor.com/Restaurant_Review-g187849-d10385156-Reviews-Enoteca_di_mare_Bistrot_Mare_In_Pasta-Milan_Lombardy.html",
+  "website": "https://www.enotecadimare.it",
+  "rankingString": "#26 of 9,537 places to eat in Milan",
+  "rankingDenominator": "7547",
+  "rankingSource": "API",
+  "neighborhoodLocations": [
+    {
+      "id": "15621048",
+      "name": "Zone 9"
+    },
+    {
+      "id": "15621072",
+      "name": "Isola"
+    },
+    {
+      "id": "15621037",
+      "name": "Farini"
+    }
+  ],
+  "nearestMetroStations": [
+    {
+      "name": "Maciachini",
+      "localName": "Maciachini",
+      "address": "Via Carlo Imbonati, 8, 20159 Brusuglio, Italy",
+      "localAddress": "Via Carlo Imbonati, 8, 20159",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.49769973754883,
+      "longitude": 9.185041427612305,
+      "distance": 0.21968559594830153
+    },
+    {
+      "name": "Zara",
+      "localName": "Zara",
+      "address": "Viale Zara, 21-23, 20159 Pasturago, Italy",
+      "localAddress": "Viale Zara, 21-23, 20159",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m3",
+          "lineName": "M3",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        },
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.49266052246094,
+      "longitude": 9.192599296569824,
+      "distance": 0.3074566284539611
+    },
+    {
+      "name": "Marche",
+      "localName": "Marche",
+      "address": "Viale Zara, 90, 20125 Pasturago, Italy",
+      "localAddress": "Viale Zara, 90, 20125",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.49614334106445,
+      "longitude": 9.194822311401367,
+      "distance": 0.3848166903248702
+    },
+    {
+      "name": "Isola",
+      "localName": "Isola",
+      "address": "Via Volturno, 26, 20124 Pasturago, Italy",
+      "localAddress": "Via Volturno, 26, 20124",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.487606048583984,
+      "longitude": 9.191261291503906,
+      "distance": 0.5414648326890562
+    },
+    {
+      "name": "Istria",
+      "localName": "Istria",
+      "address": "Viale Fulvio Testi, 1, 20159 Pasturago, Italy",
+      "localAddress": "Viale Fulvio Testi, 1, 20159",
+      "lines": [
+        {
+          "id": "milan-milan-metro-m5",
+          "lineName": "M5",
+          "lineSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "systemName": "Milan Metro",
+          "systemSymbol": "https://static.tacdn.com/img/api/metro_stations/metro_placeholder.png",
+          "type": "Rapid Transit"
+        }
+      ],
+      "latitude": 45.50170135498047,
+      "longitude": 9.197798728942871,
+      "distance": 0.701830676164882
+    }
+  ],
+  "ancestorLocations": [
+    {
+      "id": "187849",
+      "name": "Milan",
+      "abbreviation": null,
+      "subcategory": "City"
+    },
+    {
+      "id": "187829",
+      "name": "Lombardy",
+      "abbreviation": null,
+      "subcategory": "Region"
+    },
+    {
+      "id": "187768",
+      "name": "Italy",
+      "abbreviation": null,
+      "subcategory": "Country"
+    }
+  ],
+  "ratingHistogram": {
+    "count1": 20,
+    "count2": 23,
+    "count3": 45,
+    "count4": 124,
+    "count5": 633
+  },
+  "numberOfReviews": 845,
+  "isClosed": false,
+  "isLongClosed": false,
+  "openNowText": "Open Now",
+  "priceLevel": "$$ - $$$",
+  "dishes": [
+    "Pasta",
+    "Crab",
+    "Shrimp",
+    "Steak Tartare",
+    "Calamari",
+    "Bolognese",
+    "Cecina",
+    "Salmon",
+    "Tuna",
+    "Clams",
+    "Octopus",
+    "Moules-frites",
+    "Antipasti",
+    "Spaghetti alla chitarra",
+    "Taglierini",
+    "Fritto misto",
+    "Paccheri",
+    "Pesto",
+    "Sweets",
+    "Fish",
+    "Tartare",
+    "Mixed Seafood",
+    "Fresh Pasta",
+    "Italian Desserts",
+    "Jumbo Shrimp",
+    "Limoncello"
+  ],
+  "hours": {
+    "weekRanges": [
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        }
+      ],
+      [],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1110,
+          "openHours": "18:30",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1110,
+          "openHours": "18:30",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 1110,
+          "openHours": "18:30",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1110,
+          "openHours": "18:30",
+          "close": 1410,
+          "closeHours": "23:30"
+        }
+      ],
+      [
+        {
+          "open": 720,
+          "openHours": "12:00",
+          "close": 870,
+          "closeHours": "14:30"
+        },
+        {
+          "open": 1110,
+          "openHours": "18:30",
+          "close": 1425,
+          "closeHours": "23:45"
+        }
+      ]
+    ],
+    "timezone": "Europe/Rome"
+  },
+  "menuWebUrl": "http://www.tripadvisor.com/MobileRestaurantMenu-g187849-d10385156-Enoteca_di_mare_Bistrot_Mare_In_Pasta-Milan_Lombardy.html",
+  "ownersTopReasons": null,
+  "isNearbyResult": false,
+  "reviewTags": [],
+  "photos": [
+    "https://media-cdn.tripadvisor.com/media/photo-o/2a/6b/af/a0/tagliolino-nero-su-tartare.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2a/6b/b0/a2/antinori-conte-dellla.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2a/6b/b0/a1/tris-di-tartare.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2a/6b/b0/a0/tortino-cuore-caldo-al.jpg",
+    "https://media-cdn.tripadvisor.com/media/photo-o/2a/6b/b0/9f/parmigianina-di-mare.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/ed/4a/c9/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/b9/85/21/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/9d/9e/aa/caption.jpg",
+    "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/39/19/08/caption.jpg"
+  ],
+  "travelerChoiceAward": null,
+  "cuisines": [
+    "Seafood",
+    "Mediterranean"
+  ],
+  "dietaryRestrictions": [],
+  "establishmentTypes": [
+    "Restaurants"
+  ],
+  "features": [
+    "Takeout",
+    "Reservations",
+    "Seating",
+    "Highchairs Available",
+    "Wheelchair Accessible",
+    "Serves Alcohol",
+    "American Express",
+    "Free Wifi",
+    "Accepts Credit Cards",
+    "Table Service"
+  ],
+  "mealTypes": [
+    "Lunch",
+    "Dinner"
+  ],
+  "isClaimedIcon": false,
+  "isClaimedText": null,
+  "orderOnline": [
+    {
+      "providerType": "RESERVATION",
+      "canProvideTimeslots": true,
+      "buttonText": "Reserve",
+      "offerURL": "https://www.tripadvisor.com/Commerce?p=theFork-Lafourchette&src=105482685&geo=10385156&from=Restaurant_Review&area=reservation_button&slot=1&matchID=1&oos=0&cnt=1&silo=16835&bucket=740400&nrank=1&crank=1&clt=R&ttype=Restaurant&tm=342373841&managed=false&capped=false&gosox=SuAtPyMvST0kNUQfpfnmsY2PbrBHM_4VcIXjyQHUCRNs04jFUvGYkS80XHGpKeQ2NGi9I6nuBPmXmunT2F7Y2aPvRC3jkacZ3sHG5Fl3H6A&cs=148004474d96fe8f120d9399acc547914",
+      "logoUrl": "https://static.tacdn.com/img2/branding/hotels/TheFork-Logo-2023.png",
+      "provider": "theFork-Lafourchette",
+      "providerId": "12629",
+      "providerDisplayName": "TheFork",
+      "headerText": "Reserve a table"
+    }
+  ],
+  "input": "Milano"
+}]

@@ -271,31 +271,69 @@ def accommodation_suggestions():
     Get hotel suggestions for a route or location
 
     POST body:
-        lat: Latitude
-        lng: Longitude
-        city: City name (default: Milan)
+        Option 1: route_points (array of {lat, lng, name})
+        Option 2: lat, lng, city (single point - legacy)
 
     Returns:
         JSON list of suggested hotels
     """
     try:
         data = request.get_json()
-        lat = float(data.get('lat'))
-        lng = float(data.get('lng'))
-        city = data.get('city', 'Milan')
 
-        suggestions = get_accommodation_suggestions(lat, lng, city)
+        # Check if route_points provided (new API)
+        if 'route_points' in data and data['route_points']:
+            route_points = data['route_points']
 
-        logger.info(
-            f"🏨 Accommodation suggestions: ({lat}, {lng}), found={len(suggestions)}")
+            if not route_points or len(route_points) == 0:
+                return jsonify({'success': False, 'error': 'No route points provided'}), 400
 
-        return jsonify({
-            'success': True,
-            'count': len(suggestions),
-            'suggestions': suggestions
-        })
+            # Calculate centroid of route
+            total_lat = sum(p['lat'] for p in route_points)
+            total_lng = sum(p['lng'] for p in route_points)
+            center_lat = total_lat / len(route_points)
+            center_lng = total_lng / len(route_points)
 
-    except (ValueError, KeyError):
+            # Extract city from first point's name if available
+            city = 'Milan'  # default
+            if route_points[0].get('name'):
+                # Try to extract city from name like "Duomo, Milan"
+                name_parts = route_points[0]['name'].split(',')
+                if len(name_parts) > 1:
+                    city = name_parts[-1].strip()
+
+            logger.info(
+                f"🏨 Accommodation suggestions for route with {len(route_points)} points, center: ({center_lat}, {center_lng}), city: {city}")
+
+            suggestions = get_accommodation_suggestions(
+                center_lat, center_lng, city)
+
+            return jsonify({
+                'success': True,
+                'count': len(suggestions),
+                'suggestions': suggestions,
+                'city': city
+            })
+
+        # Legacy single-point API
+        else:
+            lat = float(data.get('lat'))
+            lng = float(data.get('lng'))
+            city = data.get('city', 'Milan')
+
+            suggestions = get_accommodation_suggestions(lat, lng, city)
+
+            logger.info(
+                f"🏨 Accommodation suggestions: ({lat}, {lng}), found={len(suggestions)}")
+
+            return jsonify({
+                'success': True,
+                'count': len(suggestions),
+                'suggestions': suggestions,
+                'city': city
+            })
+
+    except (ValueError, KeyError) as e:
+        logger.error(f"❌ Invalid request data: {str(e)}")
         return jsonify({'success': False, 'error': 'Invalid request data'}), 400
     except Exception as e:
         logger.error(f"❌ Accommodation suggestions error: {str(e)}")

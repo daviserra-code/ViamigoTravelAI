@@ -36,8 +36,16 @@ const CITY_ALIASES = {
  * @returns {string} - Normalized city name
  */
 function normalizeCity(city) {
-    if (!city) return city;
-    return CITY_ALIASES[city] || CITY_ALIASES[city.toLowerCase()] || city;
+    if (!city) return 'Milan'; // Default fallback
+    
+    // Ensure city is a string
+    if (typeof city !== 'string') {
+        console.warn(`⚠️ normalizeCity: expected string, got ${typeof city}:`, city);
+        return 'Milan';
+    }
+    
+    const cityLower = city.toLowerCase().trim();
+    return CITY_ALIASES[cityLower] || city;
 }
 
 /**
