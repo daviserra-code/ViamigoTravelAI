@@ -6,6 +6,7 @@ from data_intelligence import data_intelligence_bp
 from analytics_routes import analytics_dashboard_bp
 from role_based_access import role_based_access_bp, role_manager
 from comprehensive_attractions_api import comprehensive_attractions_bp
+from hotels_routes import hotels_bp
 import logging
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager, current_user
