@@ -233,6 +233,18 @@
                 searchHotels(searchInput ? searchInput.value : '');
             });
         });
+        
+        // City selector
+        const citySelector = document.getElementById('hotel-city-selector');
+        if (citySelector) {
+            citySelector.addEventListener('change', (e) => {
+                currentCity = e.target.value;
+                console.log(`🌍 City changed to: ${currentCity}`);
+                // Reload stats and hotels for new city
+                loadHotelStats();
+                searchHotels('');
+            });
+        }
     }
     
     /**
@@ -250,6 +262,9 @@
         if (searchInput) {
             setTimeout(() => searchInput.focus(), 100);
         }
+        
+        // Load city selector first
+        loadCitySelector();
         
         // Load stats and top hotels
         loadHotelStats();
@@ -283,6 +298,43 @@
                 btn.classList.add('bg-gray-700', 'text-gray-300');
             }
         });
+    }
+    
+    /**
+     * Load supported cities into selector
+     */
+    async function loadCitySelector() {
+        const citySelector = document.getElementById('hotel-city-selector');
+        if (!citySelector) return;
+        
+        try {
+            const result = await window.viamigoHotels.getSupportedCities();
+            
+            if (result.success && result.cities && result.cities.length > 0) {
+                // Sort cities by hotel count (descending)
+                const cities = result.cities.sort((a, b) => b.hotel_count - a.hotel_count);
+                
+                // Build options HTML
+                citySelector.innerHTML = cities.map(city => {
+                    const selected = city.city === currentCity ? 'selected' : '';
+                    return `<option value="${city.city}" ${selected}>
+                        📍 ${city.city} (${city.hotel_count.toLocaleString()} hotel${city.hotel_count !== 1 ? 's' : ''})
+                    </option>`;
+                }).join('');
+                
+                // Set current city if not already set
+                if (!currentCity && cities.length > 0) {
+                    currentCity = cities[0].city;
+                }
+                
+                console.log(`🌍 Loaded ${cities.length} cities, current: ${currentCity}`);
+            } else {
+                citySelector.innerHTML = '<option value="">Nessuna città disponibile</option>';
+            }
+        } catch (error) {
+            console.error('❌ Failed to load cities:', error);
+            citySelector.innerHTML = '<option value="">Errore caricamento città</option>';
+        }
     }
     
     /**
@@ -374,7 +426,22 @@
         try {
             let result;
             
-            if (query.trim()) {
+            // Handle favorites category
+            if (selectedCategory === 'favorites') {
+                const favorites = getFavorites();
+                
+                // Filter by current city and search query
+                const filteredFavorites = favorites.filter(fav => {
+                    const matchesCity = !currentCity || fav.city === currentCity;
+                    const matchesQuery = !query.trim() || fav.name.toLowerCase().includes(query.toLowerCase());
+                    return matchesCity && matchesQuery;
+                });
+                
+                result = {
+                    success: true,
+                    hotels: filteredFavorites
+                };
+            } else if (query.trim()) {
                 // Search by name
                 result = await window.viamigoHotels.search(currentCity, query, 0, 20);
             } else {
@@ -389,6 +456,21 @@
                 renderHotels(result.hotels);
             } else {
                 empty.classList.remove('hidden');
+                // Show helpful message for empty favorites
+                if (selectedCategory === 'favorites') {
+                    const emptyDiv = document.getElementById('hotel-empty');
+                    if (emptyDiv) {
+                        emptyDiv.innerHTML = `
+                            <div class="text-center py-12 text-gray-400">
+                                <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                </svg>
+                                <p class="font-medium">Nessun hotel preferito</p>
+                                <p class="text-sm mt-1">Aggiungi hotel ai preferiti cliccando ❤️</p>
+                            </div>
+                        `;
+                    }
+                }
             }
             
         } catch (error) {
@@ -405,11 +487,22 @@
         const list = document.getElementById('hotel-list');
         if (!list) return;
         
-        list.innerHTML = hotels.map(hotel => `
-            <div class="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer border border-gray-600 hotel-card" data-hotel-name="${escapeHtml(hotel.name)}" data-hotel-lat="${hotel.latitude || ''}" data-hotel-lng="${hotel.longitude || ''}">
+        list.innerHTML = hotels.map(hotel => {
+            const isFavorite = isHotelFavorite(hotel.name, currentCity);
+            const heartIcon = isFavorite 
+                ? `<svg class="w-5 h-5 fill-current text-red-500" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>`
+                : `<svg class="w-5 h-5 fill-current text-gray-400" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>`;
+            
+            return `
+            <div class="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors border border-gray-600 hotel-card" data-hotel-name="${escapeHtml(hotel.name)}" data-hotel-city="${currentCity}" data-hotel-rating="${hotel.rating || 0}" data-hotel-reviews="${hotel.review_count || 0}" data-hotel-address="${escapeHtml(hotel.address || '')}" data-hotel-lat="${hotel.latitude || ''}" data-hotel-lng="${hotel.longitude || ''}">
                 <div class="flex items-start justify-between">
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-white text-sm truncate">${escapeHtml(hotel.name)}</h4>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-semibold text-white text-sm truncate flex-1">${escapeHtml(hotel.name)}</h4>
+                            <button class="favorite-btn flex-shrink-0 p-1 hover:scale-110 transition-transform" data-hotel-name="${escapeHtml(hotel.name)}" data-hotel-city="${currentCity}" title="${isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}">
+                                ${heartIcon}
+                            </button>
+                        </div>
                         ${hotel.address ? `<p class="text-xs text-gray-400 mt-1 line-clamp-1">${escapeHtml(hotel.address)}</p>` : ''}
                     </div>
                     <div class="ml-2 flex-shrink-0">
@@ -423,18 +516,46 @@
                     </div>
                 </div>
                 ${hotel.distance_km ? `<p class="text-xs text-violet-400 mt-2">📍 ${hotel.distance_km.toFixed(2)} km di distanza</p>` : ''}
-                <button class="mt-2 w-full bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+                <button class="select-hotel-btn mt-2 w-full bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium py-2 rounded-lg transition-colors">
                     Parti da qui
                 </button>
             </div>
-        `).join('');
+        `;
+        }).join('');
         
-        // Add click handlers to hotel cards
-        document.querySelectorAll('.hotel-card button').forEach(btn => {
+        // Add click handlers to select hotel buttons
+        document.querySelectorAll('.hotel-card .select-hotel-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const card = btn.closest('.hotel-card');
                 selectHotel(card.dataset.hotelName, card.dataset.hotelLat, card.dataset.hotelLng);
+            });
+        });
+        
+        // Add click handlers to favorite buttons
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const hotelName = btn.dataset.hotelName;
+                const city = btn.dataset.hotelCity;
+                const card = btn.closest('.hotel-card');
+                
+                toggleFavorite({
+                    name: hotelName,
+                    city: city,
+                    rating: parseFloat(card.dataset.hotelRating) || 0,
+                    reviews: parseInt(card.dataset.hotelReviews) || 0,
+                    address: card.dataset.hotelAddress || '',
+                    latitude: card.dataset.hotelLat || '',
+                    longitude: card.dataset.hotelLng || ''
+                });
+                
+                // Update icon
+                const isFavorite = isHotelFavorite(hotelName, city);
+                btn.innerHTML = isFavorite 
+                    ? `<svg class="w-5 h-5 fill-current text-red-500" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>`
+                    : `<svg class="w-5 h-5 fill-current text-gray-400" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>`;
+                btn.title = isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti';
             });
         });
     }
@@ -509,5 +630,87 @@
             timeout = setTimeout(later, wait);
         };
     }
+    
+    // ===== FAVORITES MANAGEMENT =====
+    
+    const FAVORITES_KEY = 'viamigo_favorite_hotels';
+    
+    /**
+     * Get all favorite hotels from localStorage
+     */
+    function getFavorites() {
+        try {
+            const stored = localStorage.getItem(FAVORITES_KEY);
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('❌ Error reading favorites:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Save favorites to localStorage
+     */
+    function saveFavorites(favorites) {
+        try {
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+        } catch (error) {
+            console.error('❌ Error saving favorites:', error);
+        }
+    }
+    
+    /**
+     * Check if hotel is in favorites
+     */
+    function isHotelFavorite(hotelName, city) {
+        const favorites = getFavorites();
+        return favorites.some(fav => fav.name === hotelName && fav.city === city);
+    }
+    
+    /**
+     * Toggle hotel favorite status
+     */
+    function toggleFavorite(hotel) {
+        let favorites = getFavorites();
+        const index = favorites.findIndex(fav => fav.name === hotel.name && fav.city === hotel.city);
+        
+        if (index >= 0) {
+            // Remove from favorites
+            favorites.splice(index, 1);
+            showSuccessToast(`❌ ${hotel.name} rimosso dai preferiti`);
+            console.log(`💔 Removed from favorites: ${hotel.name}`);
+        } else {
+            // Add to favorites
+            favorites.push({
+                name: hotel.name,
+                city: hotel.city,
+                rating: hotel.rating,
+                reviews: hotel.reviews,
+                address: hotel.address,
+                latitude: hotel.latitude,
+                longitude: hotel.longitude,
+                savedAt: new Date().toISOString()
+            });
+            showSuccessToast(`❤️ ${hotel.name} aggiunto ai preferiti`);
+            console.log(`💚 Added to favorites: ${hotel.name}`);
+        }
+        
+        saveFavorites(favorites);
+    }
+    
+    /**
+     * Get favorite hotels count
+     */
+    function getFavoritesCount() {
+        return getFavorites().length;
+    }
+    
+    // Make favorites accessible globally for debugging
+    window.viamigoFavorites = {
+        get: getFavorites,
+        toggle: toggleFavorite,
+        count: getFavoritesCount,
+        isHotelFavorite: isHotelFavorite
+    };
     
 })();
