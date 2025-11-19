@@ -261,7 +261,7 @@ def smart_discoveries():
         MOMENTO: {time_of_day}
         INTERESSI: {', '.join(user_interests)}
 
-        Genera 3 scoperte intelligenti nelle immediate vicinanze:
+        Genera 3 scoperte intelligenti nelle immediate vicinanze in formato JSON:
         {{
             "current_context": {{
                 "location": "{current_location}",
@@ -285,6 +285,7 @@ def smart_discoveries():
         }}
 
         Basa le scoperte su luoghi REALI e verificabili a {city}.
+        Rispondi SOLO con JSON valido, nessun altro testo.
         """
 
         response = openai_client.chat.completions.create(

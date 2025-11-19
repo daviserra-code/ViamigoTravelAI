@@ -451,22 +451,40 @@ Verifica che OGNI scoperta sia davvero a {city_name} prima di includerla.
 
 Genera scoperte intelligenti e contestuali PER {city_name}:
 {{
-    "ai_analysis": "Analisi intelligente del contesto attuale a {city_name}",
+    "ai_analysis": "Analisi intelligente DEL CONTESTO ATTUALE (orario, meteo, stagione) a {city_name} - VARIA ad ogni richiesta",
     "contextual_discoveries": [
         {{
-            "title": "Nome scoperta a {city_name}",
-            "description": "Descrizione dettagliata e autentica",
-            "distance": "distanza precisa",
-            "why_now": "Perché è perfetto PROPRIO ora",
-            "local_secret": "Segreto che solo i locals di {city_name} sanno",
-            "ai_insight": "Insight intelligente unico",
-            "timing_perfect": "Spiegazione timing perfetto"
+            "title": "Nome SPECIFICO e REALE di un luogo a {city_name} (USA i dati del contesto sopra)",
+            "description": "Descrizione DETTAGLIATA che cambia in base all'orario e al contesto",
+            "distance": "Distanza PRECISA calcolata dalla posizione attuale",
+            "why_now": "Motivo SPECIFICO per visitarlo ORA (orario/meteo/stagione)",
+            "local_secret": "Segreto AUTENTICO che solo i locals di {city_name} sanno",
+            "ai_insight": "Insight UNICO basato su dati reali del database",
+            "timing_perfect": "Spiegazione CONTESTUALE del timing (es: golden hour, orario di chiusura, evento speciale)"
         }}
     ],
-    "behavioral_learning": "Cosa l'AI ha imparato dalle preferenze dell'utente",
-    "adaptive_suggestions": ["suggerimento adattivo 1", "suggerimento adattivo 2"],
+    "behavioral_learning": "Cosa l'AI ha REALMENTE osservato dalle preferenze mostrate (analizza pattern)",
+    "adaptive_suggestions": [
+        "Suggerimento con NOME REALE di un luogo/ristorante/attrazione dal database",
+        "Suggerimento COMPLETAMENTE DIVERSO dal precedente - usa orario/meteo/giorno",
+        "Suggerimento con TIMING SPECIFICO (es: 'ora che è tramonto', 'prima che chiuda alle 19')"
+    ],
     "ai_confidence": "high/medium/low"
 }}
+
+REGOLE CRITICHE per adaptive_suggestions e contextual_discoveries:
+1. Usa SEMPRE nomi REALI di luoghi dal contesto database sopra
+2. VARIA COMPLETAMENTE ad ogni richiesta - niente ripetizioni
+3. Basa suggerimenti su: 
+   - Orario attuale (mattina/pomeriggio/sera)
+   - Giorno della settimana (feriale/weekend)
+   - Stagione (estate/inverno influenzano cosa suggerire)
+   - Meteo (se disponibile)
+4. Sii SPECIFICO con timing: "apre alle 10", "golden hour alle 18:30", "chiude tra 1 ora"
+5. Esempio OTTIMO: "Il Caffè Mulassano (dal database) fa aperitivo dalle 18 - vai ora che è golden hour"
+6. Esempio PESSIMO: "Esplora la zona" - troppo generico
+7. Ogni scoperta deve avere nome REALE verificabile dal database sopra
+8. NO placeholder generici come "scoperta locale", "gem nascosta"
 
 Sii specifico per {city_name}, intelligente e contextualmente rilevante. NO CROSS-CITY HALLUCINATIONS.
 """

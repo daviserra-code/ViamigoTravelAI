@@ -144,18 +144,30 @@ class IntelligentItalianRouter:
                     f"📊 Querying comprehensive_attractions for {city_name}...")
 
                 # Build category filter if interests provided
+                # Database has categories like: tourism:museum, tourism:attraction, tourism:artwork
+                # IMPORTANT: Do NOT filter to only museums - include all cultural attractions!
                 category_conditions = []
                 if interests:
+                    # If user wants culture/art, include ALL cultural attraction types
                     if 'culture' in interests or 'storia' in interests or 'arte' in interests:
+                        # Include: tourism:museum, tourism:attraction, tourism:artwork, tourism:gallery
+                        # Also include: tourism:viewpoint, historic:memorial, tourism:monument
                         category_conditions.append(
-                            "(category ILIKE '%%museum%%' OR category ILIKE '%%monument%%' OR category ILIKE '%%church%%' OR category ILIKE '%%palace%%')")
+                            "(category ILIKE '%%attraction%%' OR category ILIKE '%%museum%%' OR "
+                            "category ILIKE '%%artwork%%' OR category ILIKE '%%gallery%%' OR "
+                            "category ILIKE '%%viewpoint%%' OR category ILIKE '%%monument%%' OR "
+                            "category ILIKE '%%memorial%%' OR category ILIKE '%%church%%' OR "
+                            "category ILIKE '%%palace%%' OR category ILIKE '%%castle%%' OR "
+                            "category ILIKE '%%tower%%' OR category ILIKE '%%square%%')")
                     if 'parks' in interests or 'nature' in interests:
                         category_conditions.append(
                             "(category ILIKE '%%park%%' OR category ILIKE '%%garden%%')")
                     if 'food' in interests:
                         category_conditions.append(
-                            "(category ILIKE '%%restaurant%%' OR category ILIKE '%%cafe%%')")
+                            "(category ILIKE '%%restaurant%%' OR category ILIKE '%%cafe%%' OR category ILIKE '%%dining%%')")
 
+                # Apply category filter if interests specified
+                # This ensures we match user's selected interest types
                 category_filter = ""
                 if category_conditions:
                     category_filter = "AND (" + \

@@ -703,34 +703,78 @@
             }
         }
         
-        function updateDiscoveryForCity(cityData) {
-            const discoveries = {
-                'torino': 'Sei a 2 minuti da "Caffè Al Bicerin", storico caffè torinese. Corrisponde al tuo interesse \'Cultura locale\'.',
-                'milano': 'Sei a 5 minuti da "Luini", famosa per i panzerotti dal 1949. Corrisponde al tuo interesse \'Cibo locale\'.',
-                'bergamo': 'Sei a 3 minuti da "Polenta e Osei", dolce tipico bergamasco. Corrisponde al tuo interesse \'Tradizioni locali\'.',
-                'genova': 'Sei a 2 minuti da "Pestobene", bottega storica. Corrisponde al tuo interesse \'Cibo locale\'.',
-                'roma': 'Sei a 3 minuti da "Tazza d\'Oro", caffè storico dal 1946. Corrisponde al tuo interesse \'Cultura locale\'.',
-                'venezia': 'Sei a 4 minuti da "Caffè Florian", caffè più antico d\'Italia (1720). Corrisponde al tuo interesse \'Storia\'.',
-                'firenze': 'Sei a 3 minuti da "Vivoli", gelateria storica dal 1930. Corrisponde al tuo interesse \'Dolci tipici\'.',
-                'napoli': 'Sei a 2 minuti da "Da Michele", pizzeria storica dal 1870. Corrisponde al tuo interesse \'Cibo autentico\'.',
-                'palermo': 'Sei a 4 minuti da "Antica Focacceria San Francesco", dal 1834. Corrisponde al tuo interesse \'Tradizioni siciliane\'.',
-                'catania': 'Sei a 3 minuti da "Pasticceria Savia", cannoli siciliani autentici. Corrisponde al tuo interesse \'Dolci locali\'.',
-                'taormina': 'Sei a 2 minuti da "Bam Bar", granita siciliana artigianale. Corrisponde al tuo interesse \'Specialità estive\'.',
-                'siracusa': 'Sei a 5 minuti da "Caseificio Borderi", ricotta fresca siciliana. Corrisponde al tuo interesse \'Prodotti tipici\'.',
-                'portofino': 'Sei a 1 minuto da "Il Pitosforo", focaccia ligure vista mare. Corrisponde al tuo interesse \'Cucina ligure\'.',
-                'cinqueterre': 'Sei a 3 minuti da "Cantina del Macellaio", vini delle 5 Terre. Corrisponde al tuo interesse \'Vini locali\'.',
-                'olbia': 'Sei a 4 minuti da "Agriturismo Stazzu", pecorino sardo DOP. Corrisponde al tuo interesse \'Formaggi tipici\'.',
-                'portorotondo': 'Sei a 2 minuti da "Ristorante Da Giovannino", crudo di ricciola. Corrisponde al tuo interesse \'Pesce fresco\'.',
-                'portocervo': 'Sei a 3 minuti da "Pevero Hotel", aperitivo vista Costa Smeralda. Corrisponde al tuo interesse \'Luxury experience\'.',
-                'costasmeralda': 'Sei a 5 minuti da "Hotel Pitrizza", cocktail esclusivi vista mare. Corrisponde al tuo interesse \'Relax di lusso\'.',
-                'santeodoro': 'Sei a 2 minuti da "Agriturismo L\'Agnata", malloreddus sardi. Corrisponde al tuo interesse \'Cucina tradizionale\'.',
-                'golfoaranci': 'Sei a 4 minuti da "Ristorante Terza Spiaggia", spaghetti ai ricci. Corrisponde al tuo interesse \'Frutti di mare\'.',
-                'london': 'You are 3 minutes from "Borough Market", historic food market since 1754. Matches your interest in \'Local food culture\'.'
-            };
-            
+        async function updateDiscoveryForCity(cityData) {
             const discoveryText = document.getElementById('discovery-text');
-            if (discoveryText) {
-                discoveryText.textContent = discoveries[cityData.key] || discoveries['genova'];
+            
+            if (!discoveryText) return;
+            
+            // Show loading state
+            discoveryText.innerHTML = '<span class="animate-pulse">🔍 Generando scoperte intelligenti...</span>';
+            
+            try {
+                // Get context from localStorage (interests, location, etc.)
+                const storedRoute = localStorage.getItem('currentItinerary');
+                const interests = storedRoute ? JSON.parse(storedRoute).interests || ['arte', 'cibo'] : ['arte', 'cibo'];
+                const currentLocation = cityData.name || cityData.key || 'centro';
+                const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening';
+                
+                // Call real AI API (using /scoperte_intelligenti endpoint)
+                const response = await fetch('/scoperte_intelligenti', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        city: cityData.name || cityData.key || 'Milano',
+                        current_location: currentLocation,
+                        time_of_day: timeOfDay,
+                        interests: interests
+                    })
+                });
+                
+                if (!response.ok) throw new Error('API error');
+                
+                const data = await response.json();
+                console.log('✅ AI Discoveries:', data);
+                
+                // Display first discovery with rich formatting
+                if (data.discoveries && data.discoveries.discoveries && data.discoveries.discoveries.length > 0) {
+                    const discovery = data.discoveries.discoveries[0];
+                    discoveryText.innerHTML = `
+                        <div class="space-y-2">
+                            <div class="flex items-start justify-between">
+                                <div class="font-semibold text-white">${discovery.title}</div>
+                                <span class="text-xs px-2 py-1 bg-violet-500/20 text-violet-300 rounded">${discovery.category}</span>
+                            </div>
+                            <div class="text-sm text-gray-300">${discovery.description}</div>
+                            <div class="flex items-center space-x-2 text-xs">
+                                <span class="text-violet-400">📍 ${discovery.distance}</span>
+                                ${discovery.opening_status ? `<span class="text-green-400">• ${discovery.opening_status}</span>` : ''}
+                            </div>
+                            <div class="text-xs text-amber-400 italic">💡 ${discovery.why_now}</div>
+                            ${discovery.local_secret ? `<div class="text-xs text-gray-400 mt-1">🤫 ${discovery.local_secret}</div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Fallback to simple discovery
+                    discoveryText.textContent = 'Scopri gemme nascoste nelle vicinanze';
+                }
+                
+            } catch (error) {
+                console.error('Error loading AI discoveries:', error);
+                
+                // Fallback to static discovery for this city
+                const fallbackDiscoveries = {
+                    'torino': '☕ Caffè Al Bicerin - Storico caffè torinese a 2 minuti',
+                    'milano': '🥟 Luini - Panzerotti famosi dal 1949, a 5 minuti',
+                    'bergamo': '🍰 Polenta e Osei - Dolce tipico bergamasco, 3 minuti',
+                    'genova': '🌿 Pestobene - Bottega storica del pesto, 2 minuti',
+                    'roma': '☕ Tazza d\'Oro - Caffè storico dal 1946, 3 minuti',
+                    'venezia': '🎭 Caffè Florian - Il più antico d\'Italia (1720), 4 minuti',
+                    'firenze': '🍦 Vivoli - Gelateria storica dal 1930, 3 minuti',
+                    'napoli': '🍕 Da Michele - Pizzeria storica dal 1870, 2 minuti'
+                };
+                
+                const cityKey = (cityData.key || cityData.name || 'milano').toLowerCase();
+                discoveryText.textContent = fallbackDiscoveries[cityKey] || '✨ Esplora le gemme nascoste della città';
             }
         }
         
